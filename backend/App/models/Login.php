@@ -5,7 +5,6 @@ namespace App\models;
 defined("APPPATH") or die("Access denied");
 
 use \Core\Database;
-use \App\interfaces\Crud;
 
 class Login
 {
@@ -76,8 +75,6 @@ sql;
 sql;
 
         return [$mysqli->queryOne($query1, $params1), $mysqli->queryOne($query_ahorro, $params_ahorro)];
-
-
     }
 
     public static function getUser($usuario)
@@ -104,6 +101,4 @@ sql;
 
         return $mysqli->queryAll($query);
     }
-
-
 }

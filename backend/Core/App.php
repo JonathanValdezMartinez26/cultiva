@@ -75,7 +75,7 @@ class App
                 //eliminamos el método de url, así sólo nos quedaran los parámetros del método
                 unset($url[1]);
             } else {
-                View::render("principal_all");
+                View::render("principal");
             }
         }
         //asociamos el resto de segmentos a $this->_params para pasarlos al método llamado, por defecto será un array vacío

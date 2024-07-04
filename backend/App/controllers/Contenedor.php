@@ -4,9 +4,6 @@ namespace App\controllers;
 
 defined("APPPATH") or die("Access denied");
 
-use \Core\View;
-use \Core\MasterDom;
-use \App\models\General as GeneralDao;
 use \Core\Controller;
 
 require_once dirname(__DIR__) . '/../public/librerias/mpdf/mpdf.php';
@@ -14,218 +11,135 @@ require_once dirname(__DIR__) . '/../public/librerias/phpexcel/Classes/PHPExcel.
 
 class Contenedor extends Controller
 {
-    private $SU = "AMGM";
-    private $usuarios_especiales = ['LGFR', 'PAES', 'PMAB', 'AMGM', 'DCRI', 'GUGJ', 'JUSA', 'HEDC'];
-    private $perfiles_especiales = ['ADMIN', 'GARAN', 'CALLC', 'CAMAG', 'CAJA', 'LAYOU', 'GTOCA', 'AMOCA', 'OCOF', 'CPAGO', 'ACALL', 'TESP', 'MGJC'];
-
     public function __construct()
     {
         parent::__construct();
-    }
-
-    public function es_SU()
-    {
-        return $this->__usuario == $this->SU;
-    }
-
-    public function getUsuario()
-    {
-        return $this->__usuario;
     }
 
     public function header($extra = '')
     {
         $usuario = $this->__usuario;
         $nombre = $this->__nombre;
-        $sucursal = $this->__cdgco;
         $perfil = $this->__perfil;
 
         $header = <<<html
         <!DOCTYPE html>
         <html lang="es">
             <head>
-            <meta http-equiv="Expires" content="0">
-            <meta http-equiv="Last-Modified" content="0">
-            <meta http-equiv="Cache-Control" content="no-cache, mustrevalidate">
-            <meta http-equiv="Pragma" content="no-cache">
-            <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
-            <meta charset="utf-8">
-            
-            <link href="/css/nprogress.css" rel="stylesheet">
-            <link href="/css/loader.css" rel="stylesheet">
-            <link rel="stylesheet" href="/css/tabla/sb-admin-2.css">
-            <link rel="stylesheet" href="/css/bootstrap/datatables.bootstrap.css">
-            <link rel="stylesheet" href="/css/bootstrap/bootstrap.css">
-            <link rel="stylesheet" href="/css/bootstrap/bootstrap-switch.css">
-            <link rel="stylesheet" href="/css/validate/screen.css">
-
-            <link href="/css/bootstrap/bootstrap.min.css" rel="stylesheet">
-            <link href="/css/font-awesome.min.css" rel="stylesheet">
-            <link href="/css/menu/menu5custom.min.css" rel="stylesheet">
-            <link href="/css/green.css" rel="stylesheet">
-            <link href="/css/custom.min.css" rel="stylesheet">
-            <link href="/librerias/bootstrap-colorpicker/css/bootstrap-colorpicker.min.css" rel="stylesheet">
-            <link rel="stylesheet" type="text/css" href="/librerias/vintage_flip_clock/jquery.flipcountdown.css" />
-            $extra 
-        </head>
+                <meta http-equiv="Expires" content="0">
+                <meta http-equiv="Last-Modified" content="0">
+                <meta http-equiv="Cache-Control" content="no-cache, mustrevalidate">
+                <meta http-equiv="Pragma" content="no-cache">
+                <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+                <meta charset="utf-8">
+                
+                <link rel="stylesheet" type="text/css" href="/css/nprogress.css">
+                <link rel="stylesheet" type="text/css" href="/css/loader.css">
+                <link rel="stylesheet" type="text/css" href="/css/tabla/sb-admin-2.css">
+                <link rel="stylesheet" type="text/css" href="/css/bootstrap/datatables.bootstrap.css">
+                <link rel="stylesheet" type="text/css" href="/css/bootstrap/bootstrap.css">
+                <link rel="stylesheet" type="text/css" href="/css/bootstrap/bootstrap-switch.css">
+                <link rel="stylesheet" type="text/css" href="/css/validate/screen.css">
+                <link rel="stylesheet" type="text/css" href="/css/bootstrap/bootstrap.min.css">
+                <link rel="stylesheet" type="text/css" href="/css/font-awesome.min.css">
+                <link rel="stylesheet" type="text/css" href="/css/menu/menu5custom.min.css">
+                <link rel="stylesheet" type="text/css" href="/css/green.css">
+                <link rel="stylesheet" type="text/css" href="/css/custom.min.css">
+                <link rel="stylesheet" type="text/css" href="/librerias/bootstrap-colorpicker/css/bootstrap-colorpicker.min.css">
+                <link rel="stylesheet" type="text/css" href="/librerias/vintage_flip_clock/jquery.flipcountdown.css" />
+                $extra 
+            </head>
         html;
 
         $menu = <<<html
-        <body class="nav-md" >
-        <div class="container body" >
-            <div class="main_container" style="background: #ffffff">
-
-            <div class="col-md-3 left_col">
-                <div class="left_col scroll-view">
-                <div class="navbar nav_title" style="border: 0;"> 
-                    <a href="/Principal/" class="site_title">
-                    <i class="fa fa-home"></i>
-                    <img src="/img/logo.png" alt="Login" width="150px">
-                    <!-- <span>CULTIVA</span> -->
-                    </a>
-                </div>
-                <div class="clearfix"></div>
-                <div class="profile clearfix">
-                    <div class="profile_pic">
-                    <img src="https://static.vecteezy.com/system/resources/previews/013/042/571/large_2x/default-avatar-profile-icon-social-media-user-photo-in-flat-style-vector.jpg" alt="..." class="img-circle profile_img">
-                    </div>
-                    <div class="profile_info">
-                    <span><b>USUARIO:</b> {$usuario}</span>
-                    <br>
-                    <span><b>PERFIL:</b> <span class="fa fa-key"></span> {$perfil}</span>
-                    
-        html;
-
-        $menu .= <<<html
-            </div>
-        </div>
-            <div id="sidebar-menu" class="main_menu_side hidden-print main_menu">
-            <div class="menu_section">
-        html;
-
-        $menu .= <<<html
-            <hr>
-            <h3>GENERAL </h3>
-            <ul class="nav side-menu">       
+        <body class="nav-md">
+            <div class="container body" >
+                <div class="main_container" style="background: #ffffff">
+                    <div class="col-md-3 left_col">
+                        <div class="left_col scroll-view">
+                            <div class="navbar nav_title" style="border: 0;"> 
+                                <a href="/Principal/" class="site_title">
+                                <i class="fa fa-home"></i>
+                                <img src="/img/logo.png" alt="Login" width="150px">
+                                <!-- <span>CULTIVA</span> -->
+                                </a>
+                            </div>
+                            <div class="clearfix"></div>
+                            <div class="profile clearfix">
+                                <div class="profile_pic">
+                                    <img src="/img/profile_default.jpg" alt="..." class="img-circle profile_img">
+                                </div>
+                                <div class="profile_info">
+                                    <span><b>USUARIO:</b> {$usuario}</span>
+                                    <br>
+                                    <span><b>PERFIL:</b> <span class="fa fa-key"></span> {$perfil}</span>
+                                </div>
+                            </div>
+                            <hr>
+                            <div id="sidebar-menu" class="main_menu_side hidden-print main_menu">
+                                <div class="menu_section">
+                                    <h3>GENERAL </h3>     
         html;
 
         if ($this->__perfil == 'ADMIN' || $this->__usuario == 'PLD') {
             $menu .= <<<html
-                <ul class="nav side-menu">
-                    <li><a><i class="glyphicon glyphicon glyphicon-th-list"> </i>&nbsp; Operaciones <span class="fa fa-chevron-down"></span></a>
-                        <ul class="nav child_menu">
-                            <li><a href="/Operaciones/ReportePLDDesembolsos/">PLD Reporte Desembolsos</a></li>
-                            <li><a href="/Operaciones/ReportePLDPagos/">PLD Reporte Pagos</a></li>
-                            <li><a href="/Operaciones/ReportePLDPagosNacimiento/">PLD R. Pagos Edad</a></li>
-                            <li><a href="/Operaciones/IdentificacionClientes/">Identificación (Clientes)</a></li>
-                            <li><a href="/Operaciones/CuentasRelacionadas/">Cuentas Relacionadas</a></li>
-                            <li><a href="/Operaciones/PerfilTransaccional/">Perfil Transaccional</a></li>
-                            <li><a href="/Operaciones/UDIS_DOLAR/">Cargar UDIS y DOLAR</a></li>
-                        </ul>
-                    </li>
-                </ul>
-            html;
-        }
-
-        if ($this->__perfil == 'ADMIN' || $this->__usuario == 'PLD') {
-            $menu .= <<<html
-                <ul class="nav side-menu">
-                    <li><a><i class="glyphicon glyphicon glyphicon glyphicon-globe"></i>&nbsp;Api Condusef<span class="fa fa-chevron-down"></span></a>
-                        <ul class="nav child_menu">
-                            <li><a href="/ApiCondusef/AddRedeco/">Registrar Quejas REDECO</a></li>
-                            <li><a href="/ApiCondusef/AddReune/">Registrar Quejas REUNE</a></li>
-                        </ul>
-                    </li>
-                </ul>
-            html;
-        }
-
-        if ($this->__perfil == 'ADMIN' || $this->__usuario == 'PLMV' || $this->__usuario == 'MCDP') {
-            $menu .= <<<html
-        <ul class="nav side-menu">
-                <li><a><i class="glyphicon glyphicon glyphicon glyphicon-globe"> 
-                </i>&nbsp;Cultiva<span class="fa fa-chevron-down"></span></a>
-                  <ul class="nav child_menu">
-                        <li><a href="/Cultiva/">Consulta Clientes Solicitudes</a></li>
-html;
-        }
-
-        if ($this->__perfil == 'ADMIN'  || $this->__usuario == 'MCDP') {
-            $menu .= <<<html
-                        <li><a href="/Cultiva/ReingresarClientesCredito/">Reingresar Clientes a Grupo</a></li>
-html;
-        }
-        if ($this->__perfil == 'ADMIN' || $this->__usuario == 'PLMV' || $this->__usuario == 'MCDP') {
-            $menu .= <<<html
-                  </ul>
-                </li>
-        </ul>
-html;
-        }
-
-        if ($this->__perfil == 'ADMIN' || $this->__usuario == 'PLMV' || $this->__usuario == 'PHEE') {
-            $menu .= <<<html
-        <ul class="nav side-menu">
-                <li><a><i class="glyphicon glyphicon glyphicon-cog"> 
-                </i>&nbsp;Incidencias MCM<span class="fa fa-chevron-down"></span></a>
-                  <ul class="nav child_menu">
-                  <li><a href="/Incidencias/AutorizaRechazaSolicitud/">Error Autorizar y/o Rechazar Solicitud</a></li>
-                  <li><a href="/Incidencias/CalculoDevengo/">Calculo de Devengos</a></li>
-                  <li><a href="/Incidencias/CancelarRefinanciamiento/">Cancelar Refinanciamiento</a></li>
-                  <li><a href="/Incidencias/ActualizarFechaPagosNoConciliados/">Cambio de Fecha para Pagos No conciliados del día</a></li>
-                  <li><a href="/Incidencias/ActualizarFechaPagosNoConciliados/">Telaraña agregar referencias</a></li>
-                  </ul>
-                </li>
-        </ul>
-html;
-        }
-
-        if ($this->__perfil == 'ADMIN' || $this->__usuario == 'MAPH' || $this->__usuario == 'HSEJ' || $this->__usuario == 'ORHM' || $this->__usuario == 'LGFR') {
-            $menu .= <<<html
-                <ul class="nav side-menu">
-                    <li><a><i class="glyphicon glyphicon glyphicon-cog"> </i>&nbsp; Usuarios SICAFIN <span class="fa fa-chevron-down"></span></a>
-                        <ul class="nav child_menu">
-                            <li><a href="/Reportes/UsuariosCultiva/">Reporte Usuarios SICAFIN Cultiva</a></li>
-                        </ul>
-                    </li>
-                </ul>
-            html;
-        }
-
-        $menu .= <<<html
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <div class="top_nav">
-            <div class="nav_menu">
-                <nav>
-                    <div class="nav toggle">
-                        <a id="menu_toggle"><i class="fa fa-bars"></i></a>
-                    </div>
-                    <ul class="nav navbar-nav navbar-right">
-                        <li class="">
-                            <a href="" class="user-profile dropdown-toggle" data-toggle="dropdown" aria-expanded="false">
-                                <span class=" fa fa-user"></span> {$nombre}
-                                <span class=" fa fa-angle-down"></span>
-                            </a>
-                            <ul class="dropdown-menu dropdown-usermenu pull-right">
-                                <li><a href="/Login/cerrarSession"><i class="fa fa-sign-out pull-right"></i>Cerrar Sesión</a></li>
-                            </ul>
-                        </li>
+            <ul class="nav side-menu">
+                <li><a><i class="glyphicon glyphicon glyphicon-th-list"> </i>&nbsp; Operaciones <span class="fa fa-chevron-down"></span></a>
+                    <ul class="nav child_menu">
+                        <li><a href="/Operaciones/ReportePLDDesembolsos/">PLD Reporte Desembolsos</a></li>
+                        <li><a href="/Operaciones/ReportePLDPagos/">PLD Reporte Pagos</a></li>
+                        <li><a href="/Operaciones/ReportePLDPagosNacimiento/">PLD R. Pagos Edad</a></li>
+                        <li><a href="/Operaciones/IdentificacionClientes/">Identificación (Clientes)</a></li>
+                        <li><a href="/Operaciones/CuentasRelacionadas/">Cuentas Relacionadas</a></li>
+                        <li><a href="/Operaciones/PerfilTransaccional/">Perfil Transaccional</a></li>
                     </ul>
-                </nav>
-            </div>
-        </div>
-        html;
+                </li>
+            </ul>
+            <ul class="nav side-menu">
+                <li><a><i class="glyphicon glyphicon glyphicon glyphicon-globe"></i>&nbsp;Api Condusef<span class="fa fa-chevron-down"></span></a>
+                    <ul class="nav child_menu">
+                        <li><a href="/ApiCondusef/AddRedeco/">Registrar Quejas REDECO</a></li>
+                        <li><a href="/ApiCondusef/AddReune/">Registrar Quejas REUNE</a></li>
+                    </ul>
+                </li>
+            </ul>
+            html;
+        }
 
+        $menu .= <<<html
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="top_nav">
+                    <div class="nav_menu">
+                        <nav>
+                            <div class="nav toggle">
+                                <a id="menu_toggle"><i class="fa fa-bars"></i></a>
+                            </div>
+                            <ul class="nav navbar-nav navbar-right">
+                                <li class="">
+                                    <a href="" class="user-profile dropdown-toggle" data-toggle="dropdown" aria-expanded="false">
+                                        <span class=" fa fa-user"></span> {$nombre}
+                                        <span class=" fa fa-angle-down"></span>
+                                    </a>
+                                    <ul class="dropdown-menu dropdown-usermenu pull-right">
+                                        <li><a href="/Login/cerrarSession"><i class="fa fa-sign-out pull-right"></i>Cerrar Sesión</a></li>
+                                    </ul>
+                                </li>
+                            </ul>
+                        </nav>
+                    </div>
+                </div>
+        html;
         return $header . $menu;
     }
 
     public function footer($extra = '')
     {
         $footer = <<<html
+                </div>
                 <script src="/js/moment/moment.min.js"></script>
                 <script src="https://unpkg.com/sweetalert/dist/sweetalert.min.js"></script>
                 <script src="/js/jquery.min.js"></script>
@@ -349,7 +263,6 @@ html;
                 <footer>
                 $extra
                 </footer>
-                
             </body>
         </html>
         html;

@@ -28,13 +28,14 @@ class View
      */
     public static function render($template)
     {
-        if (!file_exists(self::VIEWS_PATH . $template . "." . self::EXTENSION_TEMPLATES)) {
-            throw new \Exception("Error: El archivo " . self::VIEWS_PATH . $template . "." . self::EXTENSION_TEMPLATES . " no existe", 1);
+        $view = self::VIEWS_PATH . $template . "." . self::EXTENSION_TEMPLATES;
+        if (!file_exists($view)) {
+            throw new \Exception("Error: El archivo " . $view . " no existe", 1);
         }
 
         ob_start();
         extract(self::$data);
-        include(self::VIEWS_PATH . $template . "." . self::EXTENSION_TEMPLATES);
+        include($view);
         $str = ob_get_contents();
         ob_end_clean();
         echo $str;
@@ -52,14 +53,14 @@ class View
 
     public static function fetch($template)
     {
-        if (!file_exists(self::VIEWS_PATH . $template . "." . self::EXTENSION_TEMPLATES)) {
-            throw new \Exception("Error: El archivo " . self::VIEWS_PATH . $template . "." . self::EXTENSION_TEMPLATES . " no existe", 1);
+        $view = self::VIEWS_PATH . $template . "." . self::EXTENSION_TEMPLATES;
+        if (!file_exists($view)) {
+            throw new \Exception("Error: El archivo " . $view . " no existe", 1);
         }
 
         ob_start();
         extract(self::$data);
-        include(self::VIEWS_PATH . $template . "." . self::EXTENSION_TEMPLATES);
-        // $str = ob_get_contents();
+        include($view);
         $str = ob_get_clean();
         return $str;
     }
