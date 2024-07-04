@@ -33,6 +33,7 @@ class Contenedor extends Controller
                 <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
                 <meta charset="utf-8">
                 
+                <link rel="shortcut icon" href="/img/logo.png">
                 <link rel="stylesheet" type="text/css" href="/css/nprogress.css">
                 <link rel="stylesheet" type="text/css" href="/css/loader.css">
                 <link rel="stylesheet" type="text/css" href="/css/tabla/sb-admin-2.css">
@@ -45,8 +46,6 @@ class Contenedor extends Controller
                 <link rel="stylesheet" type="text/css" href="/css/menu/menu5custom.min.css">
                 <link rel="stylesheet" type="text/css" href="/css/green.css">
                 <link rel="stylesheet" type="text/css" href="/css/custom.min.css">
-                <link rel="stylesheet" type="text/css" href="/librerias/bootstrap-colorpicker/css/bootstrap-colorpicker.min.css">
-                <link rel="stylesheet" type="text/css" href="/librerias/vintage_flip_clock/jquery.flipcountdown.css" />
                 $extra 
             </head>
         html;
@@ -140,129 +139,23 @@ class Contenedor extends Controller
     {
         $footer = <<<html
                 </div>
-                <script src="/js/moment/moment.min.js"></script>
-                <script src="https://unpkg.com/sweetalert/dist/sweetalert.min.js"></script>
                 <script src="/js/jquery.min.js"></script>
-
-                <!-- Bootstrap -->
+                <script src="/js/moment/moment.min.js"></script>
                 <script src="/js/bootstrap.min.js"></script>
                 <script src="/js/bootstrap/bootstrap-switch.js"></script>
-                <script src="/librerias/bootstrap-colorpicker/js/bootstrap-colorpicker.min.js"></script>
-                
-                <!-- Custom Theme Scripts -->
                 <script src="/js/nprogress.js"></script>
                 <script src="/js/custom.min.js"></script>
                 <script src="/js/validate/jquery.validate.js"></script>
-                <script src="/js/login.js"></script>
                 <script src="/js/tabla/jquery.dataTables.min.js"></script>
                 <script src="/js/tabla/dataTables.bootstrap.min.js"></script>
                 <script src="/js/tabla/jquery.tablesorter.js"></script>
-
-                <!-- EXTENCIONES DE DATATABLE() PARA EXPORTAR  -->
-                <script src="https://cdn.datatables.net/buttons/1.4.2/js/dataTables.buttons.min.js" ></script>
                 <script src="//cdnjs.cloudflare.com/ajax/libs/jszip/3.1.3/jszip.min.js" ></script>
                 <script src="//cdnjs.cloudflare.com/ajax/libs/pdfmake/0.1.32/pdfmake.min.js" ></script>
                 <script src="//cdnjs.cloudflare.com/ajax/libs/pdfmake/0.1.32/vfs_fonts.js" ></script>
                 <script src="//cdn.datatables.net/buttons/1.4.2/js/buttons.html5.min.js" ></script>
-
-                <script type="text/javascript" src="/librerias/vintage_flip_clock/jquery.flipcountdown.js"></script>
-                <script>
-                    function ponerElCursorAlFinal(id) {
-                        var el = document.getElementById(id)
-                        el.selectionStart = el.selectionEnd = el.value.length
-                        el.focus()
-                    }
-
-                    function Delete_Garantias(secuencia) {
-                        credito = getParameterByName("Credito")
-                        secuencias = secuencia
-
-                        alertify.confirm("¿Segúro que desea eliminar lo seleccionado?", function (response) {
-                            if (response) {
-                                $.ajax({
-                                    type: "POST",
-                                    url: "/Creditos/DeleteGarantia/",
-                                    data: { credito: credito, secuencia: secuencias },
-                                    success: function (response) {
-                                        if (response == "0") return alertify.error("Error, al eliminar.")
-
-                                        alertify.success("Se ha eliminado correctamente")
-                                        location.reload()
-                                    }
-                                })
-                            }
-                        })
-                    }
-
-                    function Edit_Garantias(
-                        articulo_p,
-                        marca_p,
-                        modelo_p,
-                        no_serie_p,
-                        monto_p,
-                        factura_p,
-                        secuencia_p
-                    ) {
-                        $("#articulo_e").val(articulo_p)
-                        $("#marca_e").val(marca_p)
-                        $("#modelo_e").val(modelo_p)
-                        $("#serie_e").val(no_serie_p)
-                        $("#valor_e").val(monto_p)
-                        $("#factura_e").val(factura_p)
-                        $("#secuencia_e").val(secuencia_p)
-                        $("#modal_editar_articulo").modal("show")
-                    }
-
-                    function Update_Garantias(secuencia) {
-                        secuencias = secuencia
-
-                        alertify.confirm("¿Segúro que desea eliminar lo seleccionado?", function (response) {
-                            if (response) {
-                                $.ajax({
-                                    type: "POST",
-                                    url: "/Creditos/DeleteGarantia/",
-                                    data: { credito: credito, secuencia: secuencias },
-                                    success: function (response) {
-                                        if (response != "0") return alertify.error("Error, al eliminar.")
-
-                                        alertify.success("Se ha eliminado correctamente")
-                                        location.reload()
-                                    }
-                                })
-                            }
-                        })
-                    }
-
-                    function check(e) {
-                        tecla = document.all ? e.keyCode : e.which
-                        if (tecla == 8) return true
-                        
-                        patron = /[A-Za-z]/
-                        tecla_final = String.fromCharCode(tecla)
-                        return patron.test(tecla_final)
-                    }
-
-                    function check_t(e) {
-                        tecla = document.all ? e.keyCode : e.which
-                        if (tecla == 8) return true
-
-                        patron = /[A-Za-z0-9]/
-                        tecla_final = String.fromCharCode(tecla)
-                        return patron.test(tecla_final)
-                    }
-
-                    function mayus(e) {
-                        e.value = e.value.toUpperCase()
-                    }
-
-                    $(window).load(function () {
-                        $(".loader").fadeOut("slow")
-                    })
-                </script>
-
-                <footer>
+                <script src="https://unpkg.com/sweetalert/dist/sweetalert.min.js"></script>
+                <script src="https://cdn.datatables.net/buttons/1.4.2/js/dataTables.buttons.min.js" ></script>
                 $extra
-                </footer>
             </body>
         </html>
         html;

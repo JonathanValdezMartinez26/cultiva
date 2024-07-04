@@ -2,11 +2,14 @@
 $anio = date('Y');
 ?>
 
+<!DOCTYPE html>
+<html lang="es">
+
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Login | Cultiva </title>
-    <link rel="shortcut icon" href="/img/ico.png">
+    <title>Login | Cultiva</title>
+    <link rel="shortcut icon" href="/img/logo.png">
 
     <?= $header; ?>
 </head>
@@ -39,6 +42,7 @@ $anio = date('Y');
             </form>
         </section>
     </div>
+    <?= $footer; ?>
 </body>
 
-<?= $footer; ?>
+</html>

@@ -42,7 +42,6 @@ class Controller
     {
         $html = <<<html
         <title>$titulo</title>
-        <link rel="shortcut icon" href="/img/logo.png">
         html;
 
         if (!empty($elementos)) {

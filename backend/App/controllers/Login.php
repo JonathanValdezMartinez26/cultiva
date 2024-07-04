@@ -18,29 +18,25 @@ class Login
     {
         $extraHeader = <<<html
         <link rel="stylesheet" type="text/css" href="/css/bootstrap/bootstrap.css">
-        <link rel="stylesheet" type="text/css" href="/css/bootstrap/datatables.bootstrap.css">
         <link rel="stylesheet" type="text/css" href="/css/contenido/custom.min.css">
         <link rel="stylesheet" type="text/css" href="/css/validate/screen.css">
-        <link rel="stylesheet" type="text/css" href="/librerias/vintage_flip_clock/jquery.flipcountdown.css">
         html;
 
         $extraFooter = <<<html
         <script type="text/javascript" src="/js/jquery.min.js"></script>
         <script type="text/javascript" src="/js/validate/jquery.validate.js"></script>
-        <script type="text/javascript" src="https://unpkg.com/sweetalert/dist/sweetalert.min.js"></script>
-        <script type="text/javascript" src="/librerias/vintage_flip_clock/jquery.flipcountdown.js"></script>
         <script>
-            document.getElementById("usuario").focus()
-
             const enviar_formulario = (e) => {
                 if (event.keyCode == 13) $("#btnEntrar").click()
             }
-
+            
             const mayusculas = (e) => {
                 e.target.value = e.target.value.toUpperCase()
             }
-
+            
             $(document).ready(function () {
+                document.getElementById("usuario").focus()
+
                 $.validator.addMethod(
                     "checkUserName",
                     function (value, element) {
@@ -63,6 +59,7 @@ class Login
                     },
                     "El usuario no es correcto, o no tiene acceso al sistema, verifique."
                 )
+
                 $("#login").validate({
                     rules: {
                         usuario: {
@@ -82,6 +79,7 @@ class Login
                         }
                     }
                 })
+
                 $("#btnEntrar").click(function () {
                     $.ajax({
                         type: "POST",
@@ -114,14 +112,6 @@ class Login
                                     "error"
                                 )
                             }
-                        }
-                    })
-                })
-                $(function () {
-                    var i = 1
-                    $("#retroclockbox1").flipcountdown({
-                        tick: function () {
-                            return i++
                         }
                     })
                 })
