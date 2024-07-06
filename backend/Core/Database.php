@@ -12,62 +12,108 @@ use PDO;
 
 class Database
 {
-    static $_instance;
-    static $_mysqli;
-    static $_debug;
+    private $db_mcm;
+    private $db_cultiva;
+    public $db_activa;
 
-    private function __construct()
+    function __construct()
     {
-        $this->conectar();
+        $this->DB_CULTIVA();
+        $this->DB_MCM();
+
+        // La base por defecto seria MCM
+        // $this->db_activa = $this->db_mcm;
+
+        // La base por defecto seria CULTIVA
+        $this->db_activa = $this->db_cultiva;
     }
 
-    public static function getInstance($debug = true)
+    private function Conecta($s, $u = null, $p = null)
     {
-        self::$_debug = $debug;
-        if (!(self::$_instance instanceof self)) self::$_instance = new self();
-        return self::$_instance;
-    }
-
-    public static function getConexion()
-    {
-        return self::$_mysqli;
-    }
-
-    private static function conectar()
-    {
-        $dsn = 'oci:dbname=//mcm-server:1521/ESIACOM;charset=UTF8';
-        $username = 'ESIACOM';
-        $password = 'ESIACOM';
-
+        $host = 'oci:dbname=//' . $s . ':1521/ESIACOM;charset=UTF8';
+        $usuario = $u ?? 'ESIACOM';
+        $password = $p ?? 'ESIACOM';
         try {
-            self::$_mysqli =  new PDO($dsn, $username, $password);
+            return new PDO($host, $usuario, $password);
         } catch (\PDOException $e) {
-            if (self::$_debug)
-                echo $e->getMessage();
-            die();
+            echo self::muestraError($e);
+            return null;
         }
     }
 
-    public function insert($sql)
+    private function muestraError($e, $sql = null, $parametros = null)
     {
+        $error = "Error en DB: " . $e->getMessage();
 
-        $stmt = $this->_mysqli->prepare($sql);
-        $result = $stmt->execute();
+        if ($sql != null) $error .= "\nSql: " . $sql;
+        if ($parametros != null) $error .= "\nDatos: " . print_r($parametros, 1);
 
-        if ($result) {
-            echo '1';
-        } else {
-            echo "\nPDOStatement::errorInfo():\n";
-            $arr = $stmt->errorInfo();
-            print_r($arr);
+        return $error;
+    }
+
+    private function DB_MCM()
+    {
+        $servidor = 'mcm-server';
+        $this->db_mcm = self::Conecta($servidor);
+    }
+
+    private function DB_CULTIVA()
+    {
+        $servidor = '25.95.21.168';
+        $this->db_cultiva = self::Conecta($servidor);
+    }
+
+    public function SetDB_MCM()
+    {
+        $this->db_activa = $this->db_mcm;
+    }
+
+    public function SetDB_CULTIVA()
+    {
+        $this->db_activa = $this->db_cultiva;
+    }
+
+    public function queryOne($sql, $params = [])
+    {
+        try {
+            $stmt = $this->db_activa->prepare($sql);
+            $stmt->execute($params);
+            return array_shift($stmt->fetchAll(PDO::FETCH_ASSOC));
+        } catch (\PDOException $e) {
+            self::muestraError($e, $sql, $params);
+            return [];
+        }
+    }
+
+    public function queryAll($sql, $params = [])
+    {
+        try {
+            $stmt = $this->db_activa->prepare($sql);
+            $stmt->execute($params);
+            return $stmt->fetchAll(PDO::FETCH_ASSOC);
+        } catch (\PDOException $e) {
+            echo "HUBO ERROR";
+            self::muestraError($e, $sql, $params);
+            return [];
+        }
+    }
+
+    public function insert($sql, $params = [])
+    {
+        try {
+            $stmt = $this->db_activa->prepare($sql);
+            $result = $stmt->execute($params);
+            return true;
+        } catch (\PDOException $e) {;
+            return $stmt->errorInfo();
         }
     }
 
     public function insertar($sql, $datos)
     {
         try {
-            if (!$this->_mysqli->prepare($sql)->execute($datos)) {
-                throw new \Exception("Error en insertar: " . print_r($this->_mysqli->errorInfo(), 1) . "\nSql : $sql \nDatos : " . print_r($datos, 1));
+            if (!$this->db_activa->prepare($sql)->execute($datos)) {
+                throw new \Exception("Error en insertar: " . print_r($this->db_activa->errorInfo(), 1) . "\nSql : $sql \nDatos : " . print_r($datos, 1));
             }
         } catch (\PDOException $e) {
             throw new \Exception("Error en insertar: " . $e->getMessage() . "\nSql : $sql \nDatos : " . print_r($datos, 1));
@@ -76,7 +122,7 @@ class Database
 
     public function insertCheques($sql, $parametros)
     {
-        $stmt = $this->_mysqli->prepare($sql);
+        $stmt = $this->db_activa->prepare($sql);
         $result = $stmt->execute($parametros);
 
         if ($result) return $result;
@@ -88,90 +134,41 @@ class Database
     public function insertaMultiple($sql, $registros, $validacion = null)
     {
         try {
-            $this->_mysqli->beginTransaction();
+            $this->db_activa->beginTransaction();
             foreach ($registros as $i => $valores) {
-                $stmt = $this->_mysqli->prepare($sql[$i]);
+                $stmt = $this->db_activa->prepare($sql[$i]);
                 $result = $stmt->execute($valores);
                 if (!$result) {
                     $err = $stmt->errorInfo();
-                    $this->_mysqli->rollBack();
+                    $this->db_activa->rollBack();
                     throw new \Exception("Error: " . print_r($err, 1) . "\nSql : " . $sql[$i] . "\nDatos : " . print_r($valores, 1));
                 }
             }
 
             if ($validacion != null) {
-                $stmt = $this->_mysqli->prepare($validacion['query']);
+                $stmt = $this->db_activa->prepare($validacion['query']);
                 $stmt->execute($validacion['datos']);
                 $result = $stmt->fetch(PDO::FETCH_ASSOC);
                 $resValidacion = $validacion['funcion']($result);
                 if ($resValidacion['success'] == false) {
-                    $this->_mysqli->rollBack();
+                    $this->db_activa->rollBack();
                     throw new \Exception($resValidacion['mensaje']);
                 }
             }
 
-            $this->_mysqli->commit();
+            $this->db_activa->commit();
             return true;
         } catch (\PDOException $e) {
-            $this->_mysqli->rollBack();
+            $this->db_activa->rollBack();
             throw new \Exception("Error en insertaMultiple: " . $e->getMessage() . "\nSql : $sql");
         }
     }
-
-    public function EjecutaSP($sp, $parametros)
-    {
-        try {
-            $stmt = $this->_mysqli->prepare($sp);
-            $outParam = 'OK';
-            foreach ($parametros as $parametro => $valor) {
-                if ($valor === "__RETURN__") {
-                    $stmt->bindParam($parametro, $outParam, PDO::PARAM_STR | PDO::PARAM_INPUT_OUTPUT, 4000);
-                } else {
-                    $stmt->bindParam($parametro, $valor);
-                }
-            }
-            $stmt->execute();
-            return $outParam;
-        } catch (\PDOException $e) {
-            return $e->getMessage();
-        }
-    }
-
     public function eliminar($sql)
     {
         try {
-            return $this->_mysqli->prepare($sql)->execute();
+            return $this->db_activa->prepare($sql)->execute();
         } catch (\PDOException $e) {
             throw new \Exception("Error en eliminar: " . $e->getMessage() . "\nSql : $sql");
         }
-    }
-
-    public function queryOne($sql, $params = [])
-    {
-        try {
-            $stmt = $this->_mysqli->prepare($sql);
-            $stmt->execute($params);
-            return array_shift($stmt->fetchAll(PDO::FETCH_ASSOC));
-        } catch (\PDOException $e) {
-            self::muestraError($e, $sql, $params);
-            return false;
-        }
-    }
-
-    public function queryAll($sql, $params = [])
-    {
-        try {
-            $stmt = $this->_mysqli->prepare($sql);
-            $stmt->execute($params);
-            return $stmt->fetchAll(PDO::FETCH_ASSOC);
-        } catch (\PDOException $e) {
-            self::muestraError($e, $sql, $params);
-            return false;
-        }
-    }
-
-    public static function muestraError($e, $sql, $parametros)
-    {
-        echo "Error en DB: " . $e->getMessage() . "\nSql: $sql \nParametros:\n" . print_r($parametros, 1);
     }
 }

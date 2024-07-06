@@ -2,7 +2,7 @@
 
 namespace App\controllers;
 
-include 'C:/xampp/htdocs/mcm/backend/App/models/ConsultaUdiDolar.php';
+include 'C:/xampp/htdocs/cultiva/backend/App/models/ConsultaUdiDolar.php';
 
 use \App\models\ConsultaUdiDolar as ConsultaUdiDolarDao;
 use DateTime;
@@ -64,7 +64,7 @@ class ConsultaUdiDolar
             "No se pudieron obtener los valores.";
 
         // Guardar el resultado en el log
-        self::SaveLog(json_encode($resultado, JSON_PRETTY_PRINT));
+        self::SaveLog(json_encode($resultado));
     }
 
     /**

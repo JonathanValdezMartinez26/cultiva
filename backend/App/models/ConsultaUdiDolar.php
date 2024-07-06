@@ -2,10 +2,9 @@
 
 namespace App\models;
 
-include 'C:/xampp/htdocs/mcm/backend/Core/Database_cultiva.php';
+include 'C:/xampp/htdocs/cultiva/backend/Core/Database.php';
 
-use \Core\Database_cultiva;
-use Exception;
+use \Core\Database;
 
 class ConsultaUdiDolar
 {
@@ -24,39 +23,63 @@ class ConsultaUdiDolar
 
     public static function AddUdiDolar($fecha, $dolar, $udi)
     {
-        $mysqli = Database_cultiva::getInstance();
+        $db = new Database();
+        if ($db->db_activa == null) return self::Responde(false, null, "Error al conectar a la base de datos.");
         $ret_dolar = '';
         $ret_udi = '';
 
         if ($dolar != 0) {
             $query_dolar = <<<sql
-        INSERT INTO ESIACOM.UNIDAD
-        (CODIGO, DESCRIPCION, VALOR, FECHA_CALC, ABREV, CDGEM)
-        VALUES('USD', 'MX: $dolar MXN = 1 USD $fecha BM Para pagos', $dolar, TIMESTAMP '$fecha 00:00:00.000000', 'USD', 'EMPFIN')
-             
-sql;
-            try {
-                $res = $mysqli->insert($query_dolar);
-                $ret_dolar = self::Responde(true, "Dolar registrado correctamente.", ['query' => $query_dolar, 'res' => $res]);
-            } catch (Exception $e) {
-                $ret_dolar = self::Responde(false, null, $e->getMessage());
-            }
+                INSERT INTO
+                    UNIDAD (
+                        CODIGO,
+                        DESCRIPCION,
+                        VALOR,
+                        FECHA_CALC,
+                        ABREV,
+                        CDGEM
+                    )
+                VALUES
+                    (
+                        'USD',
+                        'MX: $dolar MXN = 1 USD $fecha BM Para pagos',
+                        $dolar,
+                        TIMESTAMP '$fecha 00:00:00.000000',
+                        'USD',
+                        'EMPFIN'
+                    )
+            sql;
+
+            $res = $db->insert($query_dolar);
+            if ($res === true ) $ret_dolar = self::Responde(true, "Dolar registrado correctamente.", ['query' => $query_dolar]);
+            else $ret_dolar = self::Responde(false, "Error al registrar el dolar.", ['query' => $query_dolar], $res);
         }
 
         if ($udi != 0) {
             $query_udi = <<<sql
-        INSERT INTO ESIACOM.UNIDAD
-        (CODIGO, DESCRIPCION, VALOR, FECHA_CALC, ABREV, CDGEM)
-        VALUES('UDI', 'MX: $udi UDIS $fecha BM', $udi, TIMESTAMP '$fecha 00:00:00.000000', 'UDI', 'EMPFIN')
-             
-sql;
+                INSERT INTO
+                    UNIDAD (
+                        CODIGO,
+                        DESCRIPCION,
+                        VALOR,
+                        FECHA_CALC,
+                        ABREV,
+                        CDGEM
+                    )
+                VALUES
+                (
+                    'UDI',
+                    'MX: $udi UDIS $fecha BM',
+                    $udi,
+                    TIMESTAMP '$fecha 00:00:00.000000',
+                    'UDI',
+                    'EMPFIN'
+                )
+            sql;
 
-            try {
-                $res = $mysqli->insert($query_udi);
-                $ret_udi = self::Responde(true, "UDI registrada correctamente.", ['query' => $query_udi, 'res' => $res]);
-            } catch (Exception $e) {
-                $ret_udi = self::Responde(false, null, $e->getMessage());
-            }
+            $res = $db->insert($query_udi);
+            if ($res === true ) $ret_udi = self::Responde(true, "UDI registrada correctamente.", ['query' => $query_udi]);
+            else $ret_udi = self::Responde(false, "Error al registrar la UDI.", ['query' => $query_dolar], $res);
         }
 
         return [$ret_dolar, $ret_udi];
