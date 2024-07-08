@@ -33,7 +33,7 @@ class Contenedor extends Controller
                 <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
                 <meta charset="utf-8">
                 
-                <link rel="shortcut icon" href="/img/logo.png">
+                <link rel="shortcut icon" href="/img/logo_ico.png">
                 <link rel="stylesheet" type="text/css" href="/css/nprogress.css">
                 <link rel="stylesheet" type="text/css" href="/css/loader.css">
                 <link rel="stylesheet" type="text/css" href="/css/tabla/sb-admin-2.css">
@@ -56,11 +56,9 @@ class Contenedor extends Controller
                 <div class="main_container" style="background: #ffffff">
                     <div class="col-md-3 left_col">
                         <div class="left_col scroll-view">
-                            <div class="navbar nav_title" style="border: 0;"> 
-                                <a href="/Principal/" class="site_title">
-                                <i class="fa fa-home"></i>
-                                <img src="/img/logo.png" alt="Login" width="150px">
-                                <!-- <span>CULTIVA</span> -->
+                            <div class="navbar nav_title">
+                                <a href="/Principal/" class="site_title" style="display: flex; align-items: center; justify-content: center; padding: 0; margin: 0;">
+                                    <img src="/img/logo_nombre.png" alt="Login" width="210px">
                                 </a>
                             </div>
                             <div class="clearfix"></div>
