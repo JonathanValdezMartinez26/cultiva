@@ -123,7 +123,7 @@ class Contenedor extends Controller
                                         </a>
                                         <ul class="dropdown-menu dropdown-usermenu pull-right">
                                             <li><a href="/Login/cerrarSession">
-                                                        <i class="fa fa-sign-out pull-right"></i>Cerrar Sesión</a>
+                                                <i class="fa fa-sign-out pull-right"></i>Cerrar Sesión</a>
                                             </li>
                                         </ul>
                                     </li>
