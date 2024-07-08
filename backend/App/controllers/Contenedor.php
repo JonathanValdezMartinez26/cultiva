@@ -58,7 +58,8 @@ class Contenedor extends Controller
                         <div class="left_col scroll-view">
                             <div class="navbar nav_title">
                                 <a href="/Principal/" class="site_title" style="display: flex; align-items: center; justify-content: center; padding: 0; margin: 0;">
-                                    <img src="/img/logo_nombre.png" alt="Login" width="210px">
+                                    <i class="fa fa-home" style="display: none;" id="ico_home"></i>
+                                    <img src="/img/logo_nombre.png" alt="Login" width="210px" id="img_home">
                                 </a>
                             </div>
                             <div class="clearfix"></div>
@@ -108,25 +109,27 @@ class Contenedor extends Controller
                             </div>
                         </div>
                     </div>
-                </div>
-                <div class="top_nav">
-                    <div class="nav_menu">
-                        <nav>
-                            <div class="nav toggle">
-                                <a id="menu_toggle"><i class="fa fa-bars"></i></a>
-                            </div>
-                            <ul class="nav navbar-nav navbar-right">
-                                <li class="">
-                                    <a href="" class="user-profile dropdown-toggle" data-toggle="dropdown" aria-expanded="false">
-                                        <span class=" fa fa-user"></span> {$nombre}
-                                        <span class=" fa fa-angle-down"></span>
-                                    </a>
-                                    <ul class="dropdown-menu dropdown-usermenu pull-right">
-                                        <li><a href="/Login/cerrarSession"><i class="fa fa-sign-out pull-right"></i>Cerrar Sesión</a></li>
-                                    </ul>
-                                </li>
-                            </ul>
-                        </nav>
+                    <div class="top_nav ">
+                        <div class="nav_menu">
+                            <nav>
+                                <div class="nav toggle">
+                                    <a id="menu_toggle"><i class="fa fa-bars"></i></a>
+                                </div>
+                                <ul class="nav navbar-nav navbar-right">
+                                    <li class="">
+                                        <a href="" class="user-profile dropdown-toggle" data-toggle="dropdown" aria-expanded="false">
+                                            <span class=" fa fa-user"></span> {$nombre}
+                                            <span class=" fa fa-angle-down"></span>
+                                        </a>
+                                        <ul class="dropdown-menu dropdown-usermenu pull-right">
+                                            <li><a href="/Login/cerrarSession">
+                                                        <i class="fa fa-sign-out pull-right"></i>Cerrar Sesión</a>
+                                            </li>
+                                        </ul>
+                                    </li>
+                                </ul>
+                            </nav>
+                        </div>
                     </div>
                 </div>
         html;

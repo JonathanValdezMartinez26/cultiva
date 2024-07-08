@@ -1,10 +1,8 @@
 <?= $header; ?>
 
-<div class="right_col" style="background: #ffffff;">
-    <div class="col-md-12 col-sm-12 col-xs-12 col-lg-12">
-        <div style="text-align: center; padding-top: 10px;">
-            <img width="500" style="padding-top: 100px;" src="/img/logo.png">
-        </div>
+<div class="right_col" style="background: #ffffff; height: 100vh;">
+    <div style="display: flex; justify-content: center; align-items: center; height: 80%; width: 100%">
+        <img width="500" src="/img/logo.png">
     </div>
 </div>
 
