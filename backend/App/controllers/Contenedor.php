@@ -80,7 +80,7 @@ class Contenedor extends Controller
                                     <h3>GENERAL </h3>     
         html;
 
-        if ($this->__perfil == 'ADMIN' || $this->__usuario == 'PLD') {
+        if ($this->__perfil == 'ADMIN' || $this->__usuario == 'OFCLD' || $this->__usuario == 'PLDCO') {
             $menu .= <<<html
             <ul class="nav side-menu">
                 <li><a><i class="glyphicon glyphicon glyphicon-th-list"> </i>&nbsp; Operaciones <span class="fa fa-chevron-down"></span></a>
