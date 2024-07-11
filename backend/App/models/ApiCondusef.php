@@ -8,7 +8,7 @@ use \Core\Database;
 
 class ApiCondusef
 {
-    public static function Responde($respuesta, $mensaje, $datos = null, $error = null)
+    private static function Responde($respuesta, $mensaje, $datos = null, $error = null)
     {
         $res = array(
             "success" => $respuesta,

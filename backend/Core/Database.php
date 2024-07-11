@@ -47,7 +47,7 @@ class Database
 
         if ($sql != null) $error .= "\nSql: " . $sql;
         if ($parametros != null) $error .= "\nDatos: " . print_r($parametros, 1);
-
+        echo $error;
         return $error;
     }
 
@@ -92,7 +92,6 @@ class Database
             $stmt->execute($params);
             return $stmt->fetchAll(PDO::FETCH_ASSOC);
         } catch (\PDOException $e) {
-            echo "HUBO ERROR";
             self::muestraError($e, $sql, $params);
             return [];
         }
@@ -102,10 +101,16 @@ class Database
     {
         try {
             $stmt = $this->db_activa->prepare($sql);
-            $result = $stmt->execute($params);
+            $stmt->execute($params);
+            $err = $stmt->errorInfo();
+
+            if ($err[0] != '00000')
+                throw new \PDOException("Error en insert: " . print_r($err, 1) . "\nSql: $sql \nDatos: " . print_r($params, 1));
+
             return true;
-        } catch (\PDOException $e) {;
-            return $stmt->errorInfo();
+        } catch (\PDOException $e) {
+            self::muestraError($e);
+            return false;
         }
     }
 
@@ -116,7 +121,7 @@ class Database
                 throw new \Exception("Error en insertar: " . print_r($this->db_activa->errorInfo(), 1) . "\nSql : $sql \nDatos : " . print_r($datos, 1));
             }
         } catch (\PDOException $e) {
-            throw new \Exception("Error en insertar: " . $e->getMessage() . "\nSql : $sql \nDatos : " . print_r($datos, 1));
+            throw new \Exception("Error en insertar: " . $e->getMessage() . "\nSql: $sql \nDatos: " . print_r($datos, 1));
         }
     }
 
@@ -138,11 +143,9 @@ class Database
             foreach ($registros as $i => $valores) {
                 $stmt = $this->db_activa->prepare($sql[$i]);
                 $result = $stmt->execute($valores);
-                if (!$result) {
-                    $err = $stmt->errorInfo();
-                    $this->db_activa->rollBack();
-                    throw new \Exception("Error: " . print_r($err, 1) . "\nSql : " . $sql[$i] . "\nDatos : " . print_r($valores, 1));
-                }
+                $err = $stmt->errorInfo();
+                if (!$result || $err[0] != '00000')
+                    throw new \PDOException("Error: " . print_r($err, 1) . "\nSql: " . $sql[$i] . "\nDatos: " . print_r($valores, 1));
             }
 
             if ($validacion != null) {
@@ -152,17 +155,18 @@ class Database
                 $resValidacion = $validacion['funcion']($result);
                 if ($resValidacion['success'] == false) {
                     $this->db_activa->rollBack();
-                    throw new \Exception($resValidacion['mensaje']);
+                    throw new \PDOException($resValidacion['mensaje']);
                 }
             }
 
-            $this->db_activa->commit();
-            return true;
+            return $this->db_activa->commit();
         } catch (\PDOException $e) {
             $this->db_activa->rollBack();
-            throw new \Exception("Error en insertaMultiple: " . $e->getMessage() . "\nSql : $sql");
+            self::muestraError($e);
+            return false;
         }
     }
+
     public function eliminar($sql)
     {
         try {
