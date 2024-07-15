@@ -77,9 +77,9 @@ class Contenedor extends Controller
                             <div id="sidebar-menu" class="main_menu_side hidden-print main_menu">
                                 <div class="menu_section">
                                     <h3>GENERAL </h3>     
-        html;
+html;
 
-        if ($this->__perfil == 'ADMIN' || $this->__usuario == 'OFCLD' || $this->__usuario == 'PLDCO') {
+        if ($this->__perfil == 'ADMIN' || $this->__perfil == 'OFCLD' || $this->__perfil == 'PLDCO') {
             $menu .= <<<html
             <ul class="nav side-menu">
                 <li><a><i class="glyphicon glyphicon glyphicon-th-list"> </i>&nbsp; Operaciones <span class="fa fa-chevron-down"></span></a>
