@@ -101,7 +101,7 @@ class Contenedor extends Controller
                     </ul>
                 </li>
             </ul>
-            html;
+html;
         }
 
         $menu .= <<<html
