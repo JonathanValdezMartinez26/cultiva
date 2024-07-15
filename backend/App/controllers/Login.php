@@ -148,8 +148,6 @@ class Login
         $usuario->_password = MasterDom::getData("password");
         $user = LoginDao::getById($usuario);
 
-
-
         session_start();
         $_SESSION['usuario'] = $user[0]['CODIGO'];
         $_SESSION['nombre'] = $user[0]['NOMBRE'];

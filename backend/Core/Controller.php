@@ -10,11 +10,7 @@ class Controller
     public $__nombre = '';
     public $__puesto = '';
     public $__cdgco = '';
-    public $__cdgco_ahorro = '';
     public $__perfil = '';
-    public $__ahorro = '';
-    public $__hora_inicio_ahorro = '';
-    public $__hora_fin_ahorro = '';
 
     public function __construct()
     {
