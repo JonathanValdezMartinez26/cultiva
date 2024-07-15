@@ -30,7 +30,7 @@ $anio = date('Y');
     <div class="animate form login_form">
         <section class="login_content" style="padding: 100px 0 0;">
             <div style="text-align: center;">
-                <img  src="/img/logo.png" alt="Login" width="350" height="140">
+                <img  src="/img/logo.png" alt="Login" width="350" height="120">
             </div>
             <br>
             <form id="login" action="/Login/crearSession" method="POST" class="form-horizontal" name="login">
@@ -56,7 +56,7 @@ $anio = date('Y');
                     <br/>
 
                     <div>
-                        <h1><i class="fa fa-paw"></i> Más con Menos</h1>
+                        <h1><i class="fa fa-paw"></i> Financiera Cultiva</h1>
                         <p>© <?= $anio ?> - Al utilizar los servicios de Financiera Cultiva, los usuarios están de acuerdo con las políticas de privacidad y términos de uso establecidos por la empresa.</p>
                     </div>
                 </div>
