@@ -148,17 +148,7 @@ class Login
         $usuario->_password = MasterDom::getData("password");
         $user = LoginDao::getById($usuario);
 
-        if ($user[1]['PERMISO'] == '') {
-            $permiso = 0;
-            $cdgco_ahorro = 'NULL';
-            $inicio_ahorro = 'NULL';
-            $fin_ahorro = 'NULL';
-        } else {
-            $permiso = $user[1]['PERMISO'];
-            $cdgco_ahorro = $user[1]['CDGCO_AHORRO'];
-            $inicio_ahorro = $user[1]['HORA_APERTURA'];
-            $fin_ahorro = $user[1]['HORA_CIERRE'];
-        }
+
 
         session_start();
         $_SESSION['usuario'] = $user[0]['CODIGO'];
@@ -166,10 +156,6 @@ class Login
         $_SESSION['puesto'] = $user[0]['PUESTO'];
         $_SESSION['cdgco'] = $user[0]['CDGCO'];
         $_SESSION['perfil'] = $user[0]['PERFIL'];
-        $_SESSION['ahorro'] = $permiso;
-        $_SESSION['cdgco_ahorro'] = $cdgco_ahorro;
-        $_SESSION['inicio'] = $inicio_ahorro;
-        $_SESSION['fin'] = $fin_ahorro;
 
         header("location: /Principal/");
     }

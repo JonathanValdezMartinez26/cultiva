@@ -46,23 +46,11 @@ class Login
             ':password' => $usuario->_password
         );
 
-        $params_ahorro = array(
-            ':usuario' => $usuario->_usuario,
-        );
-
-        $query_ahorro = <<<sql
-        SELECT
-            '1' as PERMISO, SUC_ESTADO_AHORRO.CDG_SUCURSAL AS CDGCO_AHORRO, HORA_APERTURA, HORA_CIERRE
-        FROM
-            SUC_CAJERA_AHORRO
-        INNER JOIN SUC_ESTADO_AHORRO ON CDG_ESTADO_AHORRO = CODIGO
-        WHERE SUC_CAJERA_AHORRO.CDG_USUARIO = :usuario
-        sql;
 
         $db = new Database;
         if ($db->db_activa == null) return [];
         $db->SetDB_CULTIVA();
-        return [$db->queryOne($query1, $params1), $db->queryOne($query_ahorro, $params_ahorro)];
+        return [$db->queryOne($query1, $params1)];
     }
 
     public static function getUser($usuario)

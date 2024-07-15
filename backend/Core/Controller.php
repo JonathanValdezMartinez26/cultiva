@@ -31,10 +31,6 @@ class Controller
             $this->__puesto = $_SESSION['puesto'];
             $this->__cdgco = $_SESSION['cdgco'];
             $this->__perfil = $_SESSION['perfil'];
-            $this->__ahorro = $_SESSION['ahorro'];
-            $this->__cdgco_ahorro = $_SESSION['cdgco_ahorro'];
-            $this->__hora_inicio_ahorro = $_SESSION['inicio'];
-            $this->__hora_fin_ahorro = $_SESSION['fin'];
         }
     }
 
@@ -42,7 +38,7 @@ class Controller
     {
         $html = <<<html
         <title>$titulo</title>
-        html;
+html;
 
         if (!empty($elementos)) {
             foreach ($elementos as $elemento) {
