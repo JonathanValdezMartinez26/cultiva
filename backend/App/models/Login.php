@@ -61,7 +61,7 @@ class Login
 
         $db = new Database;
         if ($db->db_activa == null) return [];
-        $db->SetDB_MCM();
+        $db->SetDB_CULTIVA();
         return [$db->queryOne($query1, $params1), $db->queryOne($query_ahorro, $params_ahorro)];
     }
 
@@ -85,7 +85,7 @@ class Login
 
         $db = new Database;
         if ($db->db_activa == null) return [];
-        $db->SetDB_MCM();
+        $db->SetDB_CULTIVA();
         return $db->queryAll($query);
     }
 }
