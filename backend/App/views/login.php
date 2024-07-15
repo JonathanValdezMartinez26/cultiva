@@ -29,8 +29,9 @@ $anio = date('Y');
 <div class="login_wrapper" style="margin-top: 0%;">
     <div class="animate form login_form">
         <section class="login_content" style="padding: 100px 0 0;">
+            <br>
             <div style="text-align: center;">
-                <img  src="/img/logo.png" alt="Login" width="350" height="120">
+                <img  src="/img/logo.png" alt="Login" width="350" height="110">
             </div>
             <br>
             <form id="login" action="/Login/crearSession" method="POST" class="form-horizontal" name="login">
