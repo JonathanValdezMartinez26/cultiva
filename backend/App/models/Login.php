@@ -27,17 +27,8 @@ class Login
             AND PE.CLAVE LIKE (SELECT CODIFICA(:password) as pass FROM DUAL)
             AND (
                 UT.CDGTUS = 'ADMIN' ------ USUARIO ADMIN
-                OR UT.CDGTUS = 'CAJA' ------- USUARIO CAJA (EXTRA)
-                OR UT.CDGTUS = 'OCOF' ----- USUARIO OCOF
-                OR UT.CDGTUS = 'GTOCA' ------ USUARIO GERENTE SUCURSAL
-                OR UT.CDGTUS = 'AMOCA' ------ PERFIL DE CAJAS
-                OR UT.CDGTUS = 'GARAN' ------ USUARIO PARA REGISTRAR GARANTIAS
-                OR UT.CDGTUS = 'CAMAG' ------ 
-                OR UT.CDGTUS = 'CALLC' ------ USUARIO 
-                OR UT.CDGTUS = 'ACALL' ----- USUARIO ADMIN CALL CENTER
-                OR UT.CDGTUS = 'PLD' ---- USUARIO PLD CONSULTA )
-                OR UT.CDGTUS = 'CPAGO' ---- USUARIO CONSULTA PAGOS )
-                OR UT.CDGTUS = 'LAYOU' ---- USUARIO CONSULTA PAGOS )   
+                OR UT.CDGTUS = 'OFCLD' ------- USUARIO CAJA (EXTRA)
+                OR UT.CDGTUS = 'PLDCO' ----- USUARIO OCOF
             )
         sql;
 
