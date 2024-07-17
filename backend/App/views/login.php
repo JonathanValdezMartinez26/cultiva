@@ -5,6 +5,7 @@ echo $header;
 <?php
 $anio = date('Y');
 ?>
+
 <head>
     <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
     <!-- Meta, title, CSS, favicons, etc. -->
@@ -31,14 +32,14 @@ $anio = date('Y');
         <section class="login_content" style="padding: 100px 0 0;">
             <br>
             <div style="text-align: center;">
-                <img  src="/img/logo.png" alt="Login" width="350" height="110">
+                <img src="/img/logo.png" alt="Login" width="350" height="110">
             </div>
             <br>
             <form id="login" action="/Login/crearSession" method="POST" class="form-horizontal" name="login">
                 <h1 style="color: #C43136; font-size: 30px; text-align: center;">Iniciar Sesión</h1>
                 <div class="col-md-1 col-sm-1 col-xs-1"><span id="availability"> </span></div>
                 <div class="col-md-12 col-sm-12 col-xs-12">
-                    <input type="text" name="usuario" id="usuario" class="form-control col-md-6 col-xs-12" placeholder="Usuario" required="" onkeyup="mayus(this);">
+                    <input type="text" name="usuario" id="usuario" class="form-control col-md-6 col-xs-12" placeholder="Usuario" required="" onkeyup="mayusculas(event);">
                 </div>
                 <div class="col-md-12 col-sm-12 col-xs-12">
                     <input type="password" name="password" id="password" class="form-control col-md-5 col-xs-12" placeholder="Contraseña" required="" onkeypress="if (event.keyCode == 13) enviar_formulario()">
@@ -54,7 +55,7 @@ $anio = date('Y');
                 <div class="separator">
 
                     <div class="clearfix"></div>
-                    <br/>
+                    <br />
 
                     <div>
                         <h1><i class="fa fa-paw"></i> Financiera Cultiva</h1>
@@ -67,10 +68,3 @@ $anio = date('Y');
 
 </div>
 <?php echo $footer; ?>
-
-
-
-
-
-
-
