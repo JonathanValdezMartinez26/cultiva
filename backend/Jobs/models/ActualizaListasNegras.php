@@ -32,6 +32,8 @@ class ActualizaListasNegras extends Model
                 CL_MARCA CM
             WHERE
                 CM.CDGEM = 'EMPFIN'
+                AND CAUSA != 9
+                AND CAUSA != 10
         SQL;
 
         $db = new Database();
@@ -96,7 +98,7 @@ class ActualizaListasNegras extends Model
             INSERT INTO CL_MARCA
                 (CDGEM, SECUENCIA, CDGCL, CURP, TIPOMARCA, ESTATUS, MONTOMAX, ALTAPE, ALTA, BAJAPE, BAJA, FREGISTRO, CAUSA, CAUSABAJA, CDGCLNS, CICLO, CLNS)
             VALUES
-                ('EMPFIN', (SELECT NVL(MAX(SECUENCIA),0) + 1 FROM CL_MARCA WHERE TO_CHAR(ALTA, 'YYYYMMDD') = TO_CHAR(SYSDATE, 'YYYYMMDD')), :cdgcl, :curp, 'LN', 'A', NULL, 'SYSTEM', TRUNC(SYSDATE), NULL, NULL, SYSDATE, 9, NULL, NULL, NULL, NULL)
+                ('EMPFIN', (SELECT NVL(MAX(SECUENCIA),0) + 1 FROM CL_MARCA WHERE TO_CHAR(ALTA, 'YYYYMMDD') = TO_CHAR(SYSDATE, 'YYYYMMDD')), null, :curp, 'LN', 'A', NULL, 'SYSTEM', TRUNC(SYSDATE), NULL, NULL, SYSDATE, 9, NULL, NULL, NULL, NULL)
         SQL;
 
         $inserts = [];
@@ -105,7 +107,7 @@ class ActualizaListasNegras extends Model
         foreach ($datos as $dato) {
             array_push($inserts, $qry);
             array_push($valores, [
-                'cdgcl' => $dato['CDGCL'],
+                // 'cdgcl' => $dato['CDGCL'],
                 'curp' => $dato['CURP']
             ]);
         }
@@ -163,7 +165,7 @@ class ActualizaListasNegras extends Model
             INSERT INTO CL_MARCA
                 (CDGEM, SECUENCIA, CDGCL, CURP, TIPOMARCA, ESTATUS, MONTOMAX, ALTAPE, ALTA, BAJAPE, BAJA, FREGISTRO, CAUSA, CAUSABAJA, CDGCLNS, CICLO, CLNS)
             VALUES
-                ('EMPFIN', (SELECT NVL(MAX(SECUENCIA),0) + 1 FROM CL_MARCA WHERE TO_CHAR(ALTA, 'YYYYMMDD') = :inicio), :cdgcl, :curp, 'LN', 'A', NULL, 'SYSTEM', TO_DATE(:inicio, 'YYYYMMDD'), NULL, NULL, SYSDATE, 10, NULL, NULL, NULL, NULL)
+                ('EMPFIN', (SELECT NVL(MAX(SECUENCIA),0) + 1 FROM CL_MARCA WHERE TO_CHAR(ALTA, 'YYYYMMDD') = :inicio), null, :curp, 'LN', 'A', NULL, 'SYSTEM', TO_DATE(:inicio, 'YYYYMMDD'), NULL, NULL, SYSDATE, 10, NULL, NULL, NULL, NULL)
         SQL;
 
         $db = new Database();
@@ -178,7 +180,7 @@ class ActualizaListasNegras extends Model
 
         foreach ($datos as $dato) {
             $v = [
-                'cdgcl' => $dato['CDGCL'],
+                // 'cdgcl' => $dato['CDGCL'],
                 'curp' => $dato['CURP'],
                 'inicio' => $dato['FECHA']
             ];

@@ -2,7 +2,6 @@
 
 namespace Core;
 
-use Core\App;
 use PDO;
 
 /**
