@@ -52,8 +52,8 @@ class Database
 
     private function DB_MCM()
     {
-        $servidor = 'mcm-server';
-        // $servidor = 'DRP';
+        // $servidor = 'mcm-server';
+        $servidor = '25.13.83.206';
         $this->db_mcm = self::Conecta($servidor);
     }
 
