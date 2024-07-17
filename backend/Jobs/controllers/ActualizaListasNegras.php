@@ -26,7 +26,7 @@ class ActualizaListasNegras extends Job
         if ($listaMCM["success"] == false) $respuesta["mcm_cultiva"] = $listaMCM["mensaje"];
 
         if ($listaMCM["success"]) {
-            $resultado = DAO::ValidaListaNegra($listaMCM);
+            $resultado = DAO::ValidaListaNegra($listaMCM["datos"]);
             if ($resultado["success"] == false) $respuesta["mcm_cultiva"] = $resultado["mensaje"];
 
             if ($resultado["success"]) {
@@ -40,7 +40,7 @@ class ActualizaListasNegras extends Job
         if ($listaCultiva["success"] == false) $respuesta["cultiva_mcm"] = $listaCultiva["mensaje"];
 
         if ($listaCultiva["success"]) {
-            $resultado = DAO::ValidaListaNegra($listaCultiva, false);
+            $resultado = DAO::ValidaListaNegra($listaCultiva["datos"], false);
             if ($resultado["success"] == false) $respuesta["cultiva_mcm"] = $resultado["mensaje"];
 
             if ($resultado["success"]) {
