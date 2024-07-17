@@ -24,18 +24,17 @@ class ApiCondusef extends Controller
     {
         $fecha = date('Y-m-d');
 
-        $extraFooter = <<<html
+        $extraFooter = <<<HTML
             <script>                                                  
                 const showError = (mensaje) => swal(mensaje, { icon: "error" })
                 const showAviso = (mensaje) => swal(mensaje, { icon: "warning" })
                 const showSuccess = (mensaje) => swal(mensaje, { icon: "success" , showConfirmButton: true,}).then((result) => {location.reload();} )
             
                 const consumeAPI = (url, callback, datos = null, tipoDatos = 'json', tipo = "get", token = null, msgError = "", fncERR = null) => {
-                    $.ajax({
+                    parametros = {
                         type: tipo,
                         url: url,
                         dataType: tipoDatos,
-                        data: JSON.stringify(datos),
                         contentType: "application/json",
                         success: callback,
                         error: (resError) => {
@@ -44,7 +43,11 @@ class ApiCondusef extends Controller
                             else showError(msgError)
                         },
                         headers: { "Authorization": token }
-                    })
+                    }
+
+                    if (datos) parametros.data = JSON.stringify(datos)
+
+                    $.ajax(parametros)
                 }
                  
                 const limpiaCampos = (mensaje = "") => {
@@ -111,7 +114,8 @@ class ApiCondusef extends Controller
                         validaMunicipio(data.colonias)
                         validaLocalidad(data.colonias)
                         validaColonia(data.colonias)
-                    })
+                    },
+                    null, "json", "get", null, "Ocurrió un error al consultar el CP en SEPOMEX.")
                 }
                  
                 const validaEstado = (edo) => {
@@ -244,7 +248,7 @@ class ApiCondusef extends Controller
                     consumeAPI("https://api.condusef.gob.mx/redeco/quejas", procesaRespuesta, datos, "json", "post", token, "Ocurrió un error de comunicación con el portal de REDECO.", procesaError)
                 }
             </script>
-        html;
+        HTML;
 
         $meses = [
             "1" => "Enero",
