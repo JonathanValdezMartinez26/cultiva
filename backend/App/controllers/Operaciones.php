@@ -26,7 +26,7 @@ class Operaciones extends Controller
 
     public function ReportePLDPagos()
     {
-        $extraFooter = <<<html
+        $extraFooter = <<<HTML
         <script>
             function getParameterByName(name) {
                 name = name.replace(/[\[]/, "\\[").replace(/[\]]/, "\\]")
@@ -99,7 +99,7 @@ class Operaciones extends Controller
                 )
             }
         </script>
-        html;
+        HTML;
 
         $Inicial = $_GET['Inicial'];
         $Final = $_GET['Final'];
@@ -110,7 +110,7 @@ class Operaciones extends Controller
             $Consulta = OperacionesDao::ConsultarPagos($Inicial, $Final);
 
             foreach ($Consulta as $key => $value) {
-                $tabla .= <<<html
+                $tabla .= <<<HTML
                 <tr style="padding: 0px !important;">
                     <td style="padding: 0px !important;">{$value['LOCALIDAD']}</td>
                     <td style="padding: 0px !important;">{$value['SUCURSAL']}</td>
@@ -132,7 +132,7 @@ class Operaciones extends Controller
                     <td style="padding: 0px !important;">{$value['ATRASO']}</td>
                     <td style="padding: 0px !important;">{$value['OFICINA_CLIENTE']}</td>
                 </tr>
-                html;
+                HTML;
             }
 
             if ($Consulta[0] == '') {
@@ -156,7 +156,7 @@ class Operaciones extends Controller
 
     public function ReportePLDPagosNacimiento()
     {
-        $extraFooter = <<<html
+        $extraFooter = <<<HTML
         <script>
             function getParameterByName(name) {
                 name = name.replace(/[\[]/, "\\[").replace(/[\]]/, "\\]")
@@ -229,7 +229,7 @@ class Operaciones extends Controller
                 )
             }
         </script>
-        html;
+        HTML;
 
         $Inicial = $_GET['Inicial'];
         $Final = $_GET['Final'];
@@ -240,7 +240,7 @@ class Operaciones extends Controller
             $Consulta = OperacionesDao::ConsultarPagosNacimiento($Inicial, $Final);
 
             foreach ($Consulta as $key => $value) {
-                $tabla .= <<<html
+                $tabla .= <<<HTML
                 <tr style="padding: 0px !important;">
                     <td style="padding: 0px !important;">{$value['LOCALIDAD']}</td>
                     <td style="padding: 0px !important;">{$value['SUCURSAL']}</td>
@@ -265,7 +265,7 @@ class Operaciones extends Controller
                     <td style="padding: 0px !important;">{$value['EDAD']}</td>
                     <td style="padding: 0px !important;">{$value['CICLO']}</td>
                 </tr>
-                html;
+                HTML;
             }
 
             if ($Consulta[0] == '') {
@@ -289,7 +289,7 @@ class Operaciones extends Controller
 
     public function ReportePLDDesembolsos()
     {
-        $extraFooter = <<<html
+        $extraFooter = <<<HTML
         <script>
             function getParameterByName(name) {
                 name = name.replace(/[\[]/, "\\[").replace(/[\]]/, "\\]")
@@ -362,7 +362,7 @@ class Operaciones extends Controller
                 )
             }
         </script>
-        html;
+        HTML;
 
         $Inicial = $_GET['Inicial'];
         $Final = $_GET['Final'];
@@ -373,7 +373,7 @@ class Operaciones extends Controller
             $Consulta = OperacionesDao::ConsultarDesembolsos($Inicial, $Final);
 
             foreach ($Consulta as $key => $value) {
-                $tabla .= <<<html
+                $tabla .= <<<HTML
                 <tr style="padding: 0px !important;">
                     <td style="padding: 0px !important;">{$value['LOCALIDAD']}</td>
                     <td style="padding: 0px !important;">{$value['SUCURSAL']}</td>
@@ -395,7 +395,7 @@ class Operaciones extends Controller
                     <td style="padding: 0px !important;">{$value['ATRASO']}</td>
                     <td style="padding: 0px !important;">{$value['OFICINA_CLIENTE']}</td>
                 </tr>
-                html;
+                HTML;
             }
 
             if ($Consulta[0] == '') {
@@ -419,7 +419,7 @@ class Operaciones extends Controller
 
     public function IdentificacionClientes()
     {
-        $extraFooter = <<<html
+        $extraFooter = <<<HTML
         <script>
             function getParameterByName(name) {
                 name = name.replace(/[\[]/, "\\[").replace(/[\]]/, "\\]")
@@ -480,7 +480,7 @@ class Operaciones extends Controller
             Inicial.max = new Date().toISOString().split("T")[0]
             Final.max = new Date().toISOString().split("T")[0]
         </script>
-        html;
+        HTML;
 
         $fechaActual = date('Y-m-d');
         $Inicial = $_GET['Inicial'];
@@ -492,7 +492,7 @@ class Operaciones extends Controller
             $Consulta = OperacionesDao::ConsultarClientes($Inicial, $Final);
 
             foreach ($Consulta as $key => $value) {
-                $tabla .= <<<html
+                $tabla .= <<<HTML
                 <tr style="padding: 0px !important;">
                     <td style="padding: 0px !important;">{$value['CDGCL']}</td>
                     <td style="padding: 0px !important;">{$value['GRUPO']}</td>
@@ -539,7 +539,7 @@ class Operaciones extends Controller
                     <td style="padding: 0px !important;">{$value['FEH_FIN']}</td>
                     <td style="padding: 0px !important;">{$value['CP']}</td>
                 </tr>
-                html;
+                HTML;
             }
             if ($Consulta[0] == '') {
                 View::set('fechaActual', $fechaActual);
@@ -562,7 +562,7 @@ class Operaciones extends Controller
 
     public function CuentasRelacionadas()
     {
-        $extraFooter = <<<html
+        $extraFooter = <<<HTML
         <script>
             function getParameterByName(name) {
                 name = name.replace(/[\[]/, "\\[").replace(/[\]]/, "\\]")
@@ -623,7 +623,7 @@ class Operaciones extends Controller
             Inicial.max = new Date().toISOString().split("T")[0]
             Final.max = new Date().toISOString().split("T")[0]
         </script>
-        html;
+        HTML;
 
         $Inicial = $_GET['Inicial'];
         $Final = $_GET['Final'];
@@ -633,7 +633,7 @@ class Operaciones extends Controller
         if ($Inicial != '' || $Final != '') {
             $Consulta = OperacionesDao::CuentasRelacionadas($Inicial, $Final);
             foreach ($Consulta as $key => $value) {
-                $tabla .= <<<html
+                $tabla .= <<<HTML
                 <tr style="padding: 0px !important;">
                     <td style="padding: 0px !important;">{$value['CLIENTE']}</td>
                     <td style="padding: 0px !important;">{$value['GRUPO']}</td>
@@ -648,7 +648,7 @@ class Operaciones extends Controller
                     <td style="padding: 0px !important;">{$value['OFICINA_CLIENTE']}</td>
                     <td style="padding: 0px !important;">{$value['FECHA_INICIO_OPERACION']}</td>
                 </tr>
-                html;
+                HTML;
             }
             if ($Consulta[0] == '') {
                 View::set('fechaActual', date('Y-m-d'));
@@ -671,7 +671,7 @@ class Operaciones extends Controller
 
     public function PerfilTransaccional()
     {
-        $extraFooter = <<<html
+        $extraFooter = <<<HTML
         <script>
             function getParameterByName(name) {
                 name = name.replace(/[\[]/, "\\[").replace(/[\]]/, "\\]")
@@ -732,7 +732,7 @@ class Operaciones extends Controller
             Inicial.max = new Date().toISOString().split("T")[0]
             Final.max = new Date().toISOString().split("T")[0]
         </script>
-        html;
+        HTML;
 
         $Inicial = $_GET['Inicial'];
         $Final = $_GET['Final'];
@@ -742,7 +742,7 @@ class Operaciones extends Controller
         if ($Inicial != '' || $Final != '') {
             $Consulta = OperacionesDao::ConsultarPerfilTransaccional($Inicial, $Final);
             foreach ($Consulta as $key => $value) {
-                $tabla .= <<<html
+                $tabla .= <<<HTML
                 <tr style="padding: 0px !important;">
                     <td style="padding: 0px !important;">{$value['CDGCL']}</td>
                     <td style="padding: 0px !important;">{$value['GRUPO']}</td>
@@ -780,7 +780,7 @@ class Operaciones extends Controller
                     <td style="padding: 0px !important;">{$value['LOCALIZACION']}</td>
                     <td style="padding: 0px !important;">{$value['CP']}</td>
                 </tr>
-                html;
+                HTML;
             }
             if ($Consulta[0] == '') {
                 View::set('fechaActual', date('Y-m-d'));

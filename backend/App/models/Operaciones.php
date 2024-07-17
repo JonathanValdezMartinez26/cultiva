@@ -11,7 +11,7 @@ class Operaciones
 
     public static function ConsultarDesembolsos($Inicial, $Final)
     {
-        $query = <<<sql
+        $query = <<<SQL
             SELECT
                 *
             FROM
@@ -20,7 +20,7 @@ class Operaciones
                 FDEPOSITO BETWEEN TO_DATE('$Inicial', 'YY-mm-dd') AND TO_DATE('$Final', 'YY-mm-dd')
             ORDER BY
                 FDEPOSITO ASC
-        sql;
+        SQL;
 
         try {
             $db = new Database();
@@ -32,7 +32,7 @@ class Operaciones
 
     public static function ConsultarClientes($Inicial, $Final)
     {
-        $query = <<<sql
+        $query = <<<SQL
             SELECT
                 DISTINCT TO_CHAR(' '||CDGCL) AS CDGCL, TO_CHAR(GRUPO) AS GRUPO, ORIGEN, CLIENTES AS NOMBRE, ADICIONAL,
                 A_PATERNO, A_MATERNO, TIPO_PERSONA, RFC, CURP, RAZON_SOCIAL, FECHA_NAC, NACIONALIDAD, DOMICILIO,
@@ -53,7 +53,7 @@ class Operaciones
                 TIPO_DOCUMENTO, INDICADOR_EMPLEO, EMPRESAS, INDICADOR_GOBIERNO, PUESTO, FECHA_INICIO, FEH_FIN, CP, FECHA_ALTA
             ORDER BY
                 FECHA_ALTA DESC
-        sql;
+        SQL;
 
         $db = new Database();
         if ($db->db_activa == null) return "";
@@ -62,7 +62,7 @@ class Operaciones
 
     public static function CuentasRelacionadas($Inicial, $Final)
     {
-        $query = <<<sql
+        $query = <<<SQL
             SELECT
                 DISTINCT TO_CHAR(' ' || CDGCL) AS CLIENTE,
                 TO_CHAR(GRUPO) AS GRUPO,
@@ -98,7 +98,7 @@ class Operaciones
                 FECHA_ALTA
             ORDER BY
                 FECHA_ALTA DESC
-        sql;
+        SQL;
 
         $db = new Database();
         if ($db->db_activa == null) return "";
@@ -107,7 +107,7 @@ class Operaciones
 
     public static function ConsultarPagos($Inicial, $Final)
     {
-        $query = <<<sql
+        $query = <<<SQL
             SELECT
                 PRN.CANTENTRE,
                 PRC.CDGEM,
@@ -170,7 +170,7 @@ class Operaciones
                 AND TO_DATE('$Final', 'YY-mm-dd')
             ORDER BY
                 PRN.CICLO DESC  
-        sql;
+        SQL;
 
         $db = new Database();
         if ($db->db_activa == null) return "";
@@ -179,7 +179,7 @@ class Operaciones
 
     public static function ConsultarPagosNacimiento($Inicial, $Final)
     {
-        $query = <<<sql
+        $query = <<<SQL
             SELECT
                 PRN.CANTENTRE,
                 PRC.CDGEM,
@@ -249,7 +249,7 @@ class Operaciones
                 AND TO_DATE('$Final', 'YY-mm-dd')
             ORDER BY
                 PRN.CICLO DESC
-        sql;
+        SQL;
 
         $db = new Database();
         if ($db->db_activa == null) return "";
@@ -258,7 +258,7 @@ class Operaciones
 
     public static function ConsultarPerfilTransaccional($Inicial, $Final)
     {
-        $query = <<<sql
+        $query = <<<SQL
             SELECT
                 CDGCL, GRUPO, NOMBRE, INSTRUMENTO, TIPO_MONEDA, T_CAMBIO, MONT_PRESTAMO, PLAZO, 
                 FRECUENCIA, TOTAL_PAGOS, MONTO_FIN_PAGO, ADELANTAR_PAGO, NUMERO_APORTACIONES,
@@ -272,7 +272,7 @@ class Operaciones
                 FECHA_ALTA BETWEEN TO_DATE('$Inicial', 'YY-mm-dd')
                 AND TO_DATE('$Final', 'YY-mm-dd')
                 AND ULTIMO_CICLO != 'D1'
-        sql;
+        SQL;
 
         $db = new Database();
         if ($db->db_activa == null) return "";
@@ -281,7 +281,7 @@ class Operaciones
 
     public static function ConsultaGruposCultiva($fecha_inicial, $fecha_final)
     {
-        $query = <<<sql
+        $query = <<<SQL
             SELECT
                 CO.NOMBRE AS SUCURSAL,
                 SC.CDGNS,
@@ -305,7 +305,7 @@ class Operaciones
                 AND TIMESTAMP '$fecha_final 11:59:00.000000'
             ORDER BY
                 SC.SOLICITUD ASC
-        sql;
+        SQL;
 
         $db = new Database();
         if ($db->db_activa == null) return "";
@@ -314,7 +314,7 @@ class Operaciones
 
     public static function ReingresarClientesCredito($credito)
     {
-        $query = <<<sql
+        $query = <<<SQL
             SELECT
                 CDGNS,
                 CDGCL,
@@ -351,16 +351,16 @@ class Operaciones
                 ) sub
             WHERE
                 RN = 1
-        sql;
+        SQL;
 
-        $query2 = <<<sql
+        $query2 = <<<SQL
             SELECT 
                 NOMBRE
             FROM
                 NS
             WHERE
                 CODIGO = '$credito'
-        sql;
+        SQL;
 
         $db = new Database();
         if ($db->db_activa == null) return [];

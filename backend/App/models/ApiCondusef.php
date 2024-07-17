@@ -4,23 +4,10 @@ namespace App\models;
 
 defined("APPPATH") or die("Access denied");
 
-use \Core\Database;
+use Core\Database;
 
 class ApiCondusef
 {
-    private static function Responde($respuesta, $mensaje, $datos = null, $error = null)
-    {
-        $res = array(
-            "success" => $respuesta,
-            "mensaje" => $mensaje
-        );
-
-        if ($datos != null) $res['datos'] = $datos;
-        if ($error != null) $res['error'] = $error;
-
-        return json_encode($res);
-    }
-
     public static function GetProductos()
     {
         $query = <<<sql

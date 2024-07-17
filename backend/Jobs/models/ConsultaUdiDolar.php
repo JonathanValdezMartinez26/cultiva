@@ -1,35 +1,25 @@
 <?php
 
-namespace App\models;
+namespace Jobs\models;
 
-include 'C:/xampp/htdocs/cultiva/backend/Core/Database.php';
+include_once dirname(__DIR__) . "\..\Core\Model.php";
+include dirname(__DIR__) . "\..\Core\Database.php";
 
-use \Core\Database;
+use Core\Model;
+use Core\Database;
 
-class ConsultaUdiDolar
+class ConsultaUdiDolar extends Model
 {
-    public static function Responde($respuesta, $mensaje, $datos = null, $error = null)
-    {
-        $res = [
-            "success" => $respuesta,
-            "mensaje" => $mensaje
-        ];
-
-        if ($datos !== null) $res['datos'] = $datos;
-        if ($error !== null) $res['error'] = $error;
-
-        return $res;
-    }
-
     public static function AddUdiDolar($fecha, $dolar, $udi)
     {
         $db = new Database();
         if ($db->db_activa == null) return self::Responde(false, null, "Error al conectar a la base de datos.");
-        $ret_dolar = '';
-        $ret_udi = '';
+        $db->SetDB_Cultiva();
+        $ret_dolar = "";
+        $ret_udi = "";
 
         if ($dolar != 0) {
-            $query_dolar = <<<sql
+            $query_dolar = <<<SQL
                 INSERT INTO
                     UNIDAD (
                         CODIGO,
@@ -48,15 +38,15 @@ class ConsultaUdiDolar
                         'USD',
                         'EMPFIN'
                     )
-            sql;
+            SQL;
 
             $res = $db->insert($query_dolar);
-            if ($res === true ) $ret_dolar = self::Responde(true, "Dolar registrado correctamente.", ['query' => $query_dolar]);
+            if ($res === true) $ret_dolar = self::Responde(true, "Dolar registrado correctamente.", ['query' => $query_dolar]);
             else $ret_dolar = self::Responde(false, "Error al registrar el dolar.", ['query' => $query_dolar], $res);
         }
 
         if ($udi != 0) {
-            $query_udi = <<<sql
+            $query_udi = <<<SQL
                 INSERT INTO
                     UNIDAD (
                         CODIGO,
@@ -75,10 +65,10 @@ class ConsultaUdiDolar
                     'UDI',
                     'EMPFIN'
                 )
-            sql;
+            SQL;
 
             $res = $db->insert($query_udi);
-            if ($res === true ) $ret_udi = self::Responde(true, "UDI registrada correctamente.", ['query' => $query_udi]);
+            if ($res === true) $ret_udi = self::Responde(true, "UDI registrada correctamente.", ['query' => $query_udi]);
             else $ret_udi = self::Responde(false, "Error al registrar la UDI.", ['query' => $query_dolar], $res);
         }
 

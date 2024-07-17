@@ -1,7 +1,6 @@
 <?php
 
 namespace Core;
-// defined("APPPATH") or die("Access denied");
 
 use Core\App;
 use PDO;
@@ -47,13 +46,14 @@ class Database
 
         if ($sql != null) $error .= "\nSql: " . $sql;
         if ($parametros != null) $error .= "\nDatos: " . print_r($parametros, 1);
-        echo $error;
+        echo $error . "\n";
         return $error;
     }
 
     private function DB_MCM()
     {
         $servidor = 'mcm-server';
+        // $servidor = 'DRP';
         $this->db_mcm = self::Conecta($servidor);
     }
 
@@ -109,7 +109,7 @@ class Database
 
             return true;
         } catch (\PDOException $e) {
-            self::muestraError($e);
+            self::muestraError($e, $sql, $params);
             return false;
         }
     }
@@ -170,9 +170,17 @@ class Database
     public function eliminar($sql)
     {
         try {
-            return $this->db_activa->prepare($sql)->execute();
+            $stmt = $this->db_activa->prepare($sql);
+            $stmt->execute();
+            $err = $stmt->errorInfo();
+
+            if ($err[0] != '00000')
+                throw new \PDOException("Error en delete: " . print_r($err, 1) . "\nSql: $sql");
+
+            return true;
         } catch (\PDOException $e) {
-            throw new \Exception("Error en eliminar: " . $e->getMessage() . "\nSql : $sql");
+            self::muestraError($e, $sql);
+            return false;
         }
     }
 }
