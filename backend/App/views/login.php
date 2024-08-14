@@ -58,7 +58,7 @@ $anio = date('Y');
                     <br />
 
                     <div>
-                        <h1><i class="fa fa-paw"></i> Financiera Cultiva</h1>
+                        <h1><i class="fa fa-paw"></i>Financiera Cultiva</h1>
                         <p>© <?= $anio ?> - Al utilizar los servicios de Financiera Cultiva, los usuarios están de acuerdo con las políticas de privacidad y términos de uso establecidos por la empresa.</p>
                     </div>
                 </div>
