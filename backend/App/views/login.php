@@ -1,6 +1,4 @@
-<?php
-echo $header;
-?>
+<?= $header; ?>
 
 <?php
 $anio = date('Y');
@@ -13,7 +11,7 @@ $anio = date('Y');
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Login | Cultiva</title>
-    <link rel="shortcut icon" href="/img/logo.png">
+    <link rel="shortcut icon" href="/img/logo_ico.png">
 
     <!-- Bootstrap -->
     <link href="../vendors/bootstrap/dist/css/bootstrap.min.css" rel="stylesheet">
@@ -59,7 +57,7 @@ $anio = date('Y');
 
                     <div>
                         <h1><i class="fa fa-paw"></i>Financiera Cultiva</h1>
-                        <p>© <?= $anio ?> - Al utilizar los servicios de Financiera Cultiva, los usuarios están de acuerdo con las políticas de privacidad y términos de uso establecidos por la empresa.</p>
+                        <p>© <?= $anio ?> - Al ingresar al sistema de Financiera Cultiva, los usuarios están de acuerdo con las políticas de privacidad y términos de uso establecidos por la empresa.</p>
                     </div>
                 </div>
             </form>
@@ -67,4 +65,4 @@ $anio = date('Y');
     </div>
 
 </div>
-<?php echo $footer; ?>
+<?= $footer; ?>
