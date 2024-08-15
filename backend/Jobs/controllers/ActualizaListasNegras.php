@@ -90,6 +90,9 @@ if (isset($argv[1])) {
         case 'ListaGris':
             $aln->ListaGris();
             break;
+        case 'prueba_horario':
+            echo date("Y-m-d H:i:s") . "\n";
+            break;
         case 'help':
             echo "Jobs disponibles:\n";
             echo "ListaNegra: Actualiza la lista negra de clientes en las bases de datos de MCM y Cultiva.\n";
@@ -100,3 +103,4 @@ if (isset($argv[1])) {
             break;
     }
 } else echo "Debe especificar el job a ejecutar.\nEjecute 'php ActualizaListasNegras.php help' para ver los jobs disponibles.\n";
+
