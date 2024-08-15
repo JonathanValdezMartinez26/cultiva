@@ -1,2 +1,4 @@
-C:\xampp\php\php.exe -f C:\xampp\htdocs\cultiva\backend\Jobs\controllers\ActualizaListasNegras.php "ListaGris"
-pause
+@echo off
+set param1=%1
+
+C:\xampp\php\php.exe -f .\controllers\JobsAhorro.php -- %param1%
