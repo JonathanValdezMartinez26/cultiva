@@ -8,7 +8,7 @@ include dirname(__DIR__) . "\..\Core\Database.php";
 use Core\Model;
 use Core\Database;
 
-class ActualizaListasNegras extends Model
+class SincronizaBloqueoClientes extends Model
 {
     public static function GetListaNegra($mcm = true)
     {

@@ -3,16 +3,16 @@
 namespace Jobs\controllers;
 
 include_once dirname(__DIR__) . "\..\Core\Job.php";
-include dirname(__DIR__) . '\models\ActualizaListasNegras.php';
+include dirname(__DIR__) . '\models\SincronizaBloqueoClientes.php';
 
 use Core\Job;
-use Jobs\models\ActualizaListasNegras as DAO;
+use Jobs\models\SincronizaBloqueoClientes as DAO;
 
-class ActualizaListasNegras extends Job
+class SincronizaBloqueoClientes extends Job
 {
     public function __construct()
     {
-        parent::__construct("ActualizaListasNegras");
+        parent::__construct("SincronizaBloqueoClientes");
     }
 
     public function ListaNegra()
@@ -81,7 +81,7 @@ class ActualizaListasNegras extends Job
 }
 
 if (isset($argv[1])) {
-    $aln = new ActualizaListasNegras();
+    $aln = new SincronizaBloqueoClientes();
 
     switch ($argv[1]) {
         case 'ListaNegra':
@@ -102,5 +102,5 @@ if (isset($argv[1])) {
             echo "No se encontró el job solicitado.\n";
             break;
     }
-} else echo "Debe especificar el job a ejecutar.\nEjecute 'php ActualizaListasNegras.php help' para ver los jobs disponibles.\n";
+} else echo "Debe especificar el job a ejecutar.\nEjecute 'php SincronizaBloqueoClientes.php help' para ver los jobs disponibles.\n";
 
