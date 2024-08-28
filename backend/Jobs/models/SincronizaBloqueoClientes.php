@@ -88,7 +88,8 @@ class SincronizaBloqueoClientes extends Model
         $resultado = $db->insertaMultiple($inserts, $valores);
         if ($resultado) $resultado = $db->queryAll($qry);
         $db->insert($dropTbl);
-        if ($resultado) return self::Responde(true, "Lista Negra validada correctamente.", $resultado);
+        if (count($resultado) > 0) return self::Responde(true, "Lista Negra validada correctamente.", $resultado);
+        if (count($resultado) == 0) return self::Responde(false, "No se encontraron registros para insertar.");
         return self::Responde(false, "Error al validar la lista negra.");
     }
 
