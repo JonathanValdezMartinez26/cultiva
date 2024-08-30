@@ -164,21 +164,21 @@
                     <div class=" col-md-3">
                         <div class="form-group">
                             <label for="QuejasFecResolucion">Fecha de resolución *</label>
-                            <input type="date" class="form-control" id="QuejasFecResolucion" value="<?= $fecha ?>" />
+                            <input type="date" class="form-control" id="QuejasFecResolucion" value="<?= $fecha ?>" disabled/>
                         </div>
                     </div>
 
                     <div class="col-md-3">
                         <div class="form-group">
                             <label for="QuejasFecNotificacion">Fecha notificación al usuario *</label>
-                            <input type="date" class="form-control" id="QuejasFecNotificacion" value="<?= $fecha ?>" oninput=validaRequeridos() />
+                            <input type="date" class="form-control" id="QuejasFecNotificacion" value="<?= $fecha ?>" oninput=validaRequeridos() disabled/>
                         </div>
                     </div>
                     <div class="col-md-3">
                         <div class="form-group">
                             <label for="QuejasRespuesta">Resolución *</label>
-                            <select class="form-control" id="QuejasRespuesta">
-                                <option value="0">Pendiente</option>
+                            <select class="form-control" id="QuejasRespuesta" disabled>
+                                <option value="0" selected>Pendiente</option>
                                 <option value="1">
                                     1 - Totalmente favorable al usuario
                                 </option>

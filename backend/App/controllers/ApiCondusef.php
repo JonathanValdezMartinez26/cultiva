@@ -150,6 +150,30 @@ class ApiCondusef extends Controller
                     })
                     return opciones
                 }
+
+                const cambioEstatus = (noEstatus) => {
+                    if (noEstatus == 1) {
+                        document.querySelector("#QuejasFecResolucion").disabled = true
+                        document.querySelector("#QuejasFecNotificacion").disabled = true
+                        document.querySelector("#QuejasRespuesta").disabled = true
+                        document.querySelector("#QuejasRespuesta").selectedIndex = 0
+                    } else {
+                        document.querySelector("#QuejasFecResolucion").disabled = false
+                        document.querySelector("#QuejasFecNotificacion").disabled = false
+                        document.querySelector("#QuejasRespuesta").disabled = false
+                    }
+                }
+
+                const cambioTipoPersona = (tipoPersona) => {
+                    if (tipoPersona == 1) {
+                        document.querySelector("#QuejasSexo").disabled = false
+                        document.querySelector("#QuejasEdad").disabled = false
+                    } else {
+                        document.querySelector("#QuejasSexo").disabled = true
+                        document.querySelector("#QuejasEdad").disabled = true
+                        document.querySelector("#QuejasEdad").value = ""
+                    }
+                }
                  
                 const insertaOpciones = (elemento, opciones = []) => {
                     if (opciones.length > 1) opciones.unshift("<option value='' disabled>Seleccione</option>")
@@ -195,6 +219,9 @@ class ApiCondusef extends Controller
                         if (elemento.id === "QuejasEdad" && Number(elemento.value) < 18) {
                             validacion = false
                         }
+
+                        if (elemento.id == "QuejasEstatus") cambioEstatus(elemento.value)
+                        if (elemento.id == "QuejasTipoPersona") cambioTipoPersona(elemento.value)
                     })
                 
                     document.querySelector("#btnAgregar").disabled = validacion
@@ -223,12 +250,12 @@ class ApiCondusef extends Controller
                         "QuejasColId": Number(document.querySelector("#QuejasColId").value),
                         "QuejasCP": Number(document.querySelector("#QuejasCP").value),
                         "QuejasTipoPersona": Number(document.querySelector("#QuejasTipoPersona").value),
-                        "QuejasSexo": document.querySelector("#QuejasSexo").value,
-                        "QuejasEdad": Number(document.querySelector("#QuejasEdad").value),
-                        "QuejasFecResolucion": null,
-                        "QuejasFecNotificacion": null, //formatoFecha(document.querySelector("#QuejasFecNotificacion").value),
-                        "QuejasRespuesta": null,
-                        "QuejasNumPenal": Number(document.querySelector("#QuejasNumPenal").value),
+                        "QuejasSexo": (document.querySelector("#QuejasTipoPersona").value == 1 ? document.querySelector("#QuejasSexo").value : null),
+                        "QuejasEdad": (document.querySelector("#QuejasTipoPersona").value == 1 ? Number(document.querySelector("#QuejasEdad").value) : null),
+                        "QuejasFecResolucion": (document.querySelector("#QuejasEstatus").value != 1 ? formatoFecha(document.querySelector("#QuejasFecResolucion").value) : null),
+                        "QuejasFecNotificacion": (document.querySelector("#QuejasEstatus").value != 1 ? formatoFecha(document.querySelector("#QuejasFecNotificacion").value) : null),
+                        "QuejasRespuesta":  (document.querySelector("#QuejasEstatus").value != 1 ? formatoFecha(document.querySelector("#QuejasRespuesta").value) : null),
+                        "QuejasNumPenal": (document.querySelector("#QuejasNumPenal").value != "" ? Number(document.querySelector("#QuejasNumPenal").value) : null),
                         "QuejasPenalizacion": Number(document.querySelector("#QuejasPenalizacion").value),
                     }]
                      
