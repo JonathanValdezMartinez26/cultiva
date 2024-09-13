@@ -39,8 +39,6 @@ class Login
 
 
         $db = new Database;
-        if ($db->db_activa == null) return [];
-        $db->SetDB_CULTIVA();
         return [$db->queryOne($query1, $params1)];
     }
 
@@ -63,8 +61,6 @@ class Login
         sql;
 
         $db = new Database;
-        if ($db->db_activa == null) return [];
-        $db->SetDB_CULTIVA();
         return $db->queryAll($query);
     }
 }
