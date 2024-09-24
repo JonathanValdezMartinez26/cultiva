@@ -843,14 +843,25 @@ class Operaciones extends Controller
         $columna = array('A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'V', 'W');
         $nombreColumna = array('LOCALIDAD', 'SUCURSAL', 'TIPO DE OPERACION', 'ID CLIENTE', 'NUMERO DE CTA-CONTRATO-OPERACIO- POLIZA O NUMERO DE SEGURIDAD SOCIAL', 'INSTRUMENTO MONETARIO', 'MONEDA', 'MONTO', 'FECHA DE LA OPERACION', 'TIPO RECEPTOR', 'CLAVE DCE RECEPTOR', 'NUM CAJA', 'ID-CAJERO', 'FECHA-HORA', 'NOTARJETA-CTA DEP', 'TIPOTARJETA', 'COD-AUTORIZACION', 'ATRASO', 'OFICINA CLIENTE');
         $nombreCampo = array(
-            'LOCALIDAD', 'SUCURSAL', 'TIPO_OPERACION', 'ID_CLIENTE',
+            'LOCALIDAD',
+            'SUCURSAL',
+            'TIPO_OPERACION',
+            'ID_CLIENTE',
             'NUM_CUENTA',
             'INSTRUMENTO_MONETARIO',
             'MONEDA',
             'MONTO',
             'FECHA_OPERACION',
-            'TIPO_RECEPTOR', 'CLAVE_RECEPTOR', 'NUM_CAJA', 'ID_CAJERO', 'FECHA_HORA', 'NOTARJETA_CTA',
-            'TIPOTARJETA', 'COD_AUTORIZACION', 'ATRASO', 'OFICINA_CLIENTE'
+            'TIPO_RECEPTOR',
+            'CLAVE_RECEPTOR',
+            'NUM_CAJA',
+            'ID_CAJERO',
+            'FECHA_HORA',
+            'NOTARJETA_CTA',
+            'TIPOTARJETA',
+            'COD_AUTORIZACION',
+            'ATRASO',
+            'OFICINA_CLIENTE'
         );
 
 
@@ -948,14 +959,25 @@ class Operaciones extends Controller
         $columna = array('A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'V', 'W');
         $nombreColumna = array('LOCALIDAD', 'SUCURSAL', 'TIPO DE OPERACION', 'ID CLIENTE', 'NUMERO DE CTA-CONTRATO-OPERACIO- POLIZA O NUMERO DE SEGURIDAD SOCIAL', 'INSTRUMENTO MONETARIO', 'MONEDA', 'MONTO', 'FECHA DE LA OPERACION', 'TIPO RECEPTOR', 'CLAVE DCE RECEPTOR', 'NUM CAJA', 'ID-CAJERO', 'FECHA-HORA', 'NOTARJETA-CTA DEP', 'TIPOTARJETA', 'COD-AUTORIZACION', 'ATRASO', 'OFICINA CLIENTE');
         $nombreCampo = array(
-            'LOCALIDAD', 'SUCURSAL', 'TIPO_OPERACION', 'ID_CLIENTE',
+            'LOCALIDAD',
+            'SUCURSAL',
+            'TIPO_OPERACION',
+            'ID_CLIENTE',
             'NUM_CUENTA',
             'INSTRUMENTO_MONETARIO',
             'MONEDA',
             'MONTO',
             'FECHA_OPERACION',
-            'TIPO_RECEPTOR', 'CLAVE_RECEPTOR', 'NUM_CAJA', 'ID_CAJERO', 'FECHA_HORA', 'NOTARJETA_CTA',
-            'TIPOTARJETA', 'COD_AUTORIZACION', 'ATRASO', 'OFICINA_CLIENTE'
+            'TIPO_RECEPTOR',
+            'CLAVE_RECEPTOR',
+            'NUM_CAJA',
+            'ID_CAJERO',
+            'FECHA_HORA',
+            'NOTARJETA_CTA',
+            'TIPOTARJETA',
+            'COD_AUTORIZACION',
+            'ATRASO',
+            'OFICINA_CLIENTE'
         );
 
 
@@ -1053,14 +1075,28 @@ class Operaciones extends Controller
         $columna = array('A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V');
         $nombreColumna = array('LOCALIDAD', 'SUCURSAL', 'TIPO DE OPERACION', 'ID CLIENTE', 'NUMERO DE CTA-CONTRATO-OPERACIO- POLIZA O NUMERO DE SEGURIDAD SOCIAL', 'INSTRUMENTO MONETARIO', 'MONEDA', 'MONTO', 'FECHA DE LA OPERACION', 'TIPO RECEPTOR', 'CLAVE DCE RECEPTOR', 'NUM CAJA', 'ID-CAJERO', 'FECHA-HORA', 'NOTARJETA-CTA DEP', 'TIPOTARJETA', 'COD-AUTORIZACION', 'ATRASO', 'OFICINA CLIENTE', 'FEC_NAC', 'EDAD', 'CICLO');
         $nombreCampo = array(
-            'LOCALIDAD', 'SUCURSAL', 'TIPO_OPERACION', 'ID_CLIENTE',
+            'LOCALIDAD',
+            'SUCURSAL',
+            'TIPO_OPERACION',
+            'ID_CLIENTE',
             'NUM_CUENTA',
             'INSTRUMENTO_MONETARIO',
             'MONEDA',
             'MONTO',
             'FECHA_OPERACION',
-            'TIPO_RECEPTOR', 'CLAVE_RECEPTOR', 'NUM_CAJA', 'ID_CAJERO', 'FECHA_HORA', 'NOTARJETA_CTA',
-            'TIPOTARJETA', 'COD_AUTORIZACION', 'ATRASO', 'OFICINA_CLIENTE', 'FEC_NAC', 'EDAD', 'CICLO'
+            'TIPO_RECEPTOR',
+            'CLAVE_RECEPTOR',
+            'NUM_CAJA',
+            'ID_CAJERO',
+            'FECHA_HORA',
+            'NOTARJETA_CTA',
+            'TIPOTARJETA',
+            'COD_AUTORIZACION',
+            'ATRASO',
+            'OFICINA_CLIENTE',
+            'FEC_NAC',
+            'EDAD',
+            'CICLO'
         );
 
 
@@ -1155,29 +1191,97 @@ class Operaciones extends Controller
 
         $controlador = "Operaciones";
         $columna = array(
-            'A', 'B', 'C', 'D', 'E', 'F', 'G',
-            'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O',
-            'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W',
-            'X', 'Y', 'Z', 'AA', 'AB', 'AC', 'AD',
-            'AE', 'AF', 'AG', 'AH', 'AI', 'AJ',
-            'AK', 'AL', 'AM', 'AN', 'AO', 'AP', 'AQ', 'AR'
+            'A',
+            'B',
+            'C',
+            'D',
+            'E',
+            'F',
+            'G',
+            'H',
+            'I',
+            'J',
+            'K',
+            'L',
+            'M',
+            'N',
+            'O',
+            'P',
+            'Q',
+            'R',
+            'S',
+            'T',
+            'U',
+            'V',
+            'W',
+            'X',
+            'Y',
+            'Z',
+            'AA',
+            'AB',
+            'AC',
+            'AD',
+            'AE',
+            'AF',
+            'AG',
+            'AH',
+            'AI',
+            'AJ',
+            'AK',
+            'AL',
+            'AM',
+            'AN',
+            'AO',
+            'AP',
+            'AQ',
+            'AR'
         );
 
         $nombreColumna = array(
-            'ID CLIENTE', 'CUENTA', 'Origen', 'NOMBRE', 'ADICIONAL',
-            'APELLIDO PATERNO', 'APELLIDO MATERNO', 'TIPO DE PERSONA',
-            'RFC', 'CURP', 'RAZON SOCIAL O DENOMINACION', 'FECHA DE NACIMIENTO OCONSTITUCION',
-            'NACIONALIDAD', 'DOMICILIO(calle- número exterior e interior (si aplica) y código postal)',
-            'COLONIA', 'CIUDAD O POBLACION', 'PAIS', 'ESTADO',
-            'TELEFONO OFICINA/PARTICULAR', 'ACTIVIDAD ECONOMICA',
-            'CALIFICACIÓN', 'FECHA ALTA',
-            'SUCURSAL', 'GENERO', 'CORREO ELEC.',
-            'FIRMA ELEC.', 'PROFESION', 'OCUPACION', 'PAIS NAC.',
-            'EDO. NAC.', 'LUGAR NAC.', 'NUMERO DE DOCUMENTO',
-            'CONOCIMIENTO CLIENTE', 'REGISTR O NACIONAL DE INMIGRACION',
-            'CUENTA ORIGINAL', 'SITUACIÓN CLIENTE',
-            'TIPO DOCUMENTO', 'INDICADOR EMPLEO', 'EMPRESA LABORA(Ó)',
-            'INDICADOR GOBIERNO', 'PUESTO', 'FECHA INICIO', 'FEH FIN', 'CP'
+            'ID CLIENTE',
+            'CUENTA',
+            'Origen',
+            'NOMBRE',
+            'ADICIONAL',
+            'APELLIDO PATERNO',
+            'APELLIDO MATERNO',
+            'TIPO DE PERSONA',
+            'RFC',
+            'CURP',
+            'RAZON SOCIAL O DENOMINACION',
+            'FECHA DE NACIMIENTO OCONSTITUCION',
+            'NACIONALIDAD',
+            'DOMICILIO(calle- número exterior e interior (si aplica) y código postal)',
+            'COLONIA',
+            'CIUDAD O POBLACION',
+            'PAIS',
+            'ESTADO',
+            'TELEFONO OFICINA/PARTICULAR',
+            'ACTIVIDAD ECONOMICA',
+            'CALIFICACIÓN',
+            'FECHA ALTA',
+            'SUCURSAL',
+            'GENERO',
+            'CORREO ELEC.',
+            'FIRMA ELEC.',
+            'PROFESION',
+            'OCUPACION',
+            'PAIS NAC.',
+            'EDO. NAC.',
+            'LUGAR NAC.',
+            'NUMERO DE DOCUMENTO',
+            'CONOCIMIENTO CLIENTE',
+            'REGISTR O NACIONAL DE INMIGRACION',
+            'CUENTA ORIGINAL',
+            'SITUACIÓN CLIENTE',
+            'TIPO DOCUMENTO',
+            'INDICADOR EMPLEO',
+            'EMPRESA LABORA(Ó)',
+            'INDICADOR GOBIERNO',
+            'PUESTO',
+            'FECHA INICIO',
+            'FEH FIN',
+            'CP'
         );
 
 
@@ -1284,22 +1388,22 @@ class Operaciones extends Controller
         $fecha_inicio = $_GET['Inicial'];
         $fecha_fin = $_GET['Final'];
 
-        $estilos = self::GetEstilosExcel();
+        $estilos = \PHPSpreadsheet::GetEstilosExcel();
 
         $columnas = [
-            self::ColumnaExcel('A', 'CLIENTE', 'CLIENTE', $estilos['centrado']),
-            self::ColumnaExcel('B', 'GRUPO', 'NUMERO DE CUENTA- CONTRATO-OPERACIÓN- PÓLIZA O NSS2', $estilos['centrado']),
-            self::ColumnaExcel('C', 'CUENTA_RELACION', 'NO. CUENTA RELACIONADA', $estilos['centrado']),
-            self::ColumnaExcel('D', 'DESCRIPCION_OPERACION', 'DESCRIPCION DE LA OPERACIÓN*', $estilos['centrado']),
-            self::ColumnaExcel('E', 'IDENTIFICA_CUENTA', 'IDENTIFICA CUENTA como interna', $estilos['centrado']),
-            self::ColumnaExcel('F', 'CONSERVA', 'CONSERVA CUENTA ORIGINAL'),
-            self::ColumnaExcel('G', 'OFICINA_CLIENTE', 'OFICINA CLIENTE', $estilos['centrado']),
-            self::ColumnaExcel('H', 'FECHA_INICIO_OPERACION', 'FECHA INICIO OPERACIÓN', $estilos['centrado'])
+            \PHPSpreadsheet::ColumnaExcel('A', 'CLIENTE', 'CLIENTE', $estilos['centrado']),
+            \PHPSpreadsheet::ColumnaExcel('B', 'GRUPO', 'NUMERO DE CUENTA- CONTRATO-OPERACIÓN- PÓLIZA O NSS2', $estilos['centrado']),
+            \PHPSpreadsheet::ColumnaExcel('C', 'CUENTA_RELACION', 'NO. CUENTA RELACIONADA', $estilos['centrado']),
+            \PHPSpreadsheet::ColumnaExcel('D', 'DESCRIPCION_OPERACION', 'DESCRIPCION DE LA OPERACIÓN*', $estilos['centrado']),
+            \PHPSpreadsheet::ColumnaExcel('E', 'IDENTIFICA_CUENTA', 'IDENTIFICA CUENTA como interna', $estilos['centrado']),
+            \PHPSpreadsheet::ColumnaExcel('F', 'CONSERVA', 'CONSERVA CUENTA ORIGINAL'),
+            \PHPSpreadsheet::ColumnaExcel('G', 'OFICINA_CLIENTE', 'OFICINA CLIENTE', $estilos['centrado']),
+            \PHPSpreadsheet::ColumnaExcel('H', 'FECHA_INICIO_OPERACION', 'FECHA INICIO OPERACIÓN', $estilos['centrado'])
         ];
 
         $filas = OperacionesDao::CuentasRelacionadas($fecha_inicio, $fecha_fin);
-        
-        self::GeneraExcel('Cuentas Relacionadas Cultiva', 'Reporte', 'Cuentas Relacionadas PLD Cultiva', $columnas, $filas);
+
+        \PHPSpreadsheet::GeneraExcel('Cuentas Relacionadas Cultiva', 'Reporte', 'Cuentas Relacionadas PLD Cultiva', $columnas, $filas);
     }
 
     public function generarExcelClientesPT()
@@ -1307,46 +1411,46 @@ class Operaciones extends Controller
         $fecha_inicio = $_GET['Inicial'];
         $fecha_fin = $_GET['Final'];
 
-        $estilos = self::GetEstilosExcel();
+        $estilos = \PHPSpreadsheet::GetEstilosExcel();
 
         $columnas = [
-            self::ColumnaExcel('A', 'CDGCL', 'ID CLIENTE', $estilos['centrado']),
-            self::ColumnaExcel('B', 'GRUPO', 'Cuenta', $estilos['centrado']),
-            self::ColumnaExcel('C', 'INSTRUMENTO', 'INSTRUMENTO', $estilos['centrado']),
-            self::ColumnaExcel('D', 'TIPO_MONEDA', 'MXD', $estilos['centrado']),
-            self::ColumnaExcel('E', 'T_CAMBIO', 'T/CAMBIO', $estilos['moneda']),
-            self::ColumnaExcel('F', 'MONT_PRESTAMO', 'MONTO Prest/INV.', $estilos['moneda']),
-            self::ColumnaExcel('G', 'PLAZO', 'PLAZO', $estilos['centrado']),
-            self::ColumnaExcel('H', 'FRECUENCIA', 'FRECUENCIA', $estilos['centrado']),
-            self::ColumnaExcel('I', 'TOTAL_PAGOS', 'TOTAL PAGOPS', $estilos['centrado']),
-            self::ColumnaExcel('J', 'MONTO_FIN_PAGO', 'Monto C/Pago', $estilos['moneda']),
-            self::ColumnaExcel('K', 'ADELANTAR_PAGO', 'AUT. ADELANTAR PAGO', $estilos['centrado']),
-            self::ColumnaExcel('L', 'NUMERO_APORTACIONES', 'NO.APORTACIONES', $estilos['centrado']),
-            self::ColumnaExcel('M', 'MONTO_APORTACIONES', 'Monto APORTACIONES', $estilos['moneda']),
-            self::ColumnaExcel('N', 'ID_SUCURSAL_SISTEMA', 'SUCURSAL', $estilos['centrado']),
-            self::ColumnaExcel('O', 'ORIGEN_RECURSO', 'ORIGEN RECURSOS'),
-            self::ColumnaExcel('P', 'DESTINO_RECURSOS', 'DESTINO RECURSOS'),
-            self::ColumnaExcel('Q', 'FECHA_INICIO_CREDITO', 'FECHA INICIO CREDITO', $estilos['centrado']),
-            self::ColumnaExcel('R', 'FECHA_FIN', 'FECHA FIN CREDITO', $estilos['centrado']),
-            self::ColumnaExcel('S', 'DESTINO', 'Destino/nacionalidad', $estilos['centrado']),
-            self::ColumnaExcel('T', 'ORIGEN', 'Origen/nacionalidad2', $estilos['centrado']),
-            self::ColumnaExcel('U', 'TIPO_OPERACION', 'TIPO OPERACIÓN', $estilos['centrado']),
-            self::ColumnaExcel('V', 'INST_MONETARIO', 'INSTR MONETARIOS', $estilos['centrado']),
-            self::ColumnaExcel('W', 'TIPO_CREDITO', 'TIPO CRÉDITO', $estilos['centrado']),
-            self::ColumnaExcel('X', 'PRODUCTO', 'CLAVE PRODUCTO', $estilos['centrado']),
-            self::ColumnaExcel('Y', 'PAIS_ORIGEN', 'PAIS ORIGEN', $estilos['centrado']),
-            self::ColumnaExcel('Z', 'PAIS_DESTINO', 'PAIS DESTINO', $estilos['centrado']),
-            self::ColumnaExcel('AA', 'ALTA_CONTRATO', 'ALTA CONTRATO', $estilos['centrado']),
-            self::ColumnaExcel('AB', 'TIPO_CONTRATO', 'TIPO DE CONTRATO', $estilos['centrado']),
-            self::ColumnaExcel('AC', 'TIP_DOC', 'TIPO DE DOCUMENTO/FOLIO'),
-            self::ColumnaExcel('AD', 'LATLON', 'LATITUD/LONGITUD'),
-            self::ColumnaExcel('AE', 'LOCALIZACION', 'LOCALIZACION'),
-            self::ColumnaExcel('AF', '', 'PROPIETARIO REAL'),
-            self::ColumnaExcel('AG', '', 'PROVEEDOR DE RECURSOS')
+            \PHPSpreadsheet::ColumnaExcel('A', 'CDGCL', 'ID CLIENTE', $estilos['centrado']),
+            \PHPSpreadsheet::ColumnaExcel('B', 'GRUPO', 'Cuenta', $estilos['centrado']),
+            \PHPSpreadsheet::ColumnaExcel('C', 'INSTRUMENTO', 'INSTRUMENTO', $estilos['centrado']),
+            \PHPSpreadsheet::ColumnaExcel('D', 'TIPO_MONEDA', 'MXN', $estilos['centrado']),
+            \PHPSpreadsheet::ColumnaExcel('E', 'T_CAMBIO', 'T/CAMBIO', $estilos['moneda']),
+            \PHPSpreadsheet::ColumnaExcel('F', 'MONT_PRESTAMO', 'MONTO Prest/INV.', $estilos['moneda']),
+            \PHPSpreadsheet::ColumnaExcel('G', 'PLAZO', 'PLAZO', $estilos['centrado']),
+            \PHPSpreadsheet::ColumnaExcel('H', 'FRECUENCIA', 'FRECUENCIA', $estilos['centrado']),
+            \PHPSpreadsheet::ColumnaExcel('I', 'TOTAL_PAGOS', 'TOTAL PAGOS', $estilos['centrado']),
+            \PHPSpreadsheet::ColumnaExcel('J', 'MONTO_FIN_PAGO', 'Monto C/Pago', $estilos['moneda']),
+            \PHPSpreadsheet::ColumnaExcel('K', 'ADELANTAR_PAGO', 'AUT. ADELANTAR PAGO', $estilos['centrado']),
+            \PHPSpreadsheet::ColumnaExcel('L', 'NUMERO_APORTACIONES', 'NO.APORTACIONES', $estilos['centrado']),
+            \PHPSpreadsheet::ColumnaExcel('M', 'MONTO_APORTACIONES', 'Monto APORTACIONES', $estilos['moneda']),
+            \PHPSpreadsheet::ColumnaExcel('N', 'ID_SUCURSAL_SISTEMA', 'SUCURSAL', $estilos['centrado']),
+            \PHPSpreadsheet::ColumnaExcel('O', 'ORIGEN_RECURSO', 'ORIGEN RECURSOS'),
+            \PHPSpreadsheet::ColumnaExcel('P', 'DESTINO_RECURSOS', 'DESTINO RECURSOS'),
+            \PHPSpreadsheet::ColumnaExcel('Q', 'FECHA_INICIO_CREDITO', 'FECHA INICIO CREDITO', $estilos['centrado']),
+            \PHPSpreadsheet::ColumnaExcel('R', 'FECHA_FIN', 'FECHA FIN CREDITO', $estilos['centrado']),
+            \PHPSpreadsheet::ColumnaExcel('S', 'DESTINO', 'Destino/nacionalidad', $estilos['centrado']),
+            \PHPSpreadsheet::ColumnaExcel('T', 'ORIGEN', 'Origen/nacionalidad2', $estilos['centrado']),
+            \PHPSpreadsheet::ColumnaExcel('U', 'TIPO_OPERACION', 'TIPO OPERACIÓN', $estilos['centrado']),
+            \PHPSpreadsheet::ColumnaExcel('V', 'INST_MONETARIO', 'INSTR MONETARIOS', $estilos['centrado']),
+            \PHPSpreadsheet::ColumnaExcel('W', 'TIPO_CREDITO', 'TIPO CRÉDITO', $estilos['centrado']),
+            \PHPSpreadsheet::ColumnaExcel('X', 'PRODUCTO', 'CLAVE PRODUCTO', $estilos['centrado']),
+            \PHPSpreadsheet::ColumnaExcel('Y', 'PAIS_ORIGEN', 'PAIS ORIGEN', $estilos['centrado']),
+            \PHPSpreadsheet::ColumnaExcel('Z', 'PAIS_DESTINO', 'PAIS DESTINO', $estilos['centrado']),
+            \PHPSpreadsheet::ColumnaExcel('AA', 'ALTA_CONTRATO', 'ALTA CONTRATO', $estilos['centrado']),
+            \PHPSpreadsheet::ColumnaExcel('AB', 'TIPO_CONTRATO', 'TIPO DE CONTRATO', $estilos['centrado']),
+            \PHPSpreadsheet::ColumnaExcel('AC', 'TIP_DOC', 'TIPO DE DOCUMENTO/FOLIO'),
+            \PHPSpreadsheet::ColumnaExcel('AD', 'LATLON', 'LATITUD/LONGITUD'),
+            \PHPSpreadsheet::ColumnaExcel('AE', 'LOCALIZACION', 'LOCALIZACION'),
+            \PHPSpreadsheet::ColumnaExcel('AF', '', 'PROPIETARIO REAL'),
+            \PHPSpreadsheet::ColumnaExcel('AG', '', 'PROVEEDOR DE RECURSOS')
         ];
 
         $filas = OperacionesDao::ConsultarPerfilTransaccional($fecha_inicio, $fecha_fin);
 
-        self::GeneraExcel('Perfil Transaccional Cultiva', 'Reporte', 'Perfil Transaccional Cultiva', $columnas, $filas);
+        \PHPSpreadsheet::GeneraExcel('Perfil Transaccional Cultiva', 'Reporte', 'Perfil Transaccional Cultiva', $columnas, $filas);
     }
 }
