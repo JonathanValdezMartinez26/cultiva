@@ -1417,7 +1417,7 @@ class Operaciones extends Controller
             \PHPSpreadsheet::ColumnaExcel('A', 'CDGCL', 'ID CLIENTE', $estilos['centrado']),
             \PHPSpreadsheet::ColumnaExcel('B', 'GRUPO', 'Cuenta', $estilos['centrado']),
             \PHPSpreadsheet::ColumnaExcel('C', 'INSTRUMENTO', 'INSTRUMENTO', $estilos['centrado']),
-            \PHPSpreadsheet::ColumnaExcel('D', 'TIPO_MONEDA', 'MXN', $estilos['centrado']),
+            \PHPSpreadsheet::ColumnaExcel('D', 'TIPO_MONEDA', 'TIPO MONEDA', $estilos['centrado']),
             \PHPSpreadsheet::ColumnaExcel('E', 'T_CAMBIO', 'T/CAMBIO', $estilos['moneda']),
             \PHPSpreadsheet::ColumnaExcel('F', 'MONT_PRESTAMO', 'MONTO Prest/INV.', $estilos['moneda']),
             \PHPSpreadsheet::ColumnaExcel('G', 'PLAZO', 'PLAZO', $estilos['centrado']),
