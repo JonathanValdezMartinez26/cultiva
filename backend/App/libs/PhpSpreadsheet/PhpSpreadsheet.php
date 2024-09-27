@@ -160,7 +160,7 @@ class PHPSpreadsheet
         $hoja->setAutoFilter('A2:' . $columnas[count($columnas) - 1]['letra'] . '2');
 
         // Enviar descarga
-        self::EnviarDescarga($libro);
+        self::EnviarDescarga($libro, $nombre_archivo);
     }
 
     /**
@@ -212,7 +212,7 @@ class PHPSpreadsheet
      *
      * @return void
      */
-    public static function EnviarDescarga($libro)
+    public static function EnviarDescarga($libro, $nombre_archivo)
     {
         // Configuración de encabezados HTTP
         header('Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
