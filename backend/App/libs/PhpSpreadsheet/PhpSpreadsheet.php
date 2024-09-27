@@ -8,7 +8,7 @@ use PhpOffice\PhpSpreadsheet\Style;
 
 class PHPSpreadsheet
 {
-    private $formatoMoneda = '"$"#,##0.00';
+    private const formatoMoneda = '"$"#,##0.00';
     
     /**
      * ColumnaExcel
@@ -64,7 +64,7 @@ class PHPSpreadsheet
             ],
             'moneda' => [
                 'alignment' => ['horizontal' => Style\Alignment::HORIZONTAL_RIGHT],
-                'numberFormat' => ['formatCode' => self::$formatoMoneda]
+                'numberFormat' => ['formatCode' => self::formatoMoneda]
             ],
             'fecha' => [
                 'alignment' => ['horizontal' => Style\Alignment::HORIZONTAL_CENTER],
