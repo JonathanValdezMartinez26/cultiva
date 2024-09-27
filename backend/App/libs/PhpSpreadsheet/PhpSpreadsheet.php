@@ -175,7 +175,7 @@ class PHPSpreadsheet
      *
      * @return void
      */
-    public function AddTotales($hoja, $noFila, $columnas, $totales)
+    public static function AddTotales($hoja, $noFila, $columnas, $totales)
     {
         $hoja->setCellValue('A' . $noFila, 'Totales');
         $hoja->getStyle('A' . $noFila)->applyFromArray([
@@ -212,7 +212,7 @@ class PHPSpreadsheet
      *
      * @return void
      */
-    public function EnviarDescarga($libro)
+    public static function EnviarDescarga($libro)
     {
         // Configuración de encabezados HTTP
         header('Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
