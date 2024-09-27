@@ -802,592 +802,159 @@ class Operaciones extends Controller
     }
 
     public function generarExcel()
-    {
-        $fecha_inicio = $_GET['Inicial'];
-        $fecha_fin = $_GET['Final'];
+    {   
+        $estilos = \PHPSpreadsheet::GetEstilosExcel();
 
-        $objPHPExcel = new \PHPExcel();
-        $objPHPExcel->getProperties()->setCreator("jma");
-        $objPHPExcel->getProperties()->setLastModifiedBy("jma");
-        $objPHPExcel->getProperties()->setTitle("Reporte");
-        $objPHPExcel->getProperties()->setSubject("Reorte");
-        $objPHPExcel->getProperties()->setDescription("Descripcion");
-        $objPHPExcel->setActiveSheetIndex(0);
+        $columnas = [
+            \PHPSpreadsheet::ColumnaExcel('A', 'LOCALIDAD', 'LOCALIDAD'),
+            \PHPSpreadsheet::ColumnaExcel('B', 'SUCURSAL', 'SUCURSAL', $estilos['centrado']),
+            \PHPSpreadsheet::ColumnaExcel('C', 'TIPO_OPERACION', 'TIPO DE OPERACIÓN', $estilos['centrado']),
+            \PHPSpreadsheet::ColumnaExcel('D', 'ID_CLIENTE', 'ID CLIENTE', $estilos['centrado']),
+            \PHPSpreadsheet::ColumnaExcel('E', 'NUM_CUENTA', 'NUMERO DE CTA, CONTRATO, OPERACIÓN, PÓLIZA O NUMERO DE SEGURIDAD SOCIAL', $estilos['centrado']),
+            \PHPSpreadsheet::ColumnaExcel('F', 'INSTRUMENTO_MONETARIO', 'INSTRUMENTO MONETARIO', $estilos['centrado']),
+            \PHPSpreadsheet::ColumnaExcel('G', 'MONEDA', 'MONEDA', $estilos['centrado']),
+            \PHPSpreadsheet::ColumnaExcel('H', 'MONTO', 'MONTO', $estilos['moneda']),
+            \PHPSpreadsheet::ColumnaExcel('I', 'FECHA_OPERACION', 'FECHA DE LA OPERACIÓN', $estilos['centrado']),
+            \PHPSpreadsheet::ColumnaExcel('J', 'TIPO_RECEPTOR', 'TIPO RECEPTOR', $estilos['centrado']),
+            \PHPSpreadsheet::ColumnaExcel('K', 'CLAVE_RECEPTOR', 'CLAVE DE RECEPTOR'),
+            \PHPSpreadsheet::ColumnaExcel('L', 'NUM_CAJA', 'CAJA', $estilos['centrado']),
+            \PHPSpreadsheet::ColumnaExcel('M', 'ID_CAJERO', 'CAJERO', $estilos['centrado']),
+            \PHPSpreadsheet::ColumnaExcel('N', 'FECHA_HORA', 'FECHA', $estilos['centrado']),
+            \PHPSpreadsheet::ColumnaExcel('O', 'NOTARJETA_CTA', 'NO. TARJETA O CTA DEPOSITO'),
+            \PHPSpreadsheet::ColumnaExcel('P', 'TIPOTARJETA', 'TIPO DE TARJETA', $estilos['centrado']),
+            \PHPSpreadsheet::ColumnaExcel('Q', 'COD_AUTORIZACION', 'COD AUTORIZACION', $estilos['centrado']),
+            \PHPSpreadsheet::ColumnaExcel('R', 'ATRASO', 'ATRASO', $estilos['centrado']),
+            \PHPSpreadsheet::ColumnaExcel('S', 'OFICINA_CLIENTE', 'OFICINA CLIENTE', $estilos['centrado'])
+        ];
 
+        $filas = OperacionesDao::ConsultarDesembolsos($_GET['Inicial'], $_GET['Final']);
 
-
-        $estilo_titulo = array(
-            'font' => array('bold' => true, 'name' => 'Calibri', 'size' => 11, 'color' => array('rgb' => '060606')),
-            'alignment' => array('horizontal' => \PHPExcel_Style_Alignment::HORIZONTAL_CENTER),
-            'type' => \PHPExcel_Style_Fill::FILL_SOLID
-        );
-
-        $estilo_encabezado = array(
-            'font' => array('bold' => true, 'name' => 'Calibri', 'size' => 11, 'color' => array('rgb' => '060606')),
-            'alignment' => array('horizontal' => \PHPExcel_Style_Alignment::HORIZONTAL_CENTER),
-            'type' => \PHPExcel_Style_Fill::FILL_SOLID
-        );
-
-        $estilo_celda = array(
-            'font' => array('bold' => false, 'name' => 'Calibri', 'size' => 11, 'color' => array('rgb' => '060606')),
-            'alignment' => array('horizontal' => \PHPExcel_Style_Alignment::HORIZONTAL_CENTER),
-            'type' => \PHPExcel_Style_Fill::FILL_SOLID
-
-        );
-
-
-        $fila = 1;
-        $adaptarTexto = true;
-
-        $controlador = "Operaciones";
-        $columna = array('A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'V', 'W');
-        $nombreColumna = array('LOCALIDAD', 'SUCURSAL', 'TIPO DE OPERACION', 'ID CLIENTE', 'NUMERO DE CTA-CONTRATO-OPERACIO- POLIZA O NUMERO DE SEGURIDAD SOCIAL', 'INSTRUMENTO MONETARIO', 'MONEDA', 'MONTO', 'FECHA DE LA OPERACION', 'TIPO RECEPTOR', 'CLAVE DCE RECEPTOR', 'NUM CAJA', 'ID-CAJERO', 'FECHA-HORA', 'NOTARJETA-CTA DEP', 'TIPOTARJETA', 'COD-AUTORIZACION', 'ATRASO', 'OFICINA CLIENTE');
-        $nombreCampo = array(
-            'LOCALIDAD',
-            'SUCURSAL',
-            'TIPO_OPERACION',
-            'ID_CLIENTE',
-            'NUM_CUENTA',
-            'INSTRUMENTO_MONETARIO',
-            'MONEDA',
-            'MONTO',
-            'FECHA_OPERACION',
-            'TIPO_RECEPTOR',
-            'CLAVE_RECEPTOR',
-            'NUM_CAJA',
-            'ID_CAJERO',
-            'FECHA_HORA',
-            'NOTARJETA_CTA',
-            'TIPOTARJETA',
-            'COD_AUTORIZACION',
-            'ATRASO',
-            'OFICINA_CLIENTE'
-        );
-
-
-        $objPHPExcel->getActiveSheet()->SetCellValue('A' . $fila, 'Consulta de Desembolsos Cultiva');
-        $objPHPExcel->getActiveSheet()->mergeCells('A' . $fila . ':' . $columna[count($nombreColumna) - 1] . $fila);
-        $objPHPExcel->getActiveSheet()->getStyle('A' . $fila)->applyFromArray($estilo_titulo);
-        $objPHPExcel->getActiveSheet()->getStyle('A' . $fila)->getAlignment()->setWrapText($adaptarTexto);
-
-        $fila += 1;
-
-        /*COLUMNAS DE LOS DATOS DEL ARCHIVO EXCEL*/
-        foreach ($nombreColumna as $key => $value) {
-            $objPHPExcel->getActiveSheet()->SetCellValue($columna[$key] . $fila, $value);
-            $objPHPExcel->getActiveSheet()->getStyle($columna[$key] . $fila)->applyFromArray($estilo_encabezado);
-            $objPHPExcel->getActiveSheet()->getStyle($columna[$key] . $fila)->getAlignment()->setWrapText($adaptarTexto);
-            $objPHPExcel->getActiveSheet()->getColumnDimensionByColumn($key)->setAutoSize(true);
-        }
-        $fila += 1; //fila donde comenzaran a escribirse los datos
-
-        /* FILAS DEL ARCHIVO EXCEL */
-
-        $Layoutt = OperacionesDao::ConsultarDesembolsos($fecha_inicio, $fecha_fin);
-        foreach ($Layoutt as $key => $value) {
-            foreach ($nombreCampo as $key => $campo) {
-                $objPHPExcel->getActiveSheet()->SetCellValue($columna[$key] . $fila, html_entity_decode($value[$campo], ENT_QUOTES, "UTF-8"));
-                $objPHPExcel->getActiveSheet()->getStyle($columna[$key] . $fila)->applyFromArray($estilo_celda);
-                $objPHPExcel->getActiveSheet()->getStyle($columna[$key] . $fila)->getAlignment()->setWrapText($adaptarTexto);
-            }
-            $fila += 1;
-        }
-
-
-        $objPHPExcel->getActiveSheet()->getStyle('A1:' . $columna[count($columna) - 1] . $fila)->getAlignment()->setHorizontal(\PHPExcel_Style_Alignment::HORIZONTAL_CENTER);
-        for ($i = 0; $i < $fila; $i++) {
-            $objPHPExcel->getActiveSheet()->getRowDimension($i)->setRowHeight(20);
-        }
-
-
-        $objPHPExcel->getActiveSheet()->setTitle('Reporte');
-
-        header('Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
-        header('Content-Disposition: attachment;filename="Consulta de Desembolsos Cultiva ' . $controlador . '.xlsx"');
-        header('Cache-Control: max-age=0');
-        header('Cache-Control: max-age=1');
-        header('Expires: Mon, 26 Jul 1997 05:00:00 GMT');
-        header('Last-Modified: ' . gmdate('D, d M Y H:i:s') . ' GMT');
-        header('Cache-Control: cache, must-revalidate');
-        header('Pragma: public');
-
-        \PHPExcel_Settings::setZipClass(\PHPExcel_Settings::PCLZIP);
-        $objWriter = \PHPExcel_IOFactory::createWriter($objPHPExcel, 'Excel2007');
-        $objWriter->save('php://output');
+        \PHPSpreadsheet::GeneraExcel('Consulta de Desembolsos Cultiva', 'Reporte', 'Consulta de Desembolsos', $columnas, $filas);
     }
 
     public function generarExcelPagos()
     {
+        $estilos = \PHPSpreadsheet::GetEstilosExcel();
 
-        $fecha_inicio = $_GET['Inicial'];
-        $fecha_fin = $_GET['Final'];
+        $columnas = [
+            \PHPSpreadsheet::ColumnaExcel('A', 'LOCALIDAD', 'LOCALIDAD'),
+            \PHPSpreadsheet::ColumnaExcel('B', 'SUCURSAL', 'SUCURSAL', $estilos['centrado']),
+            \PHPSpreadsheet::ColumnaExcel('C', 'TIPO_OPERACION', 'TIPO DE OPERACIÓN', $estilos['centrado']),
+            \PHPSpreadsheet::ColumnaExcel('D', 'ID_CLIENTE', 'ID CLIENTE', $estilos['centrado']),
+            \PHPSpreadsheet::ColumnaExcel('E', 'NUM_CUENTA', 'NUMERO DE CTA, CONTRATO, OPERACIÓN, PÓLIZA O NUMERO DE SEGURIDAD SOCIAL', $estilos['centrado']),
+            \PHPSpreadsheet::ColumnaExcel('F', 'INSTRUMENTO_MONETARIO', 'INSTRUMENTO MONETARIO', $estilos['centrado']),
+            \PHPSpreadsheet::ColumnaExcel('G', 'MONEDA', 'MONEDA', $estilos['centrado']),
+            \PHPSpreadsheet::ColumnaExcel('H', 'MONTO', 'MONTO', $estilos['moneda']),
+            \PHPSpreadsheet::ColumnaExcel('I', 'FECHA_OPERACION', 'FECHA DE LA OPERACIÓN', $estilos['centrado']),
+            \PHPSpreadsheet::ColumnaExcel('J', 'TIPO_RECEPTOR', 'TIPO RECEPTOR', $estilos['centrado']),
+            \PHPSpreadsheet::ColumnaExcel('K', 'CLAVE_RECEPTOR', 'CLAVE DE RECEPTOR'),
+            \PHPSpreadsheet::ColumnaExcel('L', 'NUM_CAJA', 'CAJA', $estilos['centrado']),
+            \PHPSpreadsheet::ColumnaExcel('M', 'ID_CAJERO', 'CAJERO', $estilos['centrado']),
+            \PHPSpreadsheet::ColumnaExcel('N', 'FECHA_HORA', 'FECHA', $estilos['centrado']),
+            \PHPSpreadsheet::ColumnaExcel('O', 'NOTARJETA_CTA', 'NO. TARJETA O CTA DEPOSITO'),
+            \PHPSpreadsheet::ColumnaExcel('P', 'TIPOTARJETA', 'TIPO DE TARJETA', $estilos['centrado']),
+            \PHPSpreadsheet::ColumnaExcel('Q', 'COD_AUTORIZACION', 'COD AUTORIZACION', $estilos['centrado']),
+            \PHPSpreadsheet::ColumnaExcel('R', 'ATRASO', 'ATRASO', $estilos['centrado']),
+            \PHPSpreadsheet::ColumnaExcel('S', 'OFICINA_CLIENTE', 'OFICINA CLIENTE', $estilos['centrado'])
+        ];
 
-        $objPHPExcel = new \PHPExcel();
-        $objPHPExcel->getProperties()->setCreator("jma");
-        $objPHPExcel->getProperties()->setLastModifiedBy("jma");
-        $objPHPExcel->getProperties()->setTitle("Reporte");
-        $objPHPExcel->getProperties()->setSubject("Reorte");
-        $objPHPExcel->getProperties()->setDescription("Descripcion");
-        $objPHPExcel->setActiveSheetIndex(0);
+        $filas = OperacionesDao::ConsultarPagos($_GET['Inicial'], $_GET['Final']);
 
-
-
-        $estilo_titulo = array(
-            'font' => array('bold' => true, 'name' => 'Calibri', 'size' => 11, 'color' => array('rgb' => '060606')),
-            'alignment' => array('horizontal' => \PHPExcel_Style_Alignment::HORIZONTAL_CENTER),
-            'type' => \PHPExcel_Style_Fill::FILL_SOLID
-        );
-
-        $estilo_encabezado = array(
-            'font' => array('bold' => true, 'name' => 'Calibri', 'size' => 11, 'color' => array('rgb' => '060606')),
-            'alignment' => array('horizontal' => \PHPExcel_Style_Alignment::HORIZONTAL_CENTER),
-            'type' => \PHPExcel_Style_Fill::FILL_SOLID
-        );
-
-        $estilo_celda = array(
-            'font' => array('bold' => false, 'name' => 'Calibri', 'size' => 11, 'color' => array('rgb' => '060606')),
-            'alignment' => array('horizontal' => \PHPExcel_Style_Alignment::HORIZONTAL_CENTER),
-            'type' => \PHPExcel_Style_Fill::FILL_SOLID
-
-        );
-
-
-        $fila = 1;
-        $adaptarTexto = true;
-
-        $controlador = "Operaciones";
-        $columna = array('A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'V', 'W');
-        $nombreColumna = array('LOCALIDAD', 'SUCURSAL', 'TIPO DE OPERACION', 'ID CLIENTE', 'NUMERO DE CTA-CONTRATO-OPERACIO- POLIZA O NUMERO DE SEGURIDAD SOCIAL', 'INSTRUMENTO MONETARIO', 'MONEDA', 'MONTO', 'FECHA DE LA OPERACION', 'TIPO RECEPTOR', 'CLAVE DCE RECEPTOR', 'NUM CAJA', 'ID-CAJERO', 'FECHA-HORA', 'NOTARJETA-CTA DEP', 'TIPOTARJETA', 'COD-AUTORIZACION', 'ATRASO', 'OFICINA CLIENTE');
-        $nombreCampo = array(
-            'LOCALIDAD',
-            'SUCURSAL',
-            'TIPO_OPERACION',
-            'ID_CLIENTE',
-            'NUM_CUENTA',
-            'INSTRUMENTO_MONETARIO',
-            'MONEDA',
-            'MONTO',
-            'FECHA_OPERACION',
-            'TIPO_RECEPTOR',
-            'CLAVE_RECEPTOR',
-            'NUM_CAJA',
-            'ID_CAJERO',
-            'FECHA_HORA',
-            'NOTARJETA_CTA',
-            'TIPOTARJETA',
-            'COD_AUTORIZACION',
-            'ATRASO',
-            'OFICINA_CLIENTE'
-        );
-
-
-        $objPHPExcel->getActiveSheet()->SetCellValue('A' . $fila, 'Consulta de Pagos Cultiva');
-        $objPHPExcel->getActiveSheet()->mergeCells('A' . $fila . ':' . $columna[count($nombreColumna) - 1] . $fila);
-        $objPHPExcel->getActiveSheet()->getStyle('A' . $fila)->applyFromArray($estilo_titulo);
-        $objPHPExcel->getActiveSheet()->getStyle('A' . $fila)->getAlignment()->setWrapText($adaptarTexto);
-
-        $fila += 1;
-
-        /*COLUMNAS DE LOS DATOS DEL ARCHIVO EXCEL*/
-        foreach ($nombreColumna as $key => $value) {
-            $objPHPExcel->getActiveSheet()->SetCellValue($columna[$key] . $fila, $value);
-            $objPHPExcel->getActiveSheet()->getStyle($columna[$key] . $fila)->applyFromArray($estilo_encabezado);
-            $objPHPExcel->getActiveSheet()->getStyle($columna[$key] . $fila)->getAlignment()->setWrapText($adaptarTexto);
-            $objPHPExcel->getActiveSheet()->getColumnDimensionByColumn($key)->setAutoSize(true);
-        }
-        $fila += 1; //fila donde comenzaran a escribirse los datos
-
-        /* FILAS DEL ARCHIVO EXCEL */
-
-        $Layoutt = OperacionesDao::ConsultarPagos($fecha_inicio, $fecha_fin);
-        foreach ($Layoutt as $key => $value) {
-            foreach ($nombreCampo as $key => $campo) {
-                $objPHPExcel->getActiveSheet()->SetCellValue($columna[$key] . $fila, html_entity_decode($value[$campo], ENT_QUOTES, "UTF-8"));
-                $objPHPExcel->getActiveSheet()->getStyle($columna[$key] . $fila)->applyFromArray($estilo_celda);
-                $objPHPExcel->getActiveSheet()->getStyle($columna[$key] . $fila)->getAlignment()->setWrapText($adaptarTexto);
-            }
-            $fila += 1;
-        }
-
-
-        $objPHPExcel->getActiveSheet()->getStyle('A1:' . $columna[count($columna) - 1] . $fila)->getAlignment()->setHorizontal(\PHPExcel_Style_Alignment::HORIZONTAL_CENTER);
-        for ($i = 0; $i < $fila; $i++) {
-            $objPHPExcel->getActiveSheet()->getRowDimension($i)->setRowHeight(20);
-        }
-
-
-        $objPHPExcel->getActiveSheet()->setTitle('Reporte');
-
-        header('Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
-        header('Content-Disposition: attachment;filename="Consulta de Pagos Cultiva ' . $controlador . '.xlsx"');
-        header('Cache-Control: max-age=0');
-        header('Cache-Control: max-age=1');
-        header('Expires: Mon, 26 Jul 1997 05:00:00 GMT');
-        header('Last-Modified: ' . gmdate('D, d M Y H:i:s') . ' GMT');
-        header('Cache-Control: cache, must-revalidate');
-        header('Pragma: public');
-
-        \PHPExcel_Settings::setZipClass(\PHPExcel_Settings::PCLZIP);
-        $objWriter = \PHPExcel_IOFactory::createWriter($objPHPExcel, 'Excel2007');
-        $objWriter->save('php://output');
+        \PHPSpreadsheet::GeneraExcel('Consulta de Pagos Cultiva', 'Reporte', 'Consulta de Pagos', $columnas, $filas);
     }
 
     public function generarExcelPagosF()
     {
+        $estilos = \PHPSpreadsheet::GetEstilosExcel();
 
-        $fecha_inicio = $_GET['Inicial'];
-        $fecha_fin = $_GET['Final'];
+        $columnas = [
+            \PHPSpreadsheet::ColumnaExcel('A', 'LOCALIDAD', 'LOCALIDAD'),
+            \PHPSpreadsheet::ColumnaExcel('B', 'SUCURSAL', 'SUCURSAL', $estilos['centrado']),
+            \PHPSpreadsheet::ColumnaExcel('C', 'TIPO_OPERACION', 'TIPO DE OPERACIÓN', $estilos['centrado']),
+            \PHPSpreadsheet::ColumnaExcel('D', 'ID_CLIENTE', 'ID CLIENTE', $estilos['centrado']),
+            \PHPSpreadsheet::ColumnaExcel('E', 'NUM_CUENTA', 'NUMERO DE CTA, CONTRATO, OPERACIÓN, PÓLIZA O NUMERO DE SEGURIDAD SOCIAL', $estilos['centrado']),
+            \PHPSpreadsheet::ColumnaExcel('F', 'INSTRUMENTO_MONETARIO', 'INSTRUMENTO MONETARIO', $estilos['centrado']),
+            \PHPSpreadsheet::ColumnaExcel('G', 'MONEDA', 'MONEDA', $estilos['centrado']),
+            \PHPSpreadsheet::ColumnaExcel('H', 'MONTO', 'MONTO', $estilos['moneda']),
+            \PHPSpreadsheet::ColumnaExcel('I', 'FECHA_OPERACION', 'FECHA DE LA OPERACIÓN', $estilos['centrado']),
+            \PHPSpreadsheet::ColumnaExcel('J', 'TIPO_RECEPTOR', 'TIPO RECEPTOR', $estilos['centrado']),
+            \PHPSpreadsheet::ColumnaExcel('K', 'CLAVE_RECEPTOR', 'CLAVE DE RECEPTOR'),
+            \PHPSpreadsheet::ColumnaExcel('L', 'NUM_CAJA', 'CAJA', $estilos['centrado']),
+            \PHPSpreadsheet::ColumnaExcel('M', 'ID_CAJERO', 'CAJERO', $estilos['centrado']),
+            \PHPSpreadsheet::ColumnaExcel('N', 'FECHA_HORA', 'FECHA', $estilos['centrado']),
+            \PHPSpreadsheet::ColumnaExcel('O', 'NOTARJETA_CTA', 'NO. TARJETA O CTA DEPOSITO'),
+            \PHPSpreadsheet::ColumnaExcel('P', 'TIPOTARJETA', 'TIPO DE TARJETA', $estilos['centrado']),
+            \PHPSpreadsheet::ColumnaExcel('Q', 'COD_AUTORIZACION', 'COD AUTORIZACION', $estilos['centrado']),
+            \PHPSpreadsheet::ColumnaExcel('R', 'ATRASO', 'ATRASO', $estilos['centrado']),
+            \PHPSpreadsheet::ColumnaExcel('S', 'OFICINA_CLIENTE', 'OFICINA CLIENTE', $estilos['centrado']),
+            \PHPSpreadsheet::ColumnaExcel('T', 'FEC_NAC', 'FECHA NACIMIENTO', $estilos['fecha']),
+            \PHPSpreadsheet::ColumnaExcel('U', 'EDAD', 'EDAD', $estilos['centrado']),
+            \PHPSpreadsheet::ColumnaExcel('V', 'CICLO', 'CICLO', $estilos['centrado'])
+        ];
 
-        $objPHPExcel = new \PHPExcel();
-        $objPHPExcel->getProperties()->setCreator("jma");
-        $objPHPExcel->getProperties()->setLastModifiedBy("jma");
-        $objPHPExcel->getProperties()->setTitle("Reporte");
-        $objPHPExcel->getProperties()->setSubject("Reorte");
-        $objPHPExcel->getProperties()->setDescription("Descripcion");
-        $objPHPExcel->setActiveSheetIndex(0);
+        $filas = OperacionesDao::ConsultarPagosNacimiento($_GET['Inicial'], $_GET['Final']);
 
-
-
-        $estilo_titulo = array(
-            'font' => array('bold' => true, 'name' => 'Calibri', 'size' => 11, 'color' => array('rgb' => '060606')),
-            'alignment' => array('horizontal' => \PHPExcel_Style_Alignment::HORIZONTAL_CENTER),
-            'type' => \PHPExcel_Style_Fill::FILL_SOLID
-        );
-
-        $estilo_encabezado = array(
-            'font' => array('bold' => true, 'name' => 'Calibri', 'size' => 11, 'color' => array('rgb' => '060606')),
-            'alignment' => array('horizontal' => \PHPExcel_Style_Alignment::HORIZONTAL_CENTER),
-            'type' => \PHPExcel_Style_Fill::FILL_SOLID
-        );
-
-        $estilo_celda = array(
-            'font' => array('bold' => false, 'name' => 'Calibri', 'size' => 11, 'color' => array('rgb' => '060606')),
-            'alignment' => array('horizontal' => \PHPExcel_Style_Alignment::HORIZONTAL_CENTER),
-            'type' => \PHPExcel_Style_Fill::FILL_SOLID
-
-        );
-
-
-        $fila = 1;
-        $adaptarTexto = true;
-
-        $controlador = "Operaciones";
-        $columna = array('A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V');
-        $nombreColumna = array('LOCALIDAD', 'SUCURSAL', 'TIPO DE OPERACION', 'ID CLIENTE', 'NUMERO DE CTA-CONTRATO-OPERACIO- POLIZA O NUMERO DE SEGURIDAD SOCIAL', 'INSTRUMENTO MONETARIO', 'MONEDA', 'MONTO', 'FECHA DE LA OPERACION', 'TIPO RECEPTOR', 'CLAVE DCE RECEPTOR', 'NUM CAJA', 'ID-CAJERO', 'FECHA-HORA', 'NOTARJETA-CTA DEP', 'TIPOTARJETA', 'COD-AUTORIZACION', 'ATRASO', 'OFICINA CLIENTE', 'FEC_NAC', 'EDAD', 'CICLO');
-        $nombreCampo = array(
-            'LOCALIDAD',
-            'SUCURSAL',
-            'TIPO_OPERACION',
-            'ID_CLIENTE',
-            'NUM_CUENTA',
-            'INSTRUMENTO_MONETARIO',
-            'MONEDA',
-            'MONTO',
-            'FECHA_OPERACION',
-            'TIPO_RECEPTOR',
-            'CLAVE_RECEPTOR',
-            'NUM_CAJA',
-            'ID_CAJERO',
-            'FECHA_HORA',
-            'NOTARJETA_CTA',
-            'TIPOTARJETA',
-            'COD_AUTORIZACION',
-            'ATRASO',
-            'OFICINA_CLIENTE',
-            'FEC_NAC',
-            'EDAD',
-            'CICLO'
-        );
-
-
-        $objPHPExcel->getActiveSheet()->SetCellValue('A' . $fila, 'Consulta de Pagos FecNac Cultiva');
-        $objPHPExcel->getActiveSheet()->mergeCells('A' . $fila . ':' . $columna[count($nombreColumna) - 1] . $fila);
-        $objPHPExcel->getActiveSheet()->getStyle('A' . $fila)->applyFromArray($estilo_titulo);
-        $objPHPExcel->getActiveSheet()->getStyle('A' . $fila)->getAlignment()->setWrapText($adaptarTexto);
-
-        $fila += 1;
-
-        /*COLUMNAS DE LOS DATOS DEL ARCHIVO EXCEL*/
-        foreach ($nombreColumna as $key => $value) {
-            $objPHPExcel->getActiveSheet()->SetCellValue($columna[$key] . $fila, $value);
-            $objPHPExcel->getActiveSheet()->getStyle($columna[$key] . $fila)->applyFromArray($estilo_encabezado);
-            $objPHPExcel->getActiveSheet()->getStyle($columna[$key] . $fila)->getAlignment()->setWrapText($adaptarTexto);
-            $objPHPExcel->getActiveSheet()->getColumnDimensionByColumn($key)->setAutoSize(true);
-        }
-        $fila += 1; //fila donde comenzaran a escribirse los datos
-
-        /* FILAS DEL ARCHIVO EXCEL */
-
-        $Layoutt = OperacionesDao::ConsultarPagosNacimiento($fecha_inicio, $fecha_fin);
-        foreach ($Layoutt as $key => $value) {
-            foreach ($nombreCampo as $key => $campo) {
-                $objPHPExcel->getActiveSheet()->SetCellValue($columna[$key] . $fila, html_entity_decode($value[$campo], ENT_QUOTES, "UTF-8"));
-                $objPHPExcel->getActiveSheet()->getStyle($columna[$key] . $fila)->applyFromArray($estilo_celda);
-                $objPHPExcel->getActiveSheet()->getStyle($columna[$key] . $fila)->getAlignment()->setWrapText($adaptarTexto);
-            }
-            $fila += 1;
-        }
-
-
-        $objPHPExcel->getActiveSheet()->getStyle('A1:' . $columna[count($columna) - 1] . $fila)->getAlignment()->setHorizontal(\PHPExcel_Style_Alignment::HORIZONTAL_CENTER);
-        for ($i = 0; $i < $fila; $i++) {
-            $objPHPExcel->getActiveSheet()->getRowDimension($i)->setRowHeight(20);
-        }
-
-
-        $objPHPExcel->getActiveSheet()->setTitle('Reporte');
-
-        header('Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
-        header('Content-Disposition: attachment;filename="Consulta de Pagos FecNac Cultiva ' . $controlador . '.xlsx"');
-        header('Cache-Control: max-age=0');
-        header('Cache-Control: max-age=1');
-        header('Expires: Mon, 26 Jul 1997 05:00:00 GMT');
-        header('Last-Modified: ' . gmdate('D, d M Y H:i:s') . ' GMT');
-        header('Cache-Control: cache, must-revalidate');
-        header('Pragma: public');
-
-        \PHPExcel_Settings::setZipClass(\PHPExcel_Settings::PCLZIP);
-        $objWriter = \PHPExcel_IOFactory::createWriter($objPHPExcel, 'Excel2007');
-        $objWriter->save('php://output');
+        \PHPSpreadsheet::GeneraExcel('Consulta de Pagos X Fecha Nacimiento Cultiva', 'Reporte', 'Consulta de Pagos por Fecha de Nacimiento', $columnas, $filas);
     }
 
     public function generarExcelPagosIC()
     {
+        $estilos = \PHPSpreadsheet::GetEstilosExcel();
 
-        $fecha_inicio = $_GET['Inicial'];
-        $fecha_fin = $_GET['Final'];
+        $columnas = [
+            \PHPSpreadsheet::ColumnaExcel('A', 'CDGCL', 'ID CLIENTE', $estilos['centrado']),
+            \PHPSpreadsheet::ColumnaExcel('B', 'GRUPO', 'CUENTA', $estilos['centrado']),
+            \PHPSpreadsheet::ColumnaExcel('C', 'ORIGEN', 'Origen', $estilos['centrado']),
+            \PHPSpreadsheet::ColumnaExcel('D', 'NOMBRE', 'NOMBRE'),
+            \PHPSpreadsheet::ColumnaExcel('E', 'ADICIONAL', 'ADICIONAL'),
+            \PHPSpreadsheet::ColumnaExcel('F', 'A_PATERNO', 'APELLIDO PATERNO'),
+            \PHPSpreadsheet::ColumnaExcel('G', 'A_MATERNO', 'APELLIDO MATERNO'),
+            \PHPSpreadsheet::ColumnaExcel('H', 'TIPO_PERSONA', 'TIPO DE PERSONA', $estilos['centrado']),
+            \PHPSpreadsheet::ColumnaExcel('I', 'RFC', 'RFC'),
+            \PHPSpreadsheet::ColumnaExcel('J', 'CURP', 'CURP'),
+            \PHPSpreadsheet::ColumnaExcel('K', 'RAZON_SOCIAL', 'RAZÓN SOCIAL O DENOMINACIÓN'),
+            \PHPSpreadsheet::ColumnaExcel('L', 'FECHA_NAC', 'FECHA DE NACIMIENTO O CONSTITUCIÓN', $estilos['centrado']),
+            \PHPSpreadsheet::ColumnaExcel('M', 'NACIONALIDAD', 'NACIONALIDAD', $estilos['centrado']),
+            \PHPSpreadsheet::ColumnaExcel('N', 'DOMICILIO', 'DOMICILIO (calle, número exterior e interior (si aplica) y código postal)'),
+            \PHPSpreadsheet::ColumnaExcel('O', 'COLONIA', 'COLONIA'),
+            \PHPSpreadsheet::ColumnaExcel('P', 'CIUDAD', 'CIUDAD O POBLACIÓN'),
+            \PHPSpreadsheet::ColumnaExcel('Q', 'PAIS', 'PAIS', $estilos['centrado']),
+            \PHPSpreadsheet::ColumnaExcel('R', 'SUC_ID_ESTADO', 'ESTADO', $estilos['centrado']),
+            \PHPSpreadsheet::ColumnaExcel('S', 'TELEFONO', 'TELEFONO OFICINA/PARTICULAR', $estilos['centrado']),
+            \PHPSpreadsheet::ColumnaExcel('T', 'ID_ACTIVIDAD_ECONO', 'ACTIVIDAD ECONOMICA', $estilos['centrado']),
+            \PHPSpreadsheet::ColumnaExcel('U', 'CALIFICACION', 'CALIFICACIÓN', $estilos['centrado']),
+            \PHPSpreadsheet::ColumnaExcel('V', 'ALTA', 'FECHA ALTA', $estilos['centrado']),
+            \PHPSpreadsheet::ColumnaExcel('W', 'ID_SUCURSAL_SISTEMA', 'SUCURSAL', $estilos['centrado']),
+            \PHPSpreadsheet::ColumnaExcel('X', 'GENERO', 'GENERO', $estilos['centrado']),
+            \PHPSpreadsheet::ColumnaExcel('Y', 'CORREO_ELECTRONICO', 'CORREO ELECTRONICO'),
+            \PHPSpreadsheet::ColumnaExcel('Z', 'FIRMA_ELECT', 'FIRMA ELEC.'),
+            \PHPSpreadsheet::ColumnaExcel('AA', 'PROFESION', 'PROFESION', $estilos['centrado']),
+            \PHPSpreadsheet::ColumnaExcel('AB', 'OCUPACION', 'OCUPACION', $estilos['centrado']),
+            \PHPSpreadsheet::ColumnaExcel('AC', 'PAIS_NAC', 'PAIS NAC.', $estilos['centrado']),
+            \PHPSpreadsheet::ColumnaExcel('AD', 'EDO_NAC', 'EDO. NAC.', $estilos['centrado']),
+            \PHPSpreadsheet::ColumnaExcel('AE', 'LUGAR_NAC', 'LUGAR NAC.'),
+            \PHPSpreadsheet::ColumnaExcel('AF', 'NUMERO_DOCUMENTO', 'NUMERO DE DOCUMENTO', $estilos['centrado']),
+            \PHPSpreadsheet::ColumnaExcel('AG', 'CONOCIMIENTO', 'CONOCIMIENTO CLIENTE', $estilos['centrado']),
+            \PHPSpreadsheet::ColumnaExcel('AH', 'INMIGRACION', 'REGISTRO NACIONAL DE INMIGRACION', $estilos['centrado']),
+            \PHPSpreadsheet::ColumnaExcel('AI', 'CUENTA_ORIGINAL', 'CUENTA ORIGINAL', $estilos['centrado']),
+            \PHPSpreadsheet::ColumnaExcel('AJ', 'SITUACION_CREDITO', 'SITUACIÓN CLIENTE', $estilos['centrado']),
+            \PHPSpreadsheet::ColumnaExcel('AK', 'TIPO_DOCUMENTO', 'TIPO DOCUMENTO', $estilos['centrado']),
+            \PHPSpreadsheet::ColumnaExcel('AL', 'INDICADOR_EMPLEO', 'INDICADOR EMPLEO', $estilos['centrado']),
+            \PHPSpreadsheet::ColumnaExcel('AM', 'EMPRESAS', 'EMPRESA LABORA(Ó)'),
+            \PHPSpreadsheet::ColumnaExcel('AN', 'INDICADOR_GOBIERNO', 'INDICADOR GOBIERNO', $estilos['centrado']),
+            \PHPSpreadsheet::ColumnaExcel('AO', 'PUESTO', 'PUESTO'),
+            \PHPSpreadsheet::ColumnaExcel('AP', 'FECHA_INICIO', 'FECHA INICIO', $estilos['centrado']),
+            \PHPSpreadsheet::ColumnaExcel('AQ', 'FEH_FIN', 'FEH FIN', $estilos['centrado']),
+            \PHPSpreadsheet::ColumnaExcel('AR', 'CP', 'CP', $estilos['centrado'])
+        ];
 
-        $objPHPExcel = new \PHPExcel();
-        $objPHPExcel->getProperties()->setCreator("jma");
-        $objPHPExcel->getProperties()->setLastModifiedBy("jma");
-        $objPHPExcel->getProperties()->setTitle("Reporte");
-        $objPHPExcel->getProperties()->setSubject("Reorte");
-        $objPHPExcel->getProperties()->setDescription("Descripcion");
-        $objPHPExcel->setActiveSheetIndex(0);
+        $filas = OperacionesDao::ConsultarClientes($_GET['Inicial'], $_GET['Final']);
 
-
-
-        $estilo_titulo = array(
-            'font' => array('bold' => true, 'name' => 'Calibri', 'size' => 11, 'color' => array('rgb' => '060606')),
-            'alignment' => array('horizontal' => \PHPExcel_Style_Alignment::HORIZONTAL_CENTER),
-            'type' => \PHPExcel_Style_Fill::FILL_SOLID
-        );
-
-        $estilo_encabezado = array(
-            'font' => array('bold' => true, 'name' => 'Calibri', 'size' => 11, 'color' => array('rgb' => '060606')),
-            'alignment' => array('horizontal' => \PHPExcel_Style_Alignment::HORIZONTAL_CENTER),
-            'type' => \PHPExcel_Style_Fill::FILL_SOLID
-        );
-
-        $estilo_celda = array(
-            'font' => array('bold' => false, 'name' => 'Calibri', 'size' => 11, 'color' => array('rgb' => '060606')),
-            'alignment' => array('horizontal' => \PHPExcel_Style_Alignment::HORIZONTAL_CENTER),
-            'type' => \PHPExcel_Style_Fill::FILL_SOLID
-
-        );
-
-        $fila = 1;
-        $adaptarTexto = true;
-
-        $controlador = "Operaciones";
-        $columna = array(
-            'A',
-            'B',
-            'C',
-            'D',
-            'E',
-            'F',
-            'G',
-            'H',
-            'I',
-            'J',
-            'K',
-            'L',
-            'M',
-            'N',
-            'O',
-            'P',
-            'Q',
-            'R',
-            'S',
-            'T',
-            'U',
-            'V',
-            'W',
-            'X',
-            'Y',
-            'Z',
-            'AA',
-            'AB',
-            'AC',
-            'AD',
-            'AE',
-            'AF',
-            'AG',
-            'AH',
-            'AI',
-            'AJ',
-            'AK',
-            'AL',
-            'AM',
-            'AN',
-            'AO',
-            'AP',
-            'AQ',
-            'AR'
-        );
-
-        $nombreColumna = array(
-            'ID CLIENTE',
-            'CUENTA',
-            'Origen',
-            'NOMBRE',
-            'ADICIONAL',
-            'APELLIDO PATERNO',
-            'APELLIDO MATERNO',
-            'TIPO DE PERSONA',
-            'RFC',
-            'CURP',
-            'RAZON SOCIAL O DENOMINACION',
-            'FECHA DE NACIMIENTO OCONSTITUCION',
-            'NACIONALIDAD',
-            'DOMICILIO(calle- número exterior e interior (si aplica) y código postal)',
-            'COLONIA',
-            'CIUDAD O POBLACION',
-            'PAIS',
-            'ESTADO',
-            'TELEFONO OFICINA/PARTICULAR',
-            'ACTIVIDAD ECONOMICA',
-            'CALIFICACIÓN',
-            'FECHA ALTA',
-            'SUCURSAL',
-            'GENERO',
-            'CORREO ELEC.',
-            'FIRMA ELEC.',
-            'PROFESION',
-            'OCUPACION',
-            'PAIS NAC.',
-            'EDO. NAC.',
-            'LUGAR NAC.',
-            'NUMERO DE DOCUMENTO',
-            'CONOCIMIENTO CLIENTE',
-            'REGISTR O NACIONAL DE INMIGRACION',
-            'CUENTA ORIGINAL',
-            'SITUACIÓN CLIENTE',
-            'TIPO DOCUMENTO',
-            'INDICADOR EMPLEO',
-            'EMPRESA LABORA(Ó)',
-            'INDICADOR GOBIERNO',
-            'PUESTO',
-            'FECHA INICIO',
-            'FEH FIN',
-            'CP'
-        );
-
-
-        $nombreCampo = array(
-            'CDGCL',
-            'GRUPO',
-            'ORIGEN',
-            'NOMBRE',
-            'ADICIONAL',
-            'A_PATERNO',
-            'A_MATERNO',
-            'TIPO_PERSONA',
-            'RFC',
-            'CURP',
-            'RAZON_SOCIAL',
-            'FECHA_NAC',
-            'NACIONALIDAD',
-            'DOMICILIO',
-            'COLONIA',
-            'CIUDAD',
-            'PAIS',
-            'SUC_ID_ESTADO',
-            'TELEFONO',
-            'ID_ACTIVIDAD_ECONO',
-            'CALIFICACION',
-            'ALTA',
-            'ID_SUCURSAL_SISTEMA',
-            'GENERO',
-            'CORREO_ELECTRONICO',
-            'FIRMA_ELECT',
-            'PROFESION',
-            'OCUPACION',
-            'PAIS_NAC',
-            'EDO_NAC',
-            'LUGAR_NAC',
-            'NUMERO_DOCUMENTO',
-            'CONOCIMIENTO',
-            'INMIGRACION',
-            'CUENTA_ORIGINAL',
-            'SITUACION_CREDITO',
-            'TIPO_DOCUMENTO',
-            'INDICADOR_EMPLEO',
-            'EMPRESAS',
-            'INDICADOR_GOBIERNO',
-            'PUESTO',
-            'FECHA_INICIO',
-            'FEH_FIN',
-            'CP'
-        );
-
-        $objPHPExcel->getActiveSheet()->SetCellValue('A' . $fila, 'Identificacion de Clientes Cultiva');
-        $objPHPExcel->getActiveSheet()->mergeCells('A' . $fila . ':' . $columna[count($nombreColumna) - 1] . $fila);
-        $objPHPExcel->getActiveSheet()->getStyle('A' . $fila)->applyFromArray($estilo_titulo);
-        $objPHPExcel->getActiveSheet()->getStyle('A' . $fila)->getAlignment()->setWrapText($adaptarTexto);
-
-        $fila += 1;
-
-        /*COLUMNAS DE LOS DATOS DEL ARCHIVO EXCEL*/
-        foreach ($nombreColumna as $key => $value) {
-            $objPHPExcel->getActiveSheet()->SetCellValue($columna[$key] . $fila, $value);
-            $objPHPExcel->getActiveSheet()->getStyle($columna[$key] . $fila)->applyFromArray($estilo_encabezado);
-            $objPHPExcel->getActiveSheet()->getStyle($columna[$key] . $fila)->getAlignment()->setWrapText($adaptarTexto);
-            $objPHPExcel->getActiveSheet()->getColumnDimensionByColumn($key)->setAutoSize(true);
-        }
-        $fila += 1; //fila donde comenzaran a escribirse los datos
-
-        /* FILAS DEL ARCHIVO EXCEL */
-
-        $Layoutt = OperacionesDao::ConsultarClientes($fecha_inicio, $fecha_fin);
-        foreach ($Layoutt as $key => $value) {
-            foreach ($nombreCampo as $key => $campo) {
-                $objPHPExcel->getActiveSheet()->SetCellValue($columna[$key] . $fila, html_entity_decode($value[$campo], ENT_QUOTES, "UTF-8"));
-                $objPHPExcel->getActiveSheet()->getStyle($columna[$key] . $fila)->applyFromArray($estilo_celda);
-                $objPHPExcel->getActiveSheet()->getStyle($columna[$key] . $fila)->getAlignment()->setWrapText($adaptarTexto);
-            }
-            $fila += 1;
-        }
-
-
-        $objPHPExcel->getActiveSheet()->getStyle('A1:' . $columna[count($columna) - 1] . $fila)->getAlignment()->setHorizontal(\PHPExcel_Style_Alignment::HORIZONTAL_CENTER);
-        for ($i = 0; $i < $fila; $i++) {
-            $objPHPExcel->getActiveSheet()->getRowDimension($i)->setRowHeight(20);
-        }
-
-
-        $objPHPExcel->getActiveSheet()->setTitle('Reporte');
-
-        header('Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
-        header('Content-Disposition: attachment;filename="Identificacion de Clientes Cultiva ' . $controlador . '.xlsx"');
-        header('Cache-Control: max-age=0');
-        header('Cache-Control: max-age=1');
-        header('Expires: Mon, 26 Jul 1997 05:00:00 GMT');
-        header('Last-Modified: ' . gmdate('D, d M Y H:i:s') . ' GMT');
-        header('Cache-Control: cache, must-revalidate');
-        header('Pragma: public');
-
-        \PHPExcel_Settings::setZipClass(\PHPExcel_Settings::PCLZIP);
-        $objWriter = \PHPExcel_IOFactory::createWriter($objPHPExcel, 'Excel2007');
-        $objWriter->save('php://output');
+        \PHPSpreadsheet::GeneraExcel('Identificación de Clientes Cultiva', 'Reporte', 'Identificación de Clientes', $columnas, $filas);
     }
 
     public function generarExcelClientesCR()
     {
-        $fecha_inicio = $_GET['Inicial'];
-        $fecha_fin = $_GET['Final'];
-
         $estilos = \PHPSpreadsheet::GetEstilosExcel();
 
         $columnas = [
@@ -1401,16 +968,13 @@ class Operaciones extends Controller
             \PHPSpreadsheet::ColumnaExcel('H', 'FECHA_INICIO_OPERACION', 'FECHA INICIO OPERACIÓN', $estilos['centrado'])
         ];
 
-        $filas = OperacionesDao::CuentasRelacionadas($fecha_inicio, $fecha_fin);
+        $filas = OperacionesDao::CuentasRelacionadas($_GET['Inicial'], $_GET['Final']);
 
         \PHPSpreadsheet::GeneraExcel('Cuentas Relacionadas Cultiva', 'Reporte', 'Cuentas Relacionadas PLD Cultiva', $columnas, $filas);
     }
 
     public function generarExcelClientesPT()
     {
-        $fecha_inicio = $_GET['Inicial'];
-        $fecha_fin = $_GET['Final'];
-
         $estilos = \PHPSpreadsheet::GetEstilosExcel();
 
         $columnas = [
@@ -1449,7 +1013,7 @@ class Operaciones extends Controller
             \PHPSpreadsheet::ColumnaExcel('AG', '', 'PROVEEDOR DE RECURSOS')
         ];
 
-        $filas = OperacionesDao::ConsultarPerfilTransaccional($fecha_inicio, $fecha_fin);
+        $filas = OperacionesDao::ConsultarPerfilTransaccional($_GET['Inicial'], $_GET['Final']);
 
         \PHPSpreadsheet::GeneraExcel('Perfil Transaccional Cultiva', 'Reporte', 'Perfil Transaccional Cultiva', $columnas, $filas);
     }

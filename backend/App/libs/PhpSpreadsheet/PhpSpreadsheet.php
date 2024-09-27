@@ -8,7 +8,7 @@ use PhpOffice\PhpSpreadsheet\Style;
 
 class PHPSpreadsheet
 {
-    public static function ColumnaExcel($letra, $campo, $titulo = '', $estilo = [])
+    public static function ColumnaExcel($letra, $campo, $titulo = '', $estilo = [], $total = false)
     {
         $titulo = $titulo == '' ? $campo : $titulo;
 
@@ -16,10 +16,21 @@ class PHPSpreadsheet
             'letra' => $letra,
             'campo' => $campo,
             'estilo' => $estilo,
-            'titulo' => $titulo
+            'titulo' => $titulo,
+            'total' => $total
         ];
     }
 
+    /**
+     * Este método devuelve un array de estilos predefinidos para hojas de Excel.
+     * Los estilos incluyen:
+     * - 'titulo': Fuente en negrita, alineación centrada y bordes delgados alrededor de todas las celdas.
+     * - 'centrado': Alineación centrada.
+     * - 'moneda': Alineación a la derecha con un formato de número de moneda simple ($1,000.00).
+     * - 'fecha': Alineación centrada con un formato de fecha (DD/MM/YYYY).
+     * - 'fecha_hora': Alineación centrada con un formato de fecha y hora (DD/MM/YYYY HH:MM:SS).
+     * @return array Un array asociativo de estilos para celdas de Excel.
+     */
     public static function GetEstilosExcel()
     {
         return [
@@ -50,50 +61,85 @@ class PHPSpreadsheet
 
     public static function GeneraExcel($nombre_archivo, $nombre_hoja, $titulo_reporte, $columnas, $filas)
     {
+        $totales = [];
         $spreadsheet = new Spreadsheet();
         $sheet = $spreadsheet->getActiveSheet();
         $sheet->setTitle($nombre_hoja);
-    
+
         // Título del reporte
         $sheet->setCellValue('A1', $titulo_reporte);
         $sheet->mergeCells('A1:' . $columnas[count($columnas) - 1]['letra'] . '1');
         $sheet->getStyle('A1')->applyFromArray(self::GetEstilosExcel()['titulo']);
-    
+
         // Encabezados de columna
         foreach ($columnas as $key => $columna) {
             $sheet->setCellValue($columna['letra'] . '2', $columna['titulo']);
             $sheet->getStyle($columna['letra'] . '2')->applyFromArray(self::GetEstilosExcel()['titulo']);
             $sheet->getColumnDimension($columna['letra'])->setAutoSize(true);
+            if ($columna['total']) array_push($totales, $columna);
         }
-    
+
         // Filas de datos
         $noFila = 3;
         foreach ($filas as $key => $fila) {
             if ($noFila % 2 == 0) {
                 $sheet->getStyle('A' . $noFila . ':' . $columnas[count($columnas) - 1]['letra'] . $noFila)
-                      ->getFill()
-                      ->setFillType(Style\Fill::FILL_SOLID)
-                      ->getStartColor()
-                      ->setRGB('F0F0F0');
+                    ->getFill()
+                    ->setFillType(Style\Fill::FILL_SOLID)
+                    ->getStartColor()
+                    ->setRGB('F0F0F0');
             }
-    
+
             foreach ($columnas as $key => $columna) {
                 $estiloCelda = $columna['estilo'];
                 $estiloCelda['borders']['left']['borderStyle'] = Style\Border::BORDER_THIN;
                 $estiloCelda['borders']['right']['borderStyle'] = Style\Border::BORDER_THIN;
-    
+
                 $sheet->setCellValue($columna['letra'] . $noFila, html_entity_decode($fila[$columna['campo']], ENT_QUOTES, "UTF-8"));
                 $sheet->getStyle($columna['letra'] . $noFila)->applyFromArray($estiloCelda);
             }
-    
+
             $noFila += 1;
         }
-    
-        // Seleccionar celda A1, congelar fila 3 y aplicar filtro a las columnas
+
+        // Poner borde a la última fila
+        $sheet->getStyle('A' . ($noFila - 1) . ':' . $columnas[count($columnas) - 1]['letra'] . ($noFila - 1))
+            ->applyFromArray([
+                'borders' => [
+                    'bottom' => ['borderStyle' => Style\Border::BORDER_THIN]
+                ]
+            ]);
+
+        // Incluir totales si es necesario
+        if (count($totales) > 0) {
+            $noFila += 1;
+            $sheet->setCellValue('A' . $noFila, 'Totales');
+            $sheet->getStyle('A' . $noFila)->applyFromArray([
+                'font' => ['bold' => true],
+                'alignment' => ['horizontal' => Style\Alignment::HORIZONTAL_CENTER]
+            ]);
+            $sheet->getStyle('A' . $noFila . ':' . $columnas[count($columnas) - 1]['letra'] . $noFila)
+                ->applyFromArray([
+                    'borders' => [
+                        'top' => ['borderStyle' => Style\Border::BORDER_THIN],
+                        'bottom' => ['borderStyle' => Style\Border::BORDER_THIN],
+                        'left' => ['borderStyle' => Style\Border::BORDER_THIN],
+                        'right' => ['borderStyle' => Style\Border::BORDER_THIN]
+                    ],
+                    'font' => ['bold' => true]
+                ]);
+
+            foreach ($totales as $key => $total) {
+                $sheet->setCellValue($total['letra'] . $noFila, '=SUBTOTAL(9,' . $total['letra'] . '3:' . $total['letra'] . ($noFila - 1) . ')');
+                $sheet->getStyle($total['letra'] . $noFila)->applyFromArray($total['estilo']);
+            }
+        }
+
+        // Seleccionar celda A1, congelar en la fila 3, aplicar filtro a las columnas
         $sheet->setSelectedCell('A1');
         $sheet->freezePane('A3');
         $sheet->setAutoFilter('A2:' . $columnas[count($columnas) - 1]['letra'] . '2');
-    
+
         // Configuración de encabezados HTTP
         header('Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
         header('Content-Disposition: attachment;filename="' . $nombre_archivo . '.xlsx"');
@@ -101,7 +147,7 @@ class PHPSpreadsheet
         header('Expires: Mon, 26 Jul 1997 05:00:00 GMT');
         header('Last-Modified: ' . gmdate('D, d M Y H:i:s') . ' GMT');
         header('Pragma: public');
-    
+
         // Guardar el archivo
         $writer = new Xlsx($spreadsheet);
         $writer->save('php://output');
