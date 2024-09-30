@@ -209,6 +209,7 @@ class PHPSpreadsheet
      * Excel en formato .xlsx y envía el archivo al cliente.
      *
      * @param \PhpOffice\PhpSpreadsheet\Spreadsheet $libro El objeto Spreadsheet que se va a descargar.
+     * @param string $nombre_archivo El nombre del archivo que se va a descargar.
      *
      * @return void
      */
