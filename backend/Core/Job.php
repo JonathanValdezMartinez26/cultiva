@@ -7,7 +7,7 @@ use DateTimeZone;
 
 class Job
 {
-    private $logPath = "C:/xampp/Logs Jobs/";
+    private $logPath;
     private $nombreJob;
 
     public function __construct($nj)
@@ -16,6 +16,7 @@ class Job
         if ($validaHV->format("I")) date_default_timezone_set("America/Mazatlan");
         else date_default_timezone_set("America/Mexico_City");
 
+        $this->logPath = dirname(__DIR__) . "/Jobs/Logs/";
         $this->nombreJob = $nj;
     }
 
@@ -25,13 +26,12 @@ class Job
 
         clearstatcache();
         if (file_exists($archivo) && filesize($archivo) > 10 * 1024 * 1024) { // 10 MB
-            $nuevoNombre = $this->logPath  . $this->nombreJob . date("Ymd") . ".log";
+            $nuevoNombre = $this->logPath . $this->nombreJob . date("Ymd") . ".log";
             rename($archivo, $nuevoNombre);
         }
 
         $log = fopen($archivo, "a");
-
-        $infoReg = date("Y-m-d H:i:s") . " - fnc: " . debug_backtrace()[1]["function"] . " -> " . $tdatos;
+        $infoReg = date("Y-m-d H:i:s") . " - fnc: " . debug_backtrace()[1]["function"] . " -> " . mb_convert_encoding($tdatos, "UTF-8");
 
         fwrite($log, $infoReg . PHP_EOL);
         fclose($log);

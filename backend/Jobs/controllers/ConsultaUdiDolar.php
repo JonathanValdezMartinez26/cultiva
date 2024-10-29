@@ -24,19 +24,24 @@ class ConsultaUdiDolar extends Job
      */
     public function GetUDI_Dolar()
     {
-        $fecha = date("Y-m-d");
+        $dias = DAO::DiasFaltantes();
 
-        // Obtener el valor del dólar y del UDI para una fecha específica
-        $valorDolar = $this->obtenerValorPorFecha("SF63528", "$fecha");
-        $valorUDI = $this->obtenerValorPorFecha("SP68257", "$fecha");
+        if (!$dias['success']) return self::SaveLog(json_encode($dias));
+        foreach ($dias['datos'] as $dia) {
+            $fecha = $dia['DIA'];
 
-        // Guardar los valores en la base de datos
-        $resultado =  ($valorDolar != 0 || $valorUDI != 0) ?
-            DAO::AddUdiDolar($fecha, $valorDolar, $valorUDI) :
-            "No se pudieron obtener los valores.";
+            // Obtener el valor del dólar y del UDI para una fecha específica
+            $valorDolar = $this->obtenerValorPorFecha("SF63528", "$fecha");
+            $valorUDI = $this->obtenerValorPorFecha("SP68257", "$fecha");
 
-        // Guardar el resultado en el log
-        self::SaveLog(json_encode($resultado));
+            // Guardar los valores en la base de datos
+            $resultado =  ($valorDolar != 0 || $valorUDI != 0) ?
+                DAO::AddUdiDolar($fecha, $valorDolar, $valorUDI) :
+                "No se pudieron obtener los valores.";
+
+            // Guardar el resultado en el log
+            self::SaveLog(json_encode($resultado, JSON_UNESCAPED_UNICODE));
+        }
     }
 
     /**
