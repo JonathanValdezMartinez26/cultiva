@@ -12,7 +12,7 @@ class ConsultaUdiDolar extends Model
 {
     public static function DiasFaltantes($fecha = null)
     {
-        $fecha = $fecha ?? "2024-10-01";
+        $fecha = $fecha ?? "2024-09-30";
 
         $qry = <<<SQL
             WITH FECHAS AS (
