@@ -36,9 +36,8 @@ class SincronizaBloqueoClientes extends Model
                 AND CAUSA != 10
         SQL;
 
-        $db = new Database();
-        if ($mcm) $db->SetDB_MCM();
-        else $db->SetDB_CULTIVA();
+        $servidor = $mcm ? 'SERVIDOR_MCM' : null;
+        $db = new Database($servidor);
         if ($db->db_activa == null) return self::Responde(false, "Error al conectar a la base de datos.");
 
         $resultado =  $db->queryAll($qry);
@@ -77,9 +76,8 @@ class SincronizaBloqueoClientes extends Model
 
         $dropTbl = "DROP TABLE curps_lista_negra";
 
-        $db = new Database();
-        if ($mcm) $db->SetDB_CULTIVA();
-        else $db->SetDB_MCM();
+        $servidor = $mcm ? 'SERVIDOR_MCM' : null;
+        $db = new Database($servidor);
         if ($db->db_activa == null) return self::Responde(false, "Error al conectar a la base de datos.");
 
         $resultado = $db->insert($tblTemp);
@@ -113,9 +111,8 @@ class SincronizaBloqueoClientes extends Model
             ]);
         }
 
-        $db = new Database();
-        if ($mcm) $db->SetDB_CULTIVA();
-        else $db->SetDB_MCM();
+        $servidor = $mcm ? 'SERVIDOR_MCM' : null;
+        $db = new Database($servidor);
         if ($db->db_activa == null) return self::Responde(false, "Error al conectar a la base de datos.");
 
         $resultado = $db->insertaMultiple($inserts, $valores);
@@ -141,9 +138,8 @@ class SincronizaBloqueoClientes extends Model
                 AND PRN.SITUACION = 'E'
         SQL;
 
-        $db = new Database();
-        if ($mcm) $db->SetDB_MCM();
-        else $db->SetDB_CULTIVA();
+        $servidor = $mcm ? 'SERVIDOR_MCM' : null;
+        $db = new Database($servidor);
         if ($db->db_activa == null) return self::Responde(false, "Error al conectar a la base de datos.");
 
         $resultado = $db->queryAll($qry);
@@ -169,9 +165,8 @@ class SincronizaBloqueoClientes extends Model
                 ('EMPFIN', (SELECT NVL(MAX(SECUENCIA),0) + 1 FROM CL_MARCA WHERE TO_CHAR(ALTA, 'YYYYMMDD') = :inicio), null, :curp, 'LN', 'A', NULL, 'SYSTEM', TO_DATE(:inicio, 'YYYYMMDD'), NULL, NULL, SYSDATE, 10, NULL, NULL, NULL, NULL)
         SQL;
 
-        $db = new Database();
-        if ($mcm) $db->SetDB_CULTIVA();
-        else $db->SetDB_MCM();
+        $servidor = $mcm ? 'SERVIDOR_MCM' : null;
+        $db = new Database($servidor);
         if ($db->db_activa == null) return self::Responde(false, "Error al conectar a la base de datos.");
 
         $rElimina = $db->eliminar($qryElimina);
