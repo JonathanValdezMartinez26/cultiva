@@ -25,7 +25,7 @@ class Job
         $archivo = $this->logPath . $this->nombreJob . ".log";
 
         clearstatcache();
-        if (file_exists($archivo) && filesize($archivo) > 10 * 1024 * 1024) { // 10 MB
+        if (filesize($archivo) > 10 * 1024 * 1024) { // 10 MB
             $nuevoNombre = $this->logPath . $this->nombreJob . date("Ymd") . ".log";
             rename($archivo, $nuevoNombre);
         }
