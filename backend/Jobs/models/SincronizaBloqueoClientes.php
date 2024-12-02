@@ -36,7 +36,7 @@ class SincronizaBloqueoClientes extends Model
                 AND CAUSA != 10
         SQL;
 
-        $servidor = $mcm ? 'SERVIDOR_MCM' : null;
+        $servidor = $mcm ? 'SERVIDOR-MCM' : null;
         $db = new Database($servidor);
         if ($db->db_activa == null) return self::Responde(false, "Error al conectar a la base de datos.");
 
@@ -76,7 +76,7 @@ class SincronizaBloqueoClientes extends Model
 
         $dropTbl = "DROP TABLE curps_lista_negra";
 
-        $servidor = $mcm ? 'SERVIDOR_MCM' : null;
+        $servidor = $mcm ? 'SERVIDOR-MCM' : null;
         $db = new Database($servidor);
         if ($db->db_activa == null) return self::Responde(false, "Error al conectar a la base de datos.");
 
@@ -111,7 +111,7 @@ class SincronizaBloqueoClientes extends Model
             ]);
         }
 
-        $servidor = $mcm ? 'SERVIDOR_MCM' : null;
+        $servidor = $mcm ? 'SERVIDOR-MCM' : null;
         $db = new Database($servidor);
         if ($db->db_activa == null) return self::Responde(false, "Error al conectar a la base de datos.");
 
@@ -138,7 +138,7 @@ class SincronizaBloqueoClientes extends Model
                 AND PRN.SITUACION = 'E'
         SQL;
 
-        $servidor = $mcm ? 'SERVIDOR_MCM' : null;
+        $servidor = $mcm ? 'SERVIDOR-MCM' : null;
         $db = new Database($servidor);
         if ($db->db_activa == null) return self::Responde(false, "Error al conectar a la base de datos.");
 
@@ -165,7 +165,7 @@ class SincronizaBloqueoClientes extends Model
                 ('EMPFIN', (SELECT NVL(MAX(SECUENCIA),0) + 1 FROM CL_MARCA WHERE TO_CHAR(ALTA, 'YYYYMMDD') = :inicio), null, :curp, 'LN', 'A', NULL, 'SYSTEM', TO_DATE(:inicio, 'YYYYMMDD'), NULL, NULL, SYSDATE, 10, NULL, NULL, NULL, NULL)
         SQL;
 
-        $servidor = $mcm ? 'SERVIDOR_MCM' : null;
+        $servidor = $mcm ? 'SERVIDOR-MCM' : null;
         $db = new Database($servidor);
         if ($db->db_activa == null) return self::Responde(false, "Error al conectar a la base de datos.");
 
