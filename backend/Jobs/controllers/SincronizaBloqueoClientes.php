@@ -17,6 +17,8 @@ class SincronizaBloqueoClientes extends Job
 
     public function ListaNegra()
     {
+        self::SaveLog("Inicio de sincronización de lista negra.");
+
         $respuesta = [
             "mcm_cultiva" => null,
             "cultiva_mcm" => null
@@ -55,6 +57,8 @@ class SincronizaBloqueoClientes extends Job
 
     public function ListaGris()
     {
+        self::SaveLog("Inicio de sincronización de lista gris.");
+
         $respuesta = [
             "mcm_cultiva" => null,
             "cultiva_mcm" => null
@@ -103,4 +107,3 @@ if (isset($argv[1])) {
             break;
     }
 } else echo "Debe especificar el job a ejecutar.\nEjecute 'php SincronizaBloqueoClientes.php help' para ver los jobs disponibles.\n";
-

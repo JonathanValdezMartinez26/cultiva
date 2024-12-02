@@ -106,7 +106,6 @@ class SincronizaBloqueoClientes extends Model
         foreach ($datos as $dato) {
             array_push($inserts, $qry);
             array_push($valores, [
-                // 'cdgcl' => $dato['CDGCL'],
                 'curp' => $dato['CURP']
             ]);
         }
@@ -176,7 +175,6 @@ class SincronizaBloqueoClientes extends Model
 
         foreach ($datos as $dato) {
             $v = [
-                // 'cdgcl' => $dato['CDGCL'],
                 'curp' => $dato['CURP'],
                 'inicio' => $dato['FECHA']
             ];
