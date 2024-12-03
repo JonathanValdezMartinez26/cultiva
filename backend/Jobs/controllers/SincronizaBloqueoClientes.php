@@ -28,11 +28,11 @@ class SincronizaBloqueoClientes extends Job
         if ($listaMCM["success"] == false) $respuesta["mcm_cultiva"] = $listaMCM["mensaje"];
 
         if ($listaMCM["success"]) {
-            $resultado = DAO::ValidaListaNegra($listaMCM["datos"]);
+            $resultado = DAO::ValidaListaNegra($listaMCM["datos"], false);
             if ($resultado["success"] == false) $respuesta["mcm_cultiva"] = $resultado["mensaje"];
 
             if ($resultado["success"]) {
-                $insertados = DAO::InsertaListaNegra($resultado["datos"]);
+                $insertados = DAO::InsertaListaNegra($resultado["datos"], false);
                 if ($insertados["success"] == false) $respuesta["mcm_cultiva"] = $insertados["mensaje"];
                 else $respuesta["mcm_cultiva"] = $resultado["datos"];
             }
@@ -42,11 +42,11 @@ class SincronizaBloqueoClientes extends Job
         if ($listaCultiva["success"] == false) $respuesta["cultiva_mcm"] = $listaCultiva["mensaje"];
 
         if ($listaCultiva["success"]) {
-            $resultado = DAO::ValidaListaNegra($listaCultiva["datos"], false);
+            $resultado = DAO::ValidaListaNegra($listaCultiva["datos"]);
             if ($resultado["success"] == false) $respuesta["cultiva_mcm"] = $resultado["mensaje"];
 
             if ($resultado["success"]) {
-                $insertados = DAO::InsertaListaNegra($resultado["datos"], false);
+                $insertados = DAO::InsertaListaNegra($resultado["datos"]);
                 if ($insertados["success"] == false) $respuesta["cultiva_mcm"] = $insertados["mensaje"];
                 else $respuesta["cultiva_mcm"] = $resultado["datos"];
             }
@@ -68,7 +68,7 @@ class SincronizaBloqueoClientes extends Job
         if ($listaMCM["success"] == false) $respuesta["mcm_cultiva"] = $listaMCM["mensaje"];
 
         if ($listaMCM["success"]) {
-            $resultado = DAO::ActualizaListaGris($listaMCM["datos"]);
+            $resultado = DAO::ActualizaListaGris($listaMCM["datos"], false);
             $respuesta["mcm_cultiva"] = $resultado;
         }
 
@@ -76,7 +76,7 @@ class SincronizaBloqueoClientes extends Job
         if ($listaCultiva["success"] == false) $respuesta["cultiva_mcm"] = $listaCultiva["mensaje"];
 
         if ($listaCultiva["success"]) {
-            $resultado = DAO::ActualizaListaGris($listaCultiva["datos"], false);
+            $resultado = DAO::ActualizaListaGris($listaCultiva["datos"]);
             $respuesta["cultiva_mcm"] = $resultado;
         }
 
