@@ -158,6 +158,8 @@ class Operaciones extends Controller
     {
         $extraFooter = <<<HTML
         <script>
+            {$this->descargaExcel}
+
             function getParameterByName(name) {
                 name = name.replace(/[\[]/, "\\[").replace(/[\]]/, "\\]")
                 var regex = new RegExp("[\\?&]" + name + "=([^&#]*)"),
@@ -191,12 +193,7 @@ class Operaciones extends Controller
                 fecha2 = getParameterByName("Final")
 
                 $("#export_excel_consulta").click(function () {
-                    $("#all").attr(
-                        "action",
-                        "/Operaciones/generarExcelPagosF/?Inicial=" + fecha1 + "&Final=" + fecha2
-                    )
-                    $("#all").attr("target", "_blank")
-                    $("#all").submit()
+                    descargaExcel("/Operaciones/generarExcelPagosF/?Inicial=" + fecha1 + "&Final=" + fecha2)
                 })
             })
 
@@ -802,219 +799,237 @@ class Operaciones extends Controller
     }
 
     public function generarExcel()
-    {   
+    {
         $estilos = \PHPSpreadsheet::GetEstilosExcel();
+        $soloCentrado = [
+            'estilo' => $estilos['centrado']
+        ];
 
         $columnas = [
-            \PHPSpreadsheet::ColumnaExcel('A', 'LOCALIDAD', 'LOCALIDAD'),
-            \PHPSpreadsheet::ColumnaExcel('B', 'SUCURSAL', 'SUCURSAL', $estilos['centrado']),
-            \PHPSpreadsheet::ColumnaExcel('C', 'TIPO_OPERACION', 'TIPO DE OPERACIÓN', $estilos['centrado']),
-            \PHPSpreadsheet::ColumnaExcel('D', 'ID_CLIENTE', 'ID CLIENTE', $estilos['centrado']),
-            \PHPSpreadsheet::ColumnaExcel('E', 'NUM_CUENTA', 'NUMERO DE CTA, CONTRATO, OPERACIÓN, PÓLIZA O NUMERO DE SEGURIDAD SOCIAL', $estilos['centrado']),
-            \PHPSpreadsheet::ColumnaExcel('F', 'INSTRUMENTO_MONETARIO', 'INSTRUMENTO MONETARIO', $estilos['centrado']),
-            \PHPSpreadsheet::ColumnaExcel('G', 'MONEDA', 'MONEDA', $estilos['centrado']),
-            \PHPSpreadsheet::ColumnaExcel('H', 'MONTO', 'MONTO', $estilos['moneda']),
-            \PHPSpreadsheet::ColumnaExcel('I', 'FECHA_OPERACION', 'FECHA DE LA OPERACIÓN', $estilos['centrado']),
-            \PHPSpreadsheet::ColumnaExcel('J', 'TIPO_RECEPTOR', 'TIPO RECEPTOR', $estilos['centrado']),
-            \PHPSpreadsheet::ColumnaExcel('K', 'CLAVE_RECEPTOR', 'CLAVE DE RECEPTOR'),
-            \PHPSpreadsheet::ColumnaExcel('L', 'NUM_CAJA', 'CAJA', $estilos['centrado']),
-            \PHPSpreadsheet::ColumnaExcel('M', 'ID_CAJERO', 'CAJERO', $estilos['centrado']),
-            \PHPSpreadsheet::ColumnaExcel('N', 'FECHA_HORA', 'FECHA', $estilos['centrado']),
-            \PHPSpreadsheet::ColumnaExcel('O', 'NOTARJETA_CTA', 'NO. TARJETA O CTA DEPOSITO'),
-            \PHPSpreadsheet::ColumnaExcel('P', 'TIPOTARJETA', 'TIPO DE TARJETA', $estilos['centrado']),
-            \PHPSpreadsheet::ColumnaExcel('Q', 'COD_AUTORIZACION', 'COD AUTORIZACION', $estilos['centrado']),
-            \PHPSpreadsheet::ColumnaExcel('R', 'ATRASO', 'ATRASO', $estilos['centrado']),
-            \PHPSpreadsheet::ColumnaExcel('S', 'OFICINA_CLIENTE', 'OFICINA CLIENTE', $estilos['centrado'])
+            \PHPSpreadsheet::ColumnaExcel('LOCALIDAD', 'LOCALIDAD'),
+            \PHPSpreadsheet::ColumnaExcel('SUCURSAL', 'SUCURSAL', $soloCentrado),
+            \PHPSpreadsheet::ColumnaExcel('TIPO_OPERACION', 'TIPO DE OPERACIÓN', $soloCentrado),
+            \PHPSpreadsheet::ColumnaExcel('ID_CLIENTE', 'ID CLIENTE', $soloCentrado),
+            \PHPSpreadsheet::ColumnaExcel('NUM_CUENTA', 'NUMERO DE CTA, CONTRATO, OPERACIÓN, PÓLIZA O NUMERO DE SEGURIDAD SOCIAL', $soloCentrado),
+            \PHPSpreadsheet::ColumnaExcel('INSTRUMENTO_MONETARIO', 'INSTRUMENTO MONETARIO', $soloCentrado),
+            \PHPSpreadsheet::ColumnaExcel('MONEDA', 'MONEDA', $soloCentrado),
+            \PHPSpreadsheet::ColumnaExcel('MONTO', 'MONTO', ['estilo' => $estilos['moneda'], 'total' => true]),
+            \PHPSpreadsheet::ColumnaExcel('FECHA_OPERACION', 'FECHA DE LA OPERACIÓN', $soloCentrado),
+            \PHPSpreadsheet::ColumnaExcel('TIPO_RECEPTOR', 'TIPO RECEPTOR', $soloCentrado),
+            \PHPSpreadsheet::ColumnaExcel('CLAVE_RECEPTOR', 'CLAVE DE RECEPTOR'),
+            \PHPSpreadsheet::ColumnaExcel('NUM_CAJA', 'CAJA', $soloCentrado),
+            \PHPSpreadsheet::ColumnaExcel('ID_CAJERO', 'CAJERO', $soloCentrado),
+            \PHPSpreadsheet::ColumnaExcel('FECHA_HORA', 'FECHA', $soloCentrado),
+            \PHPSpreadsheet::ColumnaExcel('NOTARJETA_CTA', 'NO. TARJETA O CTA DEPOSITO'),
+            \PHPSpreadsheet::ColumnaExcel('TIPOTARJETA', 'TIPO DE TARJETA', $soloCentrado),
+            \PHPSpreadsheet::ColumnaExcel('COD_AUTORIZACION', 'COD AUTORIZACION', $soloCentrado),
+            \PHPSpreadsheet::ColumnaExcel('ATRASO', 'ATRASO', $soloCentrado),
+            \PHPSpreadsheet::ColumnaExcel('OFICINA_CLIENTE', 'OFICINA CLIENTE', $soloCentrado)
         ];
 
         $filas = OperacionesDao::ConsultarDesembolsos($_GET['Inicial'], $_GET['Final']);
 
-        \PHPSpreadsheet::GeneraExcel('Consulta de Desembolsos Cultiva', 'Reporte', 'Consulta de Desembolsos', $columnas, $filas);
+        \PHPSpreadsheet::DescargaExcel('Consulta de Desembolsos Cultiva', 'Reporte', 'Consulta de Desembolsos', $columnas, $filas);
     }
 
     public function generarExcelPagos()
     {
         $estilos = \PHPSpreadsheet::GetEstilosExcel();
+        $soloCentrado = [
+            'estilo' => $estilos['centrado']
+        ];
 
         $columnas = [
-            \PHPSpreadsheet::ColumnaExcel('A', 'LOCALIDAD', 'LOCALIDAD'),
-            \PHPSpreadsheet::ColumnaExcel('B', 'SUCURSAL', 'SUCURSAL', $estilos['centrado']),
-            \PHPSpreadsheet::ColumnaExcel('C', 'TIPO_OPERACION', 'TIPO DE OPERACIÓN', $estilos['centrado']),
-            \PHPSpreadsheet::ColumnaExcel('D', 'ID_CLIENTE', 'ID CLIENTE', $estilos['centrado']),
-            \PHPSpreadsheet::ColumnaExcel('E', 'NUM_CUENTA', 'NUMERO DE CTA, CONTRATO, OPERACIÓN, PÓLIZA O NUMERO DE SEGURIDAD SOCIAL', $estilos['centrado']),
-            \PHPSpreadsheet::ColumnaExcel('F', 'INSTRUMENTO_MONETARIO', 'INSTRUMENTO MONETARIO', $estilos['centrado']),
-            \PHPSpreadsheet::ColumnaExcel('G', 'MONEDA', 'MONEDA', $estilos['centrado']),
-            \PHPSpreadsheet::ColumnaExcel('H', 'MONTO', 'MONTO', $estilos['moneda']),
-            \PHPSpreadsheet::ColumnaExcel('I', 'FECHA_OPERACION', 'FECHA DE LA OPERACIÓN', $estilos['centrado']),
-            \PHPSpreadsheet::ColumnaExcel('J', 'TIPO_RECEPTOR', 'TIPO RECEPTOR', $estilos['centrado']),
-            \PHPSpreadsheet::ColumnaExcel('K', 'CLAVE_RECEPTOR', 'CLAVE DE RECEPTOR'),
-            \PHPSpreadsheet::ColumnaExcel('L', 'NUM_CAJA', 'CAJA', $estilos['centrado']),
-            \PHPSpreadsheet::ColumnaExcel('M', 'ID_CAJERO', 'CAJERO', $estilos['centrado']),
-            \PHPSpreadsheet::ColumnaExcel('N', 'FECHA_HORA', 'FECHA', $estilos['centrado']),
-            \PHPSpreadsheet::ColumnaExcel('O', 'NOTARJETA_CTA', 'NO. TARJETA O CTA DEPOSITO'),
-            \PHPSpreadsheet::ColumnaExcel('P', 'TIPOTARJETA', 'TIPO DE TARJETA', $estilos['centrado']),
-            \PHPSpreadsheet::ColumnaExcel('Q', 'COD_AUTORIZACION', 'COD AUTORIZACION', $estilos['centrado']),
-            \PHPSpreadsheet::ColumnaExcel('R', 'ATRASO', 'ATRASO', $estilos['centrado']),
-            \PHPSpreadsheet::ColumnaExcel('S', 'OFICINA_CLIENTE', 'OFICINA CLIENTE', $estilos['centrado'])
+            \PHPSpreadsheet::ColumnaExcel('LOCALIDAD', 'LOCALIDAD'),
+            \PHPSpreadsheet::ColumnaExcel('SUCURSAL', 'SUCURSAL', $soloCentrado),
+            \PHPSpreadsheet::ColumnaExcel('TIPO_OPERACION', 'TIPO DE OPERACIÓN', $soloCentrado),
+            \PHPSpreadsheet::ColumnaExcel('ID_CLIENTE', 'ID CLIENTE', $soloCentrado),
+            \PHPSpreadsheet::ColumnaExcel('NUM_CUENTA', 'NUMERO DE CTA, CONTRATO, OPERACIÓN, PÓLIZA O NUMERO DE SEGURIDAD SOCIAL', $soloCentrado),
+            \PHPSpreadsheet::ColumnaExcel('INSTRUMENTO_MONETARIO', 'INSTRUMENTO MONETARIO', $soloCentrado),
+            \PHPSpreadsheet::ColumnaExcel('MONEDA', 'MONEDA', $soloCentrado),
+            \PHPSpreadsheet::ColumnaExcel('MONTO', 'MONTO', ['estilo' => $estilos['moneda'], 'total' => true]),
+            \PHPSpreadsheet::ColumnaExcel('FECHA_OPERACION', 'FECHA DE LA OPERACIÓN', $soloCentrado),
+            \PHPSpreadsheet::ColumnaExcel('TIPO_RECEPTOR', 'TIPO RECEPTOR', $soloCentrado),
+            \PHPSpreadsheet::ColumnaExcel('CLAVE_RECEPTOR', 'CLAVE DE RECEPTOR'),
+            \PHPSpreadsheet::ColumnaExcel('NUM_CAJA', 'CAJA', $soloCentrado),
+            \PHPSpreadsheet::ColumnaExcel('ID_CAJERO', 'CAJERO', $soloCentrado),
+            \PHPSpreadsheet::ColumnaExcel('FECHA_HORA', 'FECHA', $soloCentrado),
+            \PHPSpreadsheet::ColumnaExcel('NOTARJETA_CTA', 'NO. TARJETA O CTA DEPOSITO'),
+            \PHPSpreadsheet::ColumnaExcel('TIPOTARJETA', 'TIPO DE TARJETA', $soloCentrado),
+            \PHPSpreadsheet::ColumnaExcel('COD_AUTORIZACION', 'COD AUTORIZACION', $soloCentrado),
+            \PHPSpreadsheet::ColumnaExcel('ATRASO', 'ATRASO', $soloCentrado),
+            \PHPSpreadsheet::ColumnaExcel('OFICINA_CLIENTE', 'OFICINA CLIENTE', $soloCentrado)
         ];
 
         $filas = OperacionesDao::ConsultarPagos($_GET['Inicial'], $_GET['Final']);
 
-        \PHPSpreadsheet::GeneraExcel('Consulta de Pagos Cultiva', 'Reporte', 'Consulta de Pagos', $columnas, $filas);
+        \PHPSpreadsheet::DescargaExcel('Consulta de Pagos Cultiva', 'Reporte', 'Consulta de Pagos', $columnas, $filas);
     }
 
     public function generarExcelPagosF()
     {
         $estilos = \PHPSpreadsheet::GetEstilosExcel();
+        $soloCentrado = [
+            'estilo' => $estilos['centrado']
+        ];
 
         $columnas = [
-            \PHPSpreadsheet::ColumnaExcel('A', 'LOCALIDAD', 'LOCALIDAD'),
-            \PHPSpreadsheet::ColumnaExcel('B', 'SUCURSAL', 'SUCURSAL', $estilos['centrado']),
-            \PHPSpreadsheet::ColumnaExcel('C', 'TIPO_OPERACION', 'TIPO DE OPERACIÓN', $estilos['centrado']),
-            \PHPSpreadsheet::ColumnaExcel('D', 'ID_CLIENTE', 'ID CLIENTE', $estilos['centrado']),
-            \PHPSpreadsheet::ColumnaExcel('E', 'NUM_CUENTA', 'NUMERO DE CTA, CONTRATO, OPERACIÓN, PÓLIZA O NUMERO DE SEGURIDAD SOCIAL', $estilos['centrado']),
-            \PHPSpreadsheet::ColumnaExcel('F', 'INSTRUMENTO_MONETARIO', 'INSTRUMENTO MONETARIO', $estilos['centrado']),
-            \PHPSpreadsheet::ColumnaExcel('G', 'MONEDA', 'MONEDA', $estilos['centrado']),
-            \PHPSpreadsheet::ColumnaExcel('H', 'MONTO', 'MONTO', $estilos['moneda']),
-            \PHPSpreadsheet::ColumnaExcel('I', 'FECHA_OPERACION', 'FECHA DE LA OPERACIÓN', $estilos['centrado']),
-            \PHPSpreadsheet::ColumnaExcel('J', 'TIPO_RECEPTOR', 'TIPO RECEPTOR', $estilos['centrado']),
-            \PHPSpreadsheet::ColumnaExcel('K', 'CLAVE_RECEPTOR', 'CLAVE DE RECEPTOR'),
-            \PHPSpreadsheet::ColumnaExcel('L', 'NUM_CAJA', 'CAJA', $estilos['centrado']),
-            \PHPSpreadsheet::ColumnaExcel('M', 'ID_CAJERO', 'CAJERO', $estilos['centrado']),
-            \PHPSpreadsheet::ColumnaExcel('N', 'FECHA_HORA', 'FECHA', $estilos['centrado']),
-            \PHPSpreadsheet::ColumnaExcel('O', 'NOTARJETA_CTA', 'NO. TARJETA O CTA DEPOSITO'),
-            \PHPSpreadsheet::ColumnaExcel('P', 'TIPOTARJETA', 'TIPO DE TARJETA', $estilos['centrado']),
-            \PHPSpreadsheet::ColumnaExcel('Q', 'COD_AUTORIZACION', 'COD AUTORIZACION', $estilos['centrado']),
-            \PHPSpreadsheet::ColumnaExcel('R', 'ATRASO', 'ATRASO', $estilos['centrado']),
-            \PHPSpreadsheet::ColumnaExcel('S', 'OFICINA_CLIENTE', 'OFICINA CLIENTE', $estilos['centrado']),
-            \PHPSpreadsheet::ColumnaExcel('T', 'FEC_NAC', 'FECHA NACIMIENTO', $estilos['fecha']),
-            \PHPSpreadsheet::ColumnaExcel('U', 'EDAD', 'EDAD', $estilos['centrado']),
-            \PHPSpreadsheet::ColumnaExcel('V', 'CICLO', 'CICLO', $estilos['centrado'])
+            \PHPSpreadsheet::ColumnaExcel('LOCALIDAD', 'LOCALIDAD'),
+            \PHPSpreadsheet::ColumnaExcel('SUCURSAL', 'SUCURSAL', $soloCentrado),
+            \PHPSpreadsheet::ColumnaExcel('TIPO_OPERACION', 'TIPO DE OPERACIÓN', $soloCentrado),
+            \PHPSpreadsheet::ColumnaExcel('ID_CLIENTE', 'ID CLIENTE', $soloCentrado),
+            \PHPSpreadsheet::ColumnaExcel('NUM_CUENTA', 'NUMERO DE CTA, CONTRATO, OPERACIÓN, PÓLIZA O NUMERO DE SEGURIDAD SOCIAL', $soloCentrado),
+            \PHPSpreadsheet::ColumnaExcel('INSTRUMENTO_MONETARIO', 'INSTRUMENTO MONETARIO', $soloCentrado),
+            \PHPSpreadsheet::ColumnaExcel('MONEDA', 'MONEDA', $soloCentrado),
+            \PHPSpreadsheet::ColumnaExcel('MONTO', 'MONTO', ['estilo' => $estilos['moneda'], 'total' => true]),
+            \PHPSpreadsheet::ColumnaExcel('FECHA_OPERACION', 'FECHA DE LA OPERACIÓN', $soloCentrado),
+            \PHPSpreadsheet::ColumnaExcel('TIPO_RECEPTOR', 'TIPO RECEPTOR', $soloCentrado),
+            \PHPSpreadsheet::ColumnaExcel('CLAVE_RECEPTOR', 'CLAVE DE RECEPTOR'),
+            \PHPSpreadsheet::ColumnaExcel('NUM_CAJA', 'CAJA', $soloCentrado),
+            \PHPSpreadsheet::ColumnaExcel('ID_CAJERO', 'CAJERO', $soloCentrado),
+            \PHPSpreadsheet::ColumnaExcel('FECHA_HORA', 'FECHA', $soloCentrado),
+            \PHPSpreadsheet::ColumnaExcel('NOTARJETA_CTA', 'NO. TARJETA O CTA DEPOSITO'),
+            \PHPSpreadsheet::ColumnaExcel('TIPOTARJETA', 'TIPO DE TARJETA', $soloCentrado),
+            \PHPSpreadsheet::ColumnaExcel('COD_AUTORIZACION', 'COD AUTORIZACION', $soloCentrado),
+            \PHPSpreadsheet::ColumnaExcel('ATRASO', 'ATRASO', $soloCentrado),
+            \PHPSpreadsheet::ColumnaExcel('OFICINA_CLIENTE', 'OFICINA CLIENTE', $soloCentrado),
+            \PHPSpreadsheet::ColumnaExcel('FEC_NAC', 'FECHA NACIMIENTO', ['estilo' => $estilos['fecha']]),
+            \PHPSpreadsheet::ColumnaExcel('EDAD', 'EDAD', $soloCentrado),
+            \PHPSpreadsheet::ColumnaExcel('CICLO', 'CICLO', $soloCentrado)
         ];
 
         $filas = OperacionesDao::ConsultarPagosNacimiento($_GET['Inicial'], $_GET['Final']);
 
-        \PHPSpreadsheet::GeneraExcel('Consulta de Pagos X Fecha Nacimiento Cultiva', 'Reporte', 'Consulta de Pagos por Fecha de Nacimiento', $columnas, $filas);
+        \PHPSpreadsheet::DescargaExcel('Consulta de Pagos X Fecha Nacimiento Cultiva', 'Reporte', 'Consulta de Pagos por Fecha de Nacimiento', $columnas, $filas);
     }
 
     public function generarExcelPagosIC()
     {
         $estilos = \PHPSpreadsheet::GetEstilosExcel();
+        $soloCentrado = [
+            'estilo' => $estilos['centrado']
+        ];
 
         $columnas = [
-            \PHPSpreadsheet::ColumnaExcel('A', 'CDGCL', 'ID CLIENTE', $estilos['centrado']),
-            \PHPSpreadsheet::ColumnaExcel('B', 'GRUPO', 'CUENTA', $estilos['centrado']),
-            \PHPSpreadsheet::ColumnaExcel('C', 'ORIGEN', 'Origen', $estilos['centrado']),
-            \PHPSpreadsheet::ColumnaExcel('D', 'NOMBRE', 'NOMBRE'),
-            \PHPSpreadsheet::ColumnaExcel('E', 'ADICIONAL', 'ADICIONAL'),
-            \PHPSpreadsheet::ColumnaExcel('F', 'A_PATERNO', 'APELLIDO PATERNO'),
-            \PHPSpreadsheet::ColumnaExcel('G', 'A_MATERNO', 'APELLIDO MATERNO'),
-            \PHPSpreadsheet::ColumnaExcel('H', 'TIPO_PERSONA', 'TIPO DE PERSONA', $estilos['centrado']),
-            \PHPSpreadsheet::ColumnaExcel('I', 'RFC', 'RFC'),
-            \PHPSpreadsheet::ColumnaExcel('J', 'CURP', 'CURP'),
-            \PHPSpreadsheet::ColumnaExcel('K', 'RAZON_SOCIAL', 'RAZÓN SOCIAL O DENOMINACIÓN'),
-            \PHPSpreadsheet::ColumnaExcel('L', 'FECHA_NAC', 'FECHA DE NACIMIENTO O CONSTITUCIÓN', $estilos['centrado']),
-            \PHPSpreadsheet::ColumnaExcel('M', 'NACIONALIDAD', 'NACIONALIDAD', $estilos['centrado']),
-            \PHPSpreadsheet::ColumnaExcel('N', 'DOMICILIO', 'DOMICILIO (calle, número exterior e interior (si aplica) y código postal)'),
-            \PHPSpreadsheet::ColumnaExcel('O', 'COLONIA', 'COLONIA'),
-            \PHPSpreadsheet::ColumnaExcel('P', 'CIUDAD', 'CIUDAD O POBLACIÓN'),
-            \PHPSpreadsheet::ColumnaExcel('Q', 'PAIS', 'PAIS', $estilos['centrado']),
-            \PHPSpreadsheet::ColumnaExcel('R', 'SUC_ID_ESTADO', 'ESTADO', $estilos['centrado']),
-            \PHPSpreadsheet::ColumnaExcel('S', 'TELEFONO', 'TELEFONO OFICINA/PARTICULAR', $estilos['centrado']),
-            \PHPSpreadsheet::ColumnaExcel('T', 'ID_ACTIVIDAD_ECONO', 'ACTIVIDAD ECONOMICA', $estilos['centrado']),
-            \PHPSpreadsheet::ColumnaExcel('U', 'CALIFICACION', 'CALIFICACIÓN', $estilos['centrado']),
-            \PHPSpreadsheet::ColumnaExcel('V', 'ALTA', 'FECHA ALTA', $estilos['centrado']),
-            \PHPSpreadsheet::ColumnaExcel('W', 'ID_SUCURSAL_SISTEMA', 'SUCURSAL', $estilos['centrado']),
-            \PHPSpreadsheet::ColumnaExcel('X', 'GENERO', 'GENERO', $estilos['centrado']),
-            \PHPSpreadsheet::ColumnaExcel('Y', 'CORREO_ELECTRONICO', 'CORREO ELECTRONICO'),
-            \PHPSpreadsheet::ColumnaExcel('Z', 'FIRMA_ELECT', 'FIRMA ELEC.'),
-            \PHPSpreadsheet::ColumnaExcel('AA', 'PROFESION', 'PROFESION', $estilos['centrado']),
-            \PHPSpreadsheet::ColumnaExcel('AB', 'OCUPACION', 'OCUPACION', $estilos['centrado']),
-            \PHPSpreadsheet::ColumnaExcel('AC', 'PAIS_NAC', 'PAIS NAC.', $estilos['centrado']),
-            \PHPSpreadsheet::ColumnaExcel('AD', 'EDO_NAC', 'EDO. NAC.', $estilos['centrado']),
-            \PHPSpreadsheet::ColumnaExcel('AE', 'LUGAR_NAC', 'LUGAR NAC.'),
-            \PHPSpreadsheet::ColumnaExcel('AF', 'NUMERO_DOCUMENTO', 'NUMERO DE DOCUMENTO', $estilos['centrado']),
-            \PHPSpreadsheet::ColumnaExcel('AG', 'CONOCIMIENTO', 'CONOCIMIENTO CLIENTE', $estilos['centrado']),
-            \PHPSpreadsheet::ColumnaExcel('AH', 'INMIGRACION', 'REGISTRO NACIONAL DE INMIGRACION', $estilos['centrado']),
-            \PHPSpreadsheet::ColumnaExcel('AI', 'CUENTA_ORIGINAL', 'CUENTA ORIGINAL', $estilos['centrado']),
-            \PHPSpreadsheet::ColumnaExcel('AJ', 'SITUACION_CREDITO', 'SITUACIÓN CLIENTE', $estilos['centrado']),
-            \PHPSpreadsheet::ColumnaExcel('AK', 'TIPO_DOCUMENTO', 'TIPO DOCUMENTO', $estilos['centrado']),
-            \PHPSpreadsheet::ColumnaExcel('AL', 'INDICADOR_EMPLEO', 'INDICADOR EMPLEO', $estilos['centrado']),
-            \PHPSpreadsheet::ColumnaExcel('AM', 'EMPRESAS', 'EMPRESA LABORA(Ó)'),
-            \PHPSpreadsheet::ColumnaExcel('AN', 'INDICADOR_GOBIERNO', 'INDICADOR GOBIERNO', $estilos['centrado']),
-            \PHPSpreadsheet::ColumnaExcel('AO', 'PUESTO', 'PUESTO'),
-            \PHPSpreadsheet::ColumnaExcel('AP', 'FECHA_INICIO', 'FECHA INICIO', $estilos['centrado']),
-            \PHPSpreadsheet::ColumnaExcel('AQ', 'FEH_FIN', 'FEH FIN', $estilos['centrado']),
-            \PHPSpreadsheet::ColumnaExcel('AR', 'CP', 'CP', $estilos['centrado'])
+            \PHPSpreadsheet::ColumnaExcel('CDGCL', 'ID CLIENTE', $soloCentrado),
+            \PHPSpreadsheet::ColumnaExcel('GRUPO', 'CUENTA', $soloCentrado),
+            \PHPSpreadsheet::ColumnaExcel('ORIGEN', 'Origen', $soloCentrado),
+            \PHPSpreadsheet::ColumnaExcel('NOMBRE', 'NOMBRE'),
+            \PHPSpreadsheet::ColumnaExcel('ADICIONAL', 'ADICIONAL'),
+            \PHPSpreadsheet::ColumnaExcel('A_PATERNO', 'APELLIDO PATERNO'),
+            \PHPSpreadsheet::ColumnaExcel('A_MATERNO', 'APELLIDO MATERNO'),
+            \PHPSpreadsheet::ColumnaExcel('TIPO_PERSONA', 'TIPO DE PERSONA', $soloCentrado),
+            \PHPSpreadsheet::ColumnaExcel('RFC', 'RFC'),
+            \PHPSpreadsheet::ColumnaExcel('CURP', 'CURP'),
+            \PHPSpreadsheet::ColumnaExcel('RAZON_SOCIAL', 'RAZÓN SOCIAL O DENOMINACIÓN'),
+            \PHPSpreadsheet::ColumnaExcel('FECHA_NAC', 'FECHA DE NACIMIENTO O CONSTITUCIÓN', $soloCentrado),
+            \PHPSpreadsheet::ColumnaExcel('NACIONALIDAD', 'NACIONALIDAD', $soloCentrado),
+            \PHPSpreadsheet::ColumnaExcel('DOMICILIO', 'DOMICILIO (calle, número exterior e interior (si aplica) y código postal)'),
+            \PHPSpreadsheet::ColumnaExcel('COLONIA', 'COLONIA'),
+            \PHPSpreadsheet::ColumnaExcel('CIUDAD', 'CIUDAD O POBLACIÓN'),
+            \PHPSpreadsheet::ColumnaExcel('PAIS', 'PAIS', $soloCentrado),
+            \PHPSpreadsheet::ColumnaExcel('SUC_ID_ESTADO', 'ESTADO', $soloCentrado),
+            \PHPSpreadsheet::ColumnaExcel('TELEFONO', 'TELEFONO OFICINA/PARTICULAR', $soloCentrado),
+            \PHPSpreadsheet::ColumnaExcel('ID_ACTIVIDAD_ECONO', 'ACTIVIDAD ECONOMICA', $soloCentrado),
+            \PHPSpreadsheet::ColumnaExcel('CALIFICACION', 'CALIFICACIÓN', $soloCentrado),
+            \PHPSpreadsheet::ColumnaExcel('ALTA', 'FECHA ALTA', $soloCentrado),
+            \PHPSpreadsheet::ColumnaExcel('ID_SUCURSAL_SISTEMA', 'SUCURSAL', $soloCentrado),
+            \PHPSpreadsheet::ColumnaExcel('GENERO', 'GENERO', $soloCentrado),
+            \PHPSpreadsheet::ColumnaExcel('CORREO_ELECTRONICO', 'CORREO ELECTRONICO'),
+            \PHPSpreadsheet::ColumnaExcel('FIRMA_ELECT', 'FIRMA ELEC.'),
+            \PHPSpreadsheet::ColumnaExcel('PROFESION', 'PROFESION', $soloCentrado),
+            \PHPSpreadsheet::ColumnaExcel('OCUPACION', 'OCUPACION', $soloCentrado),
+            \PHPSpreadsheet::ColumnaExcel('PAIS_NAC', 'PAIS NAC.', $soloCentrado),
+            \PHPSpreadsheet::ColumnaExcel('EDO_NAC', 'EDO. NAC.', $soloCentrado),
+            \PHPSpreadsheet::ColumnaExcel('LUGAR_NAC', 'LUGAR NAC.'),
+            \PHPSpreadsheet::ColumnaExcel('NUMERO_DOCUMENTO', 'NUMERO DE DOCUMENTO', $soloCentrado),
+            \PHPSpreadsheet::ColumnaExcel('CONOCIMIENTO', 'CONOCIMIENTO CLIENTE', $soloCentrado),
+            \PHPSpreadsheet::ColumnaExcel('INMIGRACION', 'REGISTRO NACIONAL DE INMIGRACION', $soloCentrado),
+            \PHPSpreadsheet::ColumnaExcel('CUENTA_ORIGINAL', 'CUENTA ORIGINAL', $soloCentrado),
+            \PHPSpreadsheet::ColumnaExcel('SITUACION_CREDITO', 'SITUACIÓN CLIENTE', $soloCentrado),
+            \PHPSpreadsheet::ColumnaExcel('TIPO_DOCUMENTO', 'TIPO DOCUMENTO', $soloCentrado),
+            \PHPSpreadsheet::ColumnaExcel('INDICADOR_EMPLEO', 'INDICADOR EMPLEO', $soloCentrado),
+            \PHPSpreadsheet::ColumnaExcel('EMPRESAS', 'EMPRESA LABORA(Ó)'),
+            \PHPSpreadsheet::ColumnaExcel('INDICADOR_GOBIERNO', 'INDICADOR GOBIERNO', $soloCentrado),
+            \PHPSpreadsheet::ColumnaExcel('PUESTO', 'PUESTO'),
+            \PHPSpreadsheet::ColumnaExcel('FECHA_INICIO', 'FECHA INICIO', $soloCentrado),
+            \PHPSpreadsheet::ColumnaExcel('FEH_FIN', 'FEH FIN', $soloCentrado),
+            \PHPSpreadsheet::ColumnaExcel('CP', 'CP', $soloCentrado)
         ];
 
         $filas = OperacionesDao::ConsultarClientes($_GET['Inicial'], $_GET['Final']);
 
-        \PHPSpreadsheet::GeneraExcel('Identificación de Clientes Cultiva', 'Reporte', 'Identificación de Clientes', $columnas, $filas);
+        \PHPSpreadsheet::DescargaExcel('Identificación de Clientes Cultiva', 'Reporte', 'Identificación de Clientes', $columnas, $filas);
     }
 
     public function generarExcelClientesCR()
     {
         $estilos = \PHPSpreadsheet::GetEstilosExcel();
+        $soloCentrado = [
+            'estilo' => $estilos['centrado']
+        ];
 
         $columnas = [
-            \PHPSpreadsheet::ColumnaExcel('A', 'CLIENTE', 'CLIENTE', $estilos['centrado']),
-            \PHPSpreadsheet::ColumnaExcel('B', 'GRUPO', 'NUMERO DE CUENTA- CONTRATO-OPERACIÓN- PÓLIZA O NSS2', $estilos['centrado']),
-            \PHPSpreadsheet::ColumnaExcel('C', 'CUENTA_RELACION', 'NO. CUENTA RELACIONADA', $estilos['centrado']),
-            \PHPSpreadsheet::ColumnaExcel('D', 'DESCRIPCION_OPERACION', 'DESCRIPCION DE LA OPERACIÓN*', $estilos['centrado']),
-            \PHPSpreadsheet::ColumnaExcel('E', 'IDENTIFICA_CUENTA', 'IDENTIFICA CUENTA como interna', $estilos['centrado']),
-            \PHPSpreadsheet::ColumnaExcel('F', 'CONSERVA', 'CONSERVA CUENTA ORIGINAL'),
-            \PHPSpreadsheet::ColumnaExcel('G', 'OFICINA_CLIENTE', 'OFICINA CLIENTE', $estilos['centrado']),
-            \PHPSpreadsheet::ColumnaExcel('H', 'FECHA_INICIO_OPERACION', 'FECHA INICIO OPERACIÓN', $estilos['centrado'])
+            \PHPSpreadsheet::ColumnaExcel('CLIENTE', 'CLIENTE', $soloCentrado),
+            \PHPSpreadsheet::ColumnaExcel('GRUPO', 'NUMERO DE CUENTA- CONTRATO-OPERACIÓN- PÓLIZA O NSS2', $soloCentrado),
+            \PHPSpreadsheet::ColumnaExcel('CUENTA_RELACION', 'NO. CUENTA RELACIONADA', $soloCentrado),
+            \PHPSpreadsheet::ColumnaExcel('DESCRIPCION_OPERACION', 'DESCRIPCION DE LA OPERACIÓN*', $soloCentrado),
+            \PHPSpreadsheet::ColumnaExcel('IDENTIFICA_CUENTA', 'IDENTIFICA CUENTA como interna', $soloCentrado),
+            \PHPSpreadsheet::ColumnaExcel('CONSERVA', 'CONSERVA CUENTA ORIGINAL'),
+            \PHPSpreadsheet::ColumnaExcel('OFICINA_CLIENTE', 'OFICINA CLIENTE', $soloCentrado),
+            \PHPSpreadsheet::ColumnaExcel('FECHA_INICIO_OPERACION', 'FECHA INICIO OPERACIÓN', $soloCentrado)
         ];
 
         $filas = OperacionesDao::CuentasRelacionadas($_GET['Inicial'], $_GET['Final']);
 
-        \PHPSpreadsheet::GeneraExcel('Cuentas Relacionadas Cultiva', 'Reporte', 'Cuentas Relacionadas PLD Cultiva', $columnas, $filas);
+        \PHPSpreadsheet::DescargaExcel('Cuentas Relacionadas Cultiva', 'Reporte', 'Cuentas Relacionadas PLD Cultiva', $columnas, $filas);
     }
 
     public function generarExcelClientesPT()
     {
         $estilos = \PHPSpreadsheet::GetEstilosExcel();
+        $soloCentrado = [
+            'estilo' => $estilos['centrado']
+        ];
 
         $columnas = [
-            \PHPSpreadsheet::ColumnaExcel('A', 'CDGCL', 'ID CLIENTE', $estilos['centrado']),
-            \PHPSpreadsheet::ColumnaExcel('B', 'GRUPO', 'Cuenta', $estilos['centrado']),
-            \PHPSpreadsheet::ColumnaExcel('C', 'INSTRUMENTO', 'INSTRUMENTO', $estilos['centrado']),
-            \PHPSpreadsheet::ColumnaExcel('D', 'TIPO_MONEDA', 'TIPO MONEDA', $estilos['centrado']),
-            \PHPSpreadsheet::ColumnaExcel('E', 'T_CAMBIO', 'T/CAMBIO'),
-            \PHPSpreadsheet::ColumnaExcel('F', 'MONT_PRESTAMO', 'MONTO Prest/INV.'),
-            \PHPSpreadsheet::ColumnaExcel('G', 'PLAZO', 'PLAZO', $estilos['centrado']),
-            \PHPSpreadsheet::ColumnaExcel('H', 'FRECUENCIA', 'FRECUENCIA', $estilos['centrado']),
-            \PHPSpreadsheet::ColumnaExcel('I', 'TOTAL_PAGOS', 'TOTAL PAGOS', $estilos['centrado']),
-            \PHPSpreadsheet::ColumnaExcel('J', 'MONTO_FIN_PAGO', 'Monto C/Pago'),
-            \PHPSpreadsheet::ColumnaExcel('K', 'ADELANTAR_PAGO', 'AUT. ADELANTAR PAGO', $estilos['centrado']),
-            \PHPSpreadsheet::ColumnaExcel('L', 'NUMERO_APORTACIONES', 'NO.APORTACIONES', $estilos['centrado']),
-            \PHPSpreadsheet::ColumnaExcel('M', 'MONTO_APORTACIONES', 'Monto APORTACIONES'),
-            \PHPSpreadsheet::ColumnaExcel('N', 'ID_SUCURSAL_SISTEMA', 'SUCURSAL', $estilos['centrado']),
-            \PHPSpreadsheet::ColumnaExcel('O', 'ORIGEN_RECURSO', 'ORIGEN RECURSOS'),
-            \PHPSpreadsheet::ColumnaExcel('P', 'DESTINO_RECURSOS', 'DESTINO RECURSOS'),
-            \PHPSpreadsheet::ColumnaExcel('Q', 'FECHA_INICIO_CREDITO', 'FECHA INICIO CREDITO', $estilos['centrado']),
-            \PHPSpreadsheet::ColumnaExcel('R', 'FECHA_FIN', 'FECHA FIN CREDITO', $estilos['centrado']),
-            \PHPSpreadsheet::ColumnaExcel('S', 'DESTINO', 'Destino/nacionalidad', $estilos['centrado']),
-            \PHPSpreadsheet::ColumnaExcel('T', 'ORIGEN', 'Origen/nacionalidad2', $estilos['centrado']),
-            \PHPSpreadsheet::ColumnaExcel('U', 'TIPO_OPERACION', 'TIPO OPERACIÓN', $estilos['centrado']),
-            \PHPSpreadsheet::ColumnaExcel('V', 'INST_MONETARIO', 'INSTR MONETARIOS', $estilos['centrado']),
-            \PHPSpreadsheet::ColumnaExcel('W', 'TIPO_CREDITO', 'TIPO CRÉDITO', $estilos['centrado']),
-            \PHPSpreadsheet::ColumnaExcel('X', 'PRODUCTO', 'CLAVE PRODUCTO', $estilos['centrado']),
-            \PHPSpreadsheet::ColumnaExcel('Y', 'PAIS_ORIGEN', 'PAIS ORIGEN', $estilos['centrado']),
-            \PHPSpreadsheet::ColumnaExcel('Z', 'PAIS_DESTINO', 'PAIS DESTINO', $estilos['centrado']),
-            \PHPSpreadsheet::ColumnaExcel('AA', 'ALTA_CONTRATO', 'ALTA CONTRATO', $estilos['centrado']),
-            \PHPSpreadsheet::ColumnaExcel('AB', 'TIPO_CONTRATO', 'TIPO DE CONTRATO', $estilos['centrado']),
-            \PHPSpreadsheet::ColumnaExcel('AC', 'TIP_DOC', 'TIPO DE DOCUMENTO/FOLIO'),
-            \PHPSpreadsheet::ColumnaExcel('AD', 'LATLON', 'LATITUD/LONGITUD'),
-            \PHPSpreadsheet::ColumnaExcel('AE', 'LOCALIZACION', 'LOCALIZACION'),
-            \PHPSpreadsheet::ColumnaExcel('AF', '', 'PROPIETARIO REAL'),
-            \PHPSpreadsheet::ColumnaExcel('AG', '', 'PROVEEDOR DE RECURSOS')
+            \PHPSpreadsheet::ColumnaExcel('CDGCL', 'ID CLIENTE', $soloCentrado),
+            \PHPSpreadsheet::ColumnaExcel('GRUPO', 'Cuenta', $soloCentrado),
+            \PHPSpreadsheet::ColumnaExcel('INSTRUMENTO', 'INSTRUMENTO', $soloCentrado),
+            \PHPSpreadsheet::ColumnaExcel('TIPO_MONEDA', 'TIPO MONEDA', $soloCentrado),
+            \PHPSpreadsheet::ColumnaExcel('T_CAMBIO', 'T/CAMBIO'),
+            \PHPSpreadsheet::ColumnaExcel('MONT_PRESTAMO', 'MONTO Prest/INV.'),
+            \PHPSpreadsheet::ColumnaExcel('PLAZO', 'PLAZO', $soloCentrado),
+            \PHPSpreadsheet::ColumnaExcel('FRECUENCIA', 'FRECUENCIA', $soloCentrado),
+            \PHPSpreadsheet::ColumnaExcel('TOTAL_PAGOS', 'TOTAL PAGOS', $soloCentrado),
+            \PHPSpreadsheet::ColumnaExcel('MONTO_FIN_PAGO', 'Monto C/Pago'),
+            \PHPSpreadsheet::ColumnaExcel('ADELANTAR_PAGO', 'AUT. ADELANTAR PAGO', $soloCentrado),
+            \PHPSpreadsheet::ColumnaExcel('NUMERO_APORTACIONES', 'NO.APORTACIONES', $soloCentrado),
+            \PHPSpreadsheet::ColumnaExcel('MONTO_APORTACIONES', 'Monto APORTACIONES'),
+            \PHPSpreadsheet::ColumnaExcel('ID_SUCURSAL_SISTEMA', 'SUCURSAL', $soloCentrado),
+            \PHPSpreadsheet::ColumnaExcel('ORIGEN_RECURSO', 'ORIGEN RECURSOS'),
+            \PHPSpreadsheet::ColumnaExcel('DESTINO_RECURSOS', 'DESTINO RECURSOS'),
+            \PHPSpreadsheet::ColumnaExcel('FECHA_INICIO_CREDITO', 'FECHA INICIO CREDITO', $soloCentrado),
+            \PHPSpreadsheet::ColumnaExcel('FECHA_FIN', 'FECHA FIN CREDITO', $soloCentrado),
+            \PHPSpreadsheet::ColumnaExcel('DESTINO', 'Destino/nacionalidad', $soloCentrado),
+            \PHPSpreadsheet::ColumnaExcel('ORIGEN', 'Origen/nacionalidad2', $soloCentrado),
+            \PHPSpreadsheet::ColumnaExcel('TIPO_OPERACION', 'TIPO OPERACIÓN', $soloCentrado),
+            \PHPSpreadsheet::ColumnaExcel('INST_MONETARIO', 'INSTR MONETARIOS', $soloCentrado),
+            \PHPSpreadsheet::ColumnaExcel('TIPO_CREDITO', 'TIPO CRÉDITO', $soloCentrado),
+            \PHPSpreadsheet::ColumnaExcel('PRODUCTO', 'CLAVE PRODUCTO', $soloCentrado),
+            \PHPSpreadsheet::ColumnaExcel('PAIS_ORIGEN', 'PAIS ORIGEN', $soloCentrado),
+            \PHPSpreadsheet::ColumnaExcel('PAIS_DESTINO', 'PAIS DESTINO', $soloCentrado),
+            \PHPSpreadsheet::ColumnaExcel('ALTA_CONTRATO', 'ALTA CONTRATO', $soloCentrado),
+            \PHPSpreadsheet::ColumnaExcel('TIPO_CONTRATO', 'TIPO DE CONTRATO', $soloCentrado),
+            \PHPSpreadsheet::ColumnaExcel('TIP_DOC', 'TIPO DE DOCUMENTO/FOLIO'),
+            \PHPSpreadsheet::ColumnaExcel('LATLON', 'LATITUD/LONGITUD'),
+            \PHPSpreadsheet::ColumnaExcel('LOCALIZACION', 'LOCALIZACION'),
+            \PHPSpreadsheet::ColumnaExcel('', 'PROPIETARIO REAL'),
+            \PHPSpreadsheet::ColumnaExcel('', 'PROVEEDOR DE RECURSOS')
         ];
 
         $filas = OperacionesDao::ConsultarPerfilTransaccional($_GET['Inicial'], $_GET['Final']);
 
-        \PHPSpreadsheet::GeneraExcel('Perfil Transaccional Cultiva', 'Reporte', 'Perfil Transaccional Cultiva', $columnas, $filas);
+        \PHPSpreadsheet::DescargaExcel('Perfil Transaccional Cultiva', 'Reporte', 'Perfil Transaccional Cultiva', $columnas, $filas);
     }
 }

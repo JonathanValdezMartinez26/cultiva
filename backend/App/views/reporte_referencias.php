@@ -15,23 +15,6 @@
                     <div class="row">
                         <div class="col-md-2">
                             <div class="form-group">
-                                <label for="fecha">Fecha</label>
-                                <input type="date" class="form-control" id="fecha" value="<?= date('Y-m-d') ?>" max="<?= date('Y-m-d') ?>">
-                            </div>
-                        </div>
-                        <div class="col-md-2">
-                            <div class="form-group">
-                                <label for="fecha">Institución</label>
-                                <select class="form-control" id="institucion">
-                                    <option value="0">Todas</option>
-                                    <option value="1">Oxxo</option>
-                                    <option value="2">Paycash</option>
-                                    <option value="3">Bancopel</option>
-                                </select>
-                            </div>
-                        </div>
-                        <div class="col-md-2">
-                            <div class="form-group">
                                 <label for="noCredito">No. Crédito</label>
                                 <input type="text" class="form-control" id="noCredito" placeholder="000000" maxlength="6">
                             </div>
@@ -51,14 +34,13 @@
                     <table class="table table-striped table-bordered table-hover" id="tablaPrincipal">
                         <thead>
                             <tr>
-                                <th>Cliente</th>
                                 <th>Crédito</th>
-                                <th>Ciclo</th>
+                                <th>Grupo</th>
                                 <th>Sucursal</th>
-                                <th>Región</th>
-                                <th>Tipo pago</th>
-                                <th>No. Referencia</th>
-                                <th>Institución</th>
+                                <th>Tipo</th>
+                                <th>Paycash</th>
+                                <th>Bancopel</th>
+                                <th>Oxxo</th>
                             </tr>
                         </thead>
                         <tbody>

@@ -6,8 +6,8 @@ defined("APPPATH") or die("Access denied");
 
 use \Core\Controller;
 
-require_once dirname(__DIR__) . '/libs/mpdf/mpdf.php';
-require_once dirname(__DIR__) . '/libs/PhpSpreadsheet/PhpSpreadsheet.php';
+require_once dirname(__DIR__) . '../../libs/mpdf/mpdf.php';
+require_once dirname(__DIR__) . '../../libs/PhpSpreadsheet/PhpSpreadsheet.php';
 
 class Contenedor extends Controller
 {
@@ -78,7 +78,7 @@ class Contenedor extends Controller
                                 <div class="menu_section">
                                     <h3>GENERAL </h3>     
         HTML;
-        
+
         if ($this->__perfil == 'ADMIN' || $this->__perfil == 'OFCLD' || $this->__perfil == 'PLDCO') {
             $menu .= <<<HTML
             <ul class="nav side-menu">

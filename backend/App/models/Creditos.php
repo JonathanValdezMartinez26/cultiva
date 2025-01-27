@@ -14,23 +14,24 @@ class Creditos extends Model
     {
         $qry = <<<SQL
             SELECT
-                CODIGO_GPO AS CREDITO,
-                NOMBRE_GPO AS GRUPO,
-                NOM_SUCURSAL AS SUCURSAL,
-                REF_
+                IC.CODIGO_GPO AS CREDITO,
+                IC.NOMBRE_GPO AS GRUPO,
+                IC.NOM_SUCURSAL AS SUCURSAL,
+                IC.PAGO_PARCIAL_LETRA AS REF_PAGO_OXXO,
+                IC.REF_PAYCASH AS REF_PAGO_PAYCASH,
+                IC.NOM_GERENTE_SUC AS REF_PAGO_BANCOPPEL,
+                IC.CUENTA_BANCARIA AS REF_COMISION_OXXO,
+                IC.NOM_ASESOR  AS REF_COMISION_PAYCASH,
+                IC.SUPERVISOR AS REF_COMISION_BANCOPPEL
             FROM
-                IMPCONT IC ON IC.CODIGO_GPO = PRC.CDGNS
+                IMPCONT IC
             WHERE
                 IC.CODIGO_EMP = 'EMPFIN'
                 AND IC.TIPO_DOC = 'PAGO'
         SQL;
 
-        $prm = [
-            'fecha' => $datos['fecha']
-        ];
-
         if (isset($datos['credito']) && $datos['credito'] !== '') {
-            $qry .= ' AND IM.CODIGO_GPO :credito';
+            $qry .= ' AND IC.CODIGO_GPO = :credito';
             $prm['credito'] = $datos['credito'];
         }
 
