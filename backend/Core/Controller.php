@@ -6,6 +6,141 @@ defined("APPPATH") or die("Access denied");
 
 class Controller
 {
+    public $mensajes = <<<JAVASCRIPT
+        const tipoMensaje = (mensaje, icono, config = null) => {
+            let configMensaje = (typeof mensaje === "object") ? { content: mensaje } : { text: mensaje }
+            configMensaje.icon = icono
+            if (config) Object.assign(configMensaje, config)
+            return swal(configMensaje)
+        }
+
+        const showError = (mensaje) =>  tipoMensaje(mensaje, "error")
+        const showSuccess = (mensaje) => tipoMensaje(mensaje, "success")
+        const showInfo = (mensaje) => tipoMensaje(mensaje, "info")
+        const showWarning = (mensaje) => tipoMensaje(mensaje, "warning")
+        const showWait = (mensaje) => {
+            const config = {
+                button: false,
+                closeOnClickOutside: false,
+                closeOnEsc: false
+            }
+            return tipoMensaje(mensaje, "/img/wait.gif", config)
+        }
+    JAVASCRIPT;
+    public $confirmarMovimiento = <<<JAVASCRIPT
+        const confirmarMovimiento = async (titulo, mensaje, html = null) => {
+            return await swal({ title: titulo, content: html, text: mensaje, icon: "warning", buttons: ["No", "Si, continuar"], dangerMode: true })
+        }
+    JAVASCRIPT;
+    public $consultaServidor = <<<JAVASCRIPT
+        const consultaServidor = (url, datos, fncOK, metodo = "POST", tipo = "JSON", tipoContenido = null, procesar = null) => {
+            swal({ text: "Procesando la solicitud, espere un momento...", icon: "/img/wait.gif", button: false, closeOnClickOutside: false, closeOnEsc: false })
+            const configuracion = {
+                type: metodo,
+                url: url,
+                data: datos,
+                success: (res) => {
+                    if (tipo === "JSON") {
+                        try {
+                            res = JSON.parse(res)
+                        } catch (error) {
+                            console.error(error)
+                            res =  {
+                                success: false,
+                                mensaje: "Ocurrió un error al procesar la respuesta del servidor."
+                            }
+                        }
+                    }
+                    if (tipo === "blob") res = new Blob([res], { type: "application/pdf" })
+
+                    swal.close()
+                    fncOK(res)
+                },
+                error: (error) => {
+                    console.error(error)
+                    showError("Ocurrió un error al procesar la solicitud.")
+                }
+            }
+
+            if (tipoContenido != null) configuracion.contentType = tipoContenido 
+            if (procesar != null) configuracion.processData = procesar
+
+            $.ajax(configuracion)
+        }
+    JAVASCRIPT;
+    public $configuraTabla = <<<JAVASCRIPT
+        const configuraTabla = (id, {noRegXvista = true} = {}) => {
+            const configuracion = {
+                lengthMenu: [
+                    [10, 40, -1],
+                    [10, 40, "Todos"]
+                ],
+                order: [],
+                autoWidth: false,
+                language: {
+                    emptyTable: "No hay datos disponibles",
+                    paginate: {
+                        previous: "Anterior",
+                        next: "Siguiente",
+                    },
+                    info: "Mostrando de _START_ a _END_ de _TOTAL_ registros",
+                    infoEmpty: "Sin registros para mostrar",
+                    zeroRecords: "No se encontraron registros",
+                    lengthMenu: "Mostrar _MENU_ registros por página",
+                    search: "Buscar:",
+                }
+            }
+
+            configuracion.lengthChange = noRegXvista
+
+            $("#" + id).DataTable(configuracion)
+
+            $("#"  + id + " input[type=search]").keyup(() => {
+                $("#example")
+                    .DataTable()
+                    .search(jQuery.fn.DataTable.ext.type.search.html(this.value))
+                    .draw()
+            })
+        }
+    JAVASCRIPT;
+    public $descargaExcel = <<<JAVASCRIPT
+        const descargaExcel = (url, parametros = {}) => {
+            const formDescarga = document.createElement("form")
+            formDescarga.action = url
+            formDescarga.method = "POST"
+            formDescarga.target = "_blank"
+            formDescarga.style.display = "none"
+
+            Object.entries(parametros).forEach(([clave, valor]) => {
+                const input = document.createElement("input")
+                input.name = clave
+                input.value = valor
+                formDescarga.appendChild(input)
+            })
+
+            document.body.appendChild(formDescarga)
+            formDescarga.submit()
+
+            document.body.removeChild(formDescarga)
+
+            showInfo("Generando el archivo, espere un momento...")
+        }
+    JAVASCRIPT;
+    private $descargaExcel = <<<JAVASCRIPT
+        const descargaExcel = (url) => {
+                swal({ text: "Generando archivo, espere un momento...", icon: "/img/wait.gif", button: false, closeOnClickOutside: false, closeOnEsc: false })
+            
+            const ventana = window.open(url, "_blank")
+
+            const intervalo = setInterval(() => {
+                if (ventana.closed) {
+                    clearInterval(intervalo)
+                    swal.close()
+                }
+            }, 1000)
+        }
+    JAVASCRIPT;
+
     public $__usuario = '';
     public $__nombre = '';
     public $__puesto = '';

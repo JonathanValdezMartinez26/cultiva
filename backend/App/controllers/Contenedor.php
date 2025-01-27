@@ -22,7 +22,7 @@ class Contenedor extends Controller
         $nombre = $this->__nombre;
         $perfil = $this->__perfil;
 
-        $header = <<<html
+        $header = <<<HTML
         <!DOCTYPE html>
         <html lang="es">
             <head>
@@ -48,9 +48,9 @@ class Contenedor extends Controller
                 <link rel="stylesheet" type="text/css" href="/css/custom.min.css">
                 $extra 
             </head>
-        html;
+        HTML;
 
-        $menu = <<<html
+        $menu = <<<HTML
         <body class="nav-md">
             <div class="container body" >
                 <div class="main_container" style="background: #ffffff">
@@ -77,12 +77,12 @@ class Contenedor extends Controller
                             <div id="sidebar-menu" class="main_menu_side hidden-print main_menu">
                                 <div class="menu_section">
                                     <h3>GENERAL </h3>     
-html;
-
+        HTML;
+        
         if ($this->__perfil == 'ADMIN' || $this->__perfil == 'OFCLD' || $this->__perfil == 'PLDCO') {
-            $menu .= <<<html
+            $menu .= <<<HTML
             <ul class="nav side-menu">
-                <li><a><i class="glyphicon glyphicon glyphicon-th-list"> </i>&nbsp; Operaciones <span class="fa fa-chevron-down"></span></a>
+                <li><a><i class="glyphicon glyphicon-th-list"> </i>&nbsp; Operaciones <span class="fa fa-chevron-down"></span></a>
                     <ul class="nav child_menu">
                         <li><a href="/Operaciones/ReportePLDDesembolsos/">PLD Reporte Desembolsos</a></li>
                         <li><a href="/Operaciones/ReportePLDPagos/">PLD Reporte Pagos</a></li>
@@ -94,17 +94,30 @@ html;
                 </li>
             </ul>
             <ul class="nav side-menu">
-                <li><a><i class="glyphicon glyphicon glyphicon glyphicon-globe"></i>&nbsp;Api Condusef<span class="fa fa-chevron-down"></span></a>
+                <li><a><i class="glyphicon glyphicon-globe"></i>&nbsp;Api Condusef<span class="fa fa-chevron-down"></span></a>
                     <ul class="nav child_menu">
                         <li><a href="/ApiCondusef/AddRedeco/">Registrar Quejas REDECO</a></li>
                         <li><a href="/ApiCondusef/AddReune/">Registrar Quejas REUNE</a></li>
                     </ul>
                 </li>
             </ul>
-html;
+            HTML;
         }
 
-        $menu .= <<<html
+        $perimisos = ['AMGM', 'MCDP', 'PHEE', 'LVGA'];
+        if (in_array($this->__usuario, $perimisos)) {
+            $menu .= <<<HTML
+            <ul class="nav side-menu">
+                <li><a><i class="fa fa-users"></i>Créditos<span class="fa fa-chevron-down"></span></a>
+                    <ul class="nav child_menu">
+                        <li><a href="/Creditos/ReporteReferencias/">Reporte de Referencias</a></li>
+                    </ul>
+                </li>
+            </ul>
+            HTML;
+        }
+
+        $menu .= <<<HTML
                                 </div>
                             </div>
                         </div>
@@ -132,13 +145,13 @@ html;
                         </div>
                     </div>
                 </div>
-        html;
+        HTML;
         return $header . $menu;
     }
 
     public function footer($extra = '')
     {
-        $footer = <<<html
+        $footer = <<<HTML
                 </div>
                 <script src="/js/jquery.min.js"></script>
                 <script src="/js/moment/moment.min.js"></script>
@@ -159,7 +172,7 @@ html;
                 $extra
             </body>
         </html>
-        html;
+        HTML;
 
         return $footer;
     }

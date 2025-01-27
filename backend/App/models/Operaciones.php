@@ -8,7 +8,6 @@ use \Core\Database;
 
 class Operaciones
 {
-
     public static function ConsultarDesembolsos($Inicial, $Final)
     {
         $query = <<<SQL
