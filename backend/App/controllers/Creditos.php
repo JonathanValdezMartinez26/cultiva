@@ -123,12 +123,12 @@ class Creditos extends Controller
             \PHPSpreadsheet::ColumnaExcel('CREDITO', 'Crédito', $texto),
             \PHPSpreadsheet::ColumnaExcel('GRUPO', 'Grupo'),
             \PHPSpreadsheet::ColumnaExcel('SUCURSAL', 'Sucursal'),
-            \PHPSpreadsheet::ColumnaExcel('REF_PAGO_OXXO', 'Pago Oxxo', $texto),
             \PHPSpreadsheet::ColumnaExcel('REF_PAGO_PAYCASH', 'Pago Paycash', $texto),
             \PHPSpreadsheet::ColumnaExcel('REF_PAGO_BANCOPPEL', 'Pago Bancoppel', $texto),
-            \PHPSpreadsheet::ColumnaExcel('REF_COMISION_OXXO', 'Comisión Oxxo', $texto),
+            \PHPSpreadsheet::ColumnaExcel('REF_PAGO_OXXO', 'Pago Oxxo', $texto),
             \PHPSpreadsheet::ColumnaExcel('REF_COMISION_PAYCASH', 'Comisión Paycash', $texto),
-            \PHPSpreadsheet::ColumnaExcel('REF_COMISION_BANCOPPEL', 'Comisión Bancoppel', $texto)
+            \PHPSpreadsheet::ColumnaExcel('REF_COMISION_BANCOPPEL', 'Comisión Bancoppel', $texto),
+            \PHPSpreadsheet::ColumnaExcel('REF_COMISION_OXXO', 'Comisión Oxxo', $texto),
         ];
 
         $datos = CreditosDao::GetReporteReferencias($_GET);
