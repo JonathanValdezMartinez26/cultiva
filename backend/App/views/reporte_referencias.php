@@ -37,6 +37,7 @@
                                 <th>Crédito</th>
                                 <th>Grupo</th>
                                 <th>Sucursal</th>
+                                <th>Región</th>
                                 <th>Tipo</th>
                                 <th>Paycash</th>
                                 <th>Bancopel</th>

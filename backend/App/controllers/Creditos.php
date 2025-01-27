@@ -56,15 +56,16 @@ class Creditos extends Controller
                             const bancopel = getElementoRef(item.REF_PAGO_BANCOPPEL, item.REF_COMISION_BANCOPPEL)
                             const oxxo = getElementoRef(item.REF_PAGO_OXXO, item.REF_COMISION_OXXO)
 
-                            const nItem = {
-                                Credito: item.CREDITO,
-                                Grupo: item.GRUPO,
-                                Sucursal: item.SUCURSAL,
-                                Tipo: tipo.outerHTML,
-                                Paycash: paycash.outerHTML,
-                                Bancopel: bancopel.outerHTML,
-                                Oxxo: oxxo.outerHTML
-                            }
+                            const nItem = [
+                                item.CREDITO,
+                                item.GRUPO,
+                                item.SUCURSAL,
+                                item.REGION,
+                                tipo.outerHTML,
+                                paycash.outerHTML,
+                                bancopel.outerHTML,
+                                oxxo.outerHTML
+                            ]
                             return nItem
                         })
 
@@ -123,6 +124,7 @@ class Creditos extends Controller
             \PHPSpreadsheet::ColumnaExcel('CREDITO', 'Crédito', $texto),
             \PHPSpreadsheet::ColumnaExcel('GRUPO', 'Grupo'),
             \PHPSpreadsheet::ColumnaExcel('SUCURSAL', 'Sucursal'),
+            \PHPSpreadsheet::ColumnaExcel('REGION', 'Región'),
             \PHPSpreadsheet::ColumnaExcel('REF_PAGO_PAYCASH', 'Pago Paycash', $texto),
             \PHPSpreadsheet::ColumnaExcel('REF_PAGO_BANCOPPEL', 'Pago Bancoppel', $texto),
             \PHPSpreadsheet::ColumnaExcel('REF_PAGO_OXXO', 'Pago Oxxo', $texto),
