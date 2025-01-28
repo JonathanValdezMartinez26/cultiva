@@ -20,6 +20,10 @@ class Creditos extends Controller
 
     public function ReporteReferencias()
     {
+        $regSuc = CreditosDao::GetRegionSucursal();
+        $regSuc = $regSuc['success'] ? json_encode($regSuc['datos']) : [];
+        $suc = $_SESSION['cdgco'] ?? '';
+
         $js = <<<HTML
             <script>
                 {$this->mensajes}
@@ -28,6 +32,7 @@ class Creditos extends Controller
                 {$this->descargaExcel}
 
                 const idTablaPrincipal = "tablaPrincipal"
+                const regSuc = JSON.parse('$regSuc')
 
                 const actualizaDatosTabla = (id, datos) => {
                     const tabla = $("#" + id).DataTable()
@@ -43,10 +48,21 @@ class Creditos extends Controller
                     showError(mensaje).then(() => actualizaDatosTabla(idTablaPrincipal, []))
                 }
 
-                const buscarReferencias = () => {
-                    const credito = $("#noCredito").val()
+                const getParametros = () => {
+                    const p = {}
 
-                    consultaServidor("/Creditos/GetReporteReferencias", { credito }, (res) => {
+                    if ($("#credito").val()) p.credito = $("#credito").val()
+                    else {
+                        if ($("#situacion").val()) p.situacion = $("#situacion").val()
+                        if ($("#region").val()) p.region = $("#region").val()
+                        if ($("#sucursal").val()) p.sucursal = $("#sucursal").val()
+                    }
+
+                    return p
+                }
+
+                const buscarReferencias = () => {
+                    consultaServidor("/Creditos/GetReporteReferencias", getParametros(), (res) => {
                         if (!res.success) return respuestaError(res.mensaje)
                         if (res.datos.length === 0) return respuestaError("No se encontraron registros para los parámetros solicitados.")
 
@@ -56,9 +72,11 @@ class Creditos extends Controller
                             const bancopel = getElementoRef(item.REF_PAGO_BANCOPPEL, item.REF_COMISION_BANCOPPEL)
                             const oxxo = getElementoRef(item.REF_PAGO_OXXO, item.REF_COMISION_OXXO)
 
-                            const nItem = [
-                                item.CREDITO,
+                            return [
                                 item.GRUPO,
+                                item.CREDITO,
+                                item.ULTIMO_CICLO,
+                                item.SITUACION,
                                 item.SUCURSAL,
                                 item.REGION,
                                 tipo.outerHTML,
@@ -66,7 +84,6 @@ class Creditos extends Controller
                                 bancopel.outerHTML,
                                 oxxo.outerHTML
                             ]
-                            return nItem
                         })
 
                         actualizaDatosTabla(idTablaPrincipal, datos)
@@ -91,15 +108,36 @@ class Creditos extends Controller
                 }
 
                 const exportarExcel = () => {
-                    const credito = $("#noCredito").val()
+                    const parametros = getParametros()
+                    const qry = Object.keys(parametros).map((key) => key + "=" + parametros[key]).join("&")
 
-                    descargaExcel("/Creditos/ExportReporteReferencias/?credito=" + credito)
+                    descargaExcel("/Creditos/ExportReporteReferencias/?" + qry)
+                }
+
+                const actualizaSucursales = () => {
+                    const region = $("#region").val()
+                    $("#sucursal").empty()
+                    $("#sucursal").append(new Option("Todas", ""))
+                    regSuc.forEach((suc) => {
+                        if (suc.REGION === region || region === "") $("#sucursal").append(new Option(suc.NOMBRE_SUCURSAL, suc.SUCURSAL))
+                    })
                 }
 
                 $(document).ready(() => {
                     configuraTabla(idTablaPrincipal)
                     $("#buscar").click(buscarReferencias)
                     $("#descargarExcel").click(exportarExcel)
+
+                    $("#region").append(new Option("Todas", ""))
+                    regSuc.forEach((reg) => {
+                        if ($("#region option[value='" + reg.REGION + "']").length === 0)
+                            $("#region").append(new Option(reg.NOMBRE_REGION, reg.REGION))
+
+                        if (reg.SUCURSAL === "$suc") $("#region").val(reg.REGION)
+                    })
+                    actualizaSucursales()
+
+                    $("#region").change(actualizaSucursales)
                 })
             </script>
         HTML;
@@ -121,16 +159,22 @@ class Creditos extends Controller
         $texto = ['estilo' => $estilos['texto_centrado']];
 
         $columnas = [
-            \PHPSpreadsheet::ColumnaExcel('CREDITO', 'Crédito', $texto),
             \PHPSpreadsheet::ColumnaExcel('GRUPO', 'Grupo'),
+            \PHPSpreadsheet::ColumnaExcel('CREDITO', 'Crédito', $texto),
+            \PHPSpreadsheet::ColumnaExcel('ULTIMO_CICLO', 'Ultimo Ciclo', $texto),
+            \PHPSpreadsheet::ColumnaExcel('SITUACION', 'Situación'),
             \PHPSpreadsheet::ColumnaExcel('SUCURSAL', 'Sucursal'),
             \PHPSpreadsheet::ColumnaExcel('REGION', 'Región'),
-            \PHPSpreadsheet::ColumnaExcel('REF_PAGO_PAYCASH', 'Pago Paycash', $texto),
-            \PHPSpreadsheet::ColumnaExcel('REF_PAGO_BANCOPPEL', 'Pago Bancoppel', $texto),
-            \PHPSpreadsheet::ColumnaExcel('REF_PAGO_OXXO', 'Pago Oxxo', $texto),
-            \PHPSpreadsheet::ColumnaExcel('REF_COMISION_PAYCASH', 'Comisión Paycash', $texto),
-            \PHPSpreadsheet::ColumnaExcel('REF_COMISION_BANCOPPEL', 'Comisión Bancoppel', $texto),
-            \PHPSpreadsheet::ColumnaExcel('REF_COMISION_OXXO', 'Comisión Oxxo', $texto),
+            \PHPSpreadsheet::ColumnaExcel('Pago', [
+                \PHPSpreadsheet::ColumnaExcel('REF_PAGO_PAYCASH', 'Paycash', $texto),
+                \PHPSpreadsheet::ColumnaExcel('REF_PAGO_BANCOPPEL', 'Bancoppel', $texto),
+                \PHPSpreadsheet::ColumnaExcel('REF_PAGO_OXXO', 'Oxxo', $texto),
+            ]),
+            \PHPSpreadsheet::ColumnaExcel('Comisión', [
+                \PHPSpreadsheet::ColumnaExcel('REF_COMISION_PAYCASH', 'Paycash', $texto),
+                \PHPSpreadsheet::ColumnaExcel('REF_COMISION_BANCOPPEL', 'Bancoppel', $texto),
+                \PHPSpreadsheet::ColumnaExcel('REF_COMISION_OXXO', 'Oxxo', $texto),
+            ]),
         ];
 
         $datos = CreditosDao::GetReporteReferencias($_GET);

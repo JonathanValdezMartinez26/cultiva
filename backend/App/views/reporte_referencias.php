@@ -9,14 +9,38 @@
             </div>
             <div class="card">
                 <div class="card-header" style="margin: 20px 0;">
-                    <span class="card-title">Configure los parámetros de búsqueda</span>
+                    <span class="card-title">Configure los parámetros de búsqueda o ingrese un numero de crédito</span>
                 </div>
                 <div class="card-body">
                     <div class="row">
                         <div class="col-md-2">
                             <div class="form-group">
-                                <label for="noCredito">No. Crédito</label>
-                                <input type="text" class="form-control" id="noCredito" placeholder="000000" maxlength="6">
+                                <label for="region">Región</label>
+                                <select class="form-control" id="region">
+                                </select>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="form-group">
+                                <label for="sucursal">Sucursal</label>
+                                <select class="form-control" id="sucursal">
+                                </select>
+                            </div>
+                        </div>
+                        <div class="col-md-2">
+                            <div class="form-group">
+                                <label for="noCredito">Situación</label>
+                                <select class="form-control" id="situacion">
+                                    <option value="E" selected>Entregado</option>
+                                    <option value="L">Liquidado</option>
+                                    <option value="">Ambos</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="col-md-2">
+                            <div class="form-group">
+                                <label for="credito">No. Crédito</label>
+                                <input type="text" class="form-control" id="credito" placeholder="000000" maxlength="6">
                             </div>
                         </div>
                         <div class="col-md-2">
@@ -34,8 +58,10 @@
                     <table class="table table-striped table-bordered table-hover" id="tablaPrincipal">
                         <thead>
                             <tr>
-                                <th>Crédito</th>
                                 <th>Grupo</th>
+                                <th>Crédito</th>
+                                <th>Último ciclo</th>
+                                <th>Situación</th>
                                 <th>Sucursal</th>
                                 <th>Región</th>
                                 <th>Tipo</th>

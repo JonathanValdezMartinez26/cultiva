@@ -9,13 +9,42 @@ use Core\Model;
 
 class Creditos extends Model
 {
+    public static function GetRegionSucursal()
+    {
+        $qry = <<<SQL
+            SELECT
+                RG.CODIGO AS REGION,
+                RG.NOMBRE AS NOMBRE_REGION,
+                CO.CODIGO AS SUCURSAL,
+                CO.NOMBRE AS NOMBRE_SUCURSAL
+            FROM
+                RG
+                JOIN CO ON CO.CDGRG = RG.CODIGO
+            WHERE
+                RG.CDGEM = 'EMPFIN'
+                AND CO.CDGEM = 'EMPFIN'
+            ORDER BY
+                RG.CODIGO,
+                CO.CODIGO
+        SQL;
+
+        try {
+            $db = new Database();
+            $res = $db->queryAll($qry);
+            return self::Responde(true, "Consulta exitosa", $res);
+        } catch (\Exception $e) {
+            return self::Responde(false, 'Error al ejecutar la consulta', null, $e->getMessage());
+        }
+    }
 
     public static function GetReporteReferencias($datos)
     {
         $qry = <<<SQL
             SELECT
-                DT.CREDITO,
                 NS.NOMBRE AS GRUPO,
+                DT.CREDITO,
+                DT.CICLO AS ULTIMO_CICLO,
+                DT.SITUACION,
                 DT.SUCURSAL,
                 DT.REGION,
                 PPR.REF_PAYCASH AS REF_PAGO_PAYCASH,
@@ -27,6 +56,8 @@ class Creditos extends Model
             FROM
                 (SELECT
                     PRN.CDGNS AS CREDITO,
+                    MAX(PRN.CICLO) AS CICLO,
+                    PRN.SITUACION,
                     PRN.CDGTPC,
                     CO.CODIGO || '-' || CO.NOMBRE AS SUCURSAL,
                     RG.CODIGO || '-' || RG.NOMBRE AS REGION,
@@ -44,10 +75,13 @@ class Creditos extends Model
                 GROUP BY 
                     PRN.CDGNS,
                     PRN.CDGTPC,
+                    PRN.SITUACION,
                     CO.CODIGO,
                     CO.NOMBRE,
                     RG.CODIGO,
-                    RG.NOMBRE) DT
+                    RG.NOMBRE
+                ORDER BY
+                    PRN.CDGNS) DT
             JOIN PAYCASH_REF PPR
                 ON PPR.CDGEM = 'EMPFIN'
                 AND PPR.CDGCLNS = DT.CREDITO
@@ -62,12 +96,32 @@ class Creditos extends Model
         SQL;
 
         $filtros = '';
+
+
+        if (isset($datos['situacion'])) {
+            if ($datos['situacion'] === '') $filtros .= " AND PRN.SITUACION IN ('E', 'L')";
+            else {
+                $filtros .= ' AND PRN.SITUACION = :situacion';
+                $prm['situacion'] = $datos['situacion'];
+            }
+        }
+
+        if (isset($datos['region']) && $datos['region'] !== '') {
+            $filtros .= ' AND RG.CODIGO = :region';
+            $prm['region'] = $datos['region'];
+        }
+
+        if (isset($datos['sucursal']) && $datos['sucursal'] !== '') {
+            $filtros .= ' AND CO.CODIGO = :sucursal';
+            $prm['sucursal'] = $datos['sucursal'];
+        }
+
         if (isset($datos['credito']) && $datos['credito'] !== '') {
             $filtros .= ' AND PRN.CDGNS = :credito';
             $prm['credito'] = $datos['credito'];
         }
 
-        if ($filtros == '') $filtros = " AND PRN.SITUACION = 'E'";
+        if ($filtros === '') $filtros = " AND PRN.SITUACION = 'E'";
         $qry = str_replace('FILTROS', $filtros, $qry);
 
         try {
