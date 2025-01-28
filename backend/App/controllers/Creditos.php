@@ -57,7 +57,7 @@ class Creditos extends Controller
                         if ($("#region").val()) p.region = $("#region").val()
                         if ($("#sucursal").val()) p.sucursal = $("#sucursal").val()
                     }
-
+                    console.log(p)
                     return p
                 }
 

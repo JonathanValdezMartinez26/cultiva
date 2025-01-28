@@ -97,15 +97,6 @@ class Creditos extends Model
 
         $filtros = '';
 
-
-        if (isset($datos['situacion'])) {
-            if ($datos['situacion'] === '') $filtros .= " AND PRN.SITUACION IN ('E', 'L')";
-            else {
-                $filtros .= ' AND PRN.SITUACION = :situacion';
-                $prm['situacion'] = $datos['situacion'];
-            }
-        }
-
         if (isset($datos['region']) && $datos['region'] !== '') {
             $filtros .= ' AND RG.CODIGO = :region';
             $prm['region'] = $datos['region'];
@@ -116,12 +107,20 @@ class Creditos extends Model
             $prm['sucursal'] = $datos['sucursal'];
         }
 
+
+        if (isset($datos['situacion'])) {
+            if ($datos['situacion'] === '') $filtros .= " AND PRN.SITUACION IN ('E', 'L')";
+            else {
+                $filtros .= ' AND PRN.SITUACION = :situacion';
+                $prm['situacion'] = $datos['situacion'];
+            }
+        }
+
         if (isset($datos['credito']) && $datos['credito'] !== '') {
             $filtros .= ' AND PRN.CDGNS = :credito';
             $prm['credito'] = $datos['credito'];
         }
 
-        if ($filtros === '') $filtros = " AND PRN.SITUACION = 'E'";
         $qry = str_replace('FILTROS', $filtros, $qry);
 
         try {
