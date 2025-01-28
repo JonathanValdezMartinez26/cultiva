@@ -57,7 +57,7 @@ class Creditos extends Controller
                         if ($("#region").val()) p.region = $("#region").val()
                         if ($("#sucursal").val()) p.sucursal = $("#sucursal").val()
                     }
-                    console.log(p)
+
                     return p
                 }
 
@@ -163,8 +163,8 @@ class Creditos extends Controller
             \PHPSpreadsheet::ColumnaExcel('CREDITO', 'Crédito', $texto),
             \PHPSpreadsheet::ColumnaExcel('ULTIMO_CICLO', 'Ultimo Ciclo', $texto),
             \PHPSpreadsheet::ColumnaExcel('SITUACION', 'Situación'),
-            \PHPSpreadsheet::ColumnaExcel('SUCURSAL', 'Sucursal'),
             \PHPSpreadsheet::ColumnaExcel('REGION', 'Región'),
+            \PHPSpreadsheet::ColumnaExcel('SUCURSAL', 'Sucursal'),
             \PHPSpreadsheet::ColumnaExcel('Pago', [
                 \PHPSpreadsheet::ColumnaExcel('REF_PAGO_PAYCASH', 'Paycash', $texto),
                 \PHPSpreadsheet::ColumnaExcel('REF_PAGO_BANCOPPEL', 'Bancoppel', $texto),

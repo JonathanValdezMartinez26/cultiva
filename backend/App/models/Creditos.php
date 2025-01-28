@@ -44,7 +44,17 @@ class Creditos extends Model
                 NS.NOMBRE AS GRUPO,
                 DT.CREDITO,
                 DT.CICLO AS ULTIMO_CICLO,
-                DT.SITUACION,
+                (SELECT
+                    CASE PRN.SITUACION
+                        WHEN 'E' THEN 'ENTREGADO'
+                        WHEN 'L' THEN 'LIQUIDADO'
+                        ELSE 'N/A'
+                    END
+                FROM
+                    PRN
+                WHERE
+                    PRN.CDGNS = DT.CREDITO
+                    AND PRN.CICLO = DT.CICLO) AS SITUACION,
                 DT.SUCURSAL,
                 DT.REGION,
                 PPR.REF_PAYCASH AS REF_PAGO_PAYCASH,
@@ -57,7 +67,6 @@ class Creditos extends Model
                 (SELECT
                     PRN.CDGNS AS CREDITO,
                     MAX(PRN.CICLO) AS CICLO,
-                    PRN.SITUACION,
                     PRN.CDGTPC,
                     CO.CODIGO || '-' || CO.NOMBRE AS SUCURSAL,
                     RG.CODIGO || '-' || RG.NOMBRE AS REGION,
@@ -75,7 +84,6 @@ class Creditos extends Model
                 GROUP BY 
                     PRN.CDGNS,
                     PRN.CDGTPC,
-                    PRN.SITUACION,
                     CO.CODIGO,
                     CO.NOMBRE,
                     RG.CODIGO,
@@ -108,7 +116,8 @@ class Creditos extends Model
         }
 
 
-        if (isset($datos['situacion'])) {
+        if (!isset($datos['situacion'])) $filtros .= " AND PRN.SITUACION IN ('E', 'L')";
+        else {
             if ($datos['situacion'] === '') $filtros .= " AND PRN.SITUACION IN ('E', 'L')";
             else {
                 $filtros .= ' AND PRN.SITUACION = :situacion';
