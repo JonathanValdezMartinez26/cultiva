@@ -43,7 +43,7 @@
                                 <input type="text" class="form-control" id="credito" placeholder="000000" maxlength="6">
                             </div>
                         </div>
-                        <div class="col-md-2">
+                        <div class="col-md-2" style="min-height: 68px; display: flex; align-items: center; justify-content: space-between;">
                             <button type="button" class="btn btn-primary" id="buscar"><i class="fa fa-search"></i> Buscar</button>
                             <button type="button" class="btn btn-success" id="descargarExcel"><i class="fa fa-file-excel-o"></i> Exportar a Excel</button>
                         </div>
