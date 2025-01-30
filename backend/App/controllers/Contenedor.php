@@ -79,22 +79,30 @@ class Contenedor extends Controller
                                     <h3>GENERAL </h3>     
         HTML;
 
-        if ($this->__perfil == 'ADMIN' || $this->__perfil == 'OFCLD' || $this->__perfil == 'PLDCO') {
+        $permisos = ['AMGM', 'GASC', 'GBNA', 'PHEE'];
+        if (in_array($this->__usuario, $permisos)) {
             $menu .= <<<HTML
             <ul class="nav side-menu">
-                <li><a><i class="glyphicon glyphicon-th-list"> </i>&nbsp; Operaciones <span class="fa fa-chevron-down"></span></a>
+                <li><a><i class="glyphicon glyphicon-th-list">&nbsp;</i>PLD<span class="fa fa-chevron-down"></span></a>
                     <ul class="nav child_menu">
-                        <li><a href="/Operaciones/ReportePLDDesembolsos/">PLD Reporte Desembolsos</a></li>
-                        <li><a href="/Operaciones/ReportePLDPagos/">PLD Reporte Pagos</a></li>
-                        <li><a href="/Operaciones/ReportePLDPagosNacimiento/">PLD R. Pagos Edad</a></li>
+                        <li><a href="/Operaciones/ReportePLDDesembolsos/">Reporte Desembolsos</a></li>
+                        <li><a href="/Operaciones/ReportePLDPagos/">Reporte Pagos</a></li>
+                        <li><a href="/Operaciones/ReportePLDPagosNacimiento/">Reporte Pagos Edad</a></li>
+                        <li><a href="/Operaciones/ReporteAuditoria/">Reporte Auditoría</a></li>
                         <li><a href="/Operaciones/IdentificacionClientes/">Identificación (Clientes)</a></li>
                         <li><a href="/Operaciones/CuentasRelacionadas/">Cuentas Relacionadas</a></li>
                         <li><a href="/Operaciones/PerfilTransaccional/">Perfil Transaccional</a></li>
                     </ul>
                 </li>
             </ul>
+            HTML;
+        }
+
+        $permisos = ['AMGM', 'GASC', 'GBNA', 'PHEE'];
+        if (in_array($this->__usuario, $permisos)) {
+            $menu .= <<<HTML
             <ul class="nav side-menu">
-                <li><a><i class="glyphicon glyphicon-globe"></i>&nbsp;Api Condusef<span class="fa fa-chevron-down"></span></a>
+                <li><a><i class="glyphicon glyphicon-globe">&nbsp;</i>Api Condusef<span class="fa fa-chevron-down"></span></a>
                     <ul class="nav child_menu">
                         <li><a href="/ApiCondusef/AddRedeco/">Registrar Quejas REDECO</a></li>
                         <li><a href="/ApiCondusef/AddReune/">Registrar Quejas REUNE</a></li>
@@ -104,13 +112,27 @@ class Contenedor extends Controller
             HTML;
         }
 
-        $perimisos = ['AMGM', 'MCDP', 'PHEE', 'LVGA'];
+        $perimisos = ['AMGM', 'PHEE'];
         if (in_array($this->__usuario, $perimisos)) {
             $menu .= <<<HTML
             <ul class="nav side-menu">
-                <li><a><i class="fa fa-users"></i>Créditos<span class="fa fa-chevron-down"></span></a>
+                <li><a><i class="glyphicon glyphicon-usd">&nbsp;</i>Créditos<span class="fa fa-chevron-down"></span></a>
                     <ul class="nav child_menu">
                         <li><a href="/Creditos/ReporteReferencias/">Reporte de Referencias</a></li>
+                    </ul>
+                </li>
+            </ul>
+            HTML;
+        }
+
+        $perimisos = ['AMGM', 'PLMV', 'LGFR', 'MCDP'];
+        if (in_array($this->__usuario, $perimisos)) {
+            $menu .= <<<HTML
+            <ul class="nav side-menu">
+                <li><a><i class="glyphicon glyphicon-piggy-bank">&nbsp;</i>Tesorería<span class="fa fa-chevron-down"></span></a>
+                    <ul class="nav child_menu">
+                        <li><a href="/Tesoreria/">Consulta Clientes Solicitudes</a></li>
+                        <li><a href="/Tesoreria/ReingresarClientesCredito/">Reingresar Clientes a Grupo</a></li>
                     </ul>
                 </li>
             </ul>

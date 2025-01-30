@@ -4,9 +4,10 @@ namespace App\models;
 
 defined("APPPATH") or die("Access denied");
 
-use \Core\Database;
+use Core\Database;
+use Core\Model;
 
-class Operaciones
+class Operaciones extends Model
 {
     public static function ConsultarDesembolsos($Inicial, $Final)
     {
@@ -364,5 +365,85 @@ class Operaciones
         $db = new Database();
         if ($db->db_activa == null) return [];
         return [$db->queryAll($query), $db->queryOne($query2)];
+    }
+
+    public static function ReporteAuditoria($datos)
+    {
+        $qry = <<<SQL
+            SELECT
+                PRN.CANTENTRE,
+                PRC.CDGEM,
+                PRN.CICLO,
+                EF.NOMBRE AS LOCALIDAD,
+                CASE
+                    WHEN IB.CODIGO = 13 THEN '001' ------------------------ IMBURSA
+                    WHEN IB.CODIGO = 11 THEN '002' ---------------------- PAYCASH
+                    WHEN IB.CODIGO = 05 THEN '003' ----------------------- OXXO
+                    WHEN IB.CODIGO = 00 THEN '001' ----------------------- ES BANORTE PERO PASA A IMBURSA
+                    WHEN IB.CODIGO = 04 THEN '004' ----------------------- SON GARANTIAS
+                    ELSE '000'
+                END AS SUCURSAL,
+                '09' AS TIPO_OPERACION,
+                CL.CODIGO AS ID_CLIENTE,
+                PRC.CDGNS AS NUM_CUENTA,
+                '01' AS INSTRUMENTO_MONETARIO,
+                'MXN' AS MONEDA,
+                ROUND((MP.CANTIDAD * PRC.CANTENTRE) / PRN.CANTENTRE, 3) AS MONTO,
+                to_char(MP.FDEPOSITO, 'yyyymmdd') AS FECHA_OPERACION,
+                (
+                    CASE
+                        WHEN (CB.NOMBRE = 'OXXO' || 'PAYCASH') THEN 1
+                        ELSE 4
+                    END
+                ) AS TIPO_RECEPTOR,
+                (
+                    CASE
+                        WHEN (IB.NOMBRE = 'BANORTE') THEN 'INBURSA'
+                        ELSE IB.NOMBRE
+                    END
+                ) AS CLAVE_RECEPTOR,
+                '0' AS NUM_CAJA,
+                '0' AS ID_CAJERO,
+                to_char(MP.FDEPOSITO, 'yyyymmdd') AS FECHA_HORA,
+                '036180500609569035' AS NOTARJETA_CTA,
+                '4' AS TIPOTARJETA,
+                '0' AS COD_AUTORIZACION,
+                'NO' AS ATRASO,
+                PRN.CDGCO AS OFICINA_CLIENTE,
+                PRN.SITUACION,
+                MP.FDEPOSITO
+            FROM
+                MP
+                INNER JOIN PRN ON PRN.CDGNS = MP.CDGNS
+                INNER JOIN PRC ON PRC.CDGNS = PRN.CDGNS
+                INNER JOIN CL ON CL.CODIGO = PRC.CDGCL
+                INNER JOIN EF ON CL.CDGEF = EF.CODIGO
+                INNER JOIN CB ON CB.CODIGO = MP.CDGCB
+                INNER JOIN IB ON IB.CODIGO = CB.CDGIB
+            WHERE
+                MP.CDGEM = 'EMPFIN'
+                AND MP.TIPO = 'PD'
+                AND MP.ESTATUS = 'B'
+                AND MP.CICLO = PRC.CICLO
+                AND MP.CICLO = PRN.CICLO
+                AND MP.CDGNS = PRC.CDGNS
+                AND MP.CDGNS = PRN.CDGNS
+                AND MP.FDEPOSITO BETWEEN TO_DATE(:inicio, 'YY-mm-dd') AND TO_DATE(:fin, 'YY-mm-dd')
+            ORDER BY
+                PRN.CICLO DESC
+        SQL;
+
+        $prm = [
+            'inicio' => $datos['fechaI'],
+            'fin' => $datos['fechaF']
+        ];
+
+        try {
+            $db = new Database();
+            $res = $db->queryAll($qry, $prm);
+            return self::Responde(true, "Consulta exitosa", $res);
+        } catch (\Exception $e) {
+            return self::Responde(false, "Ocurrió un error al procesar la solicitud", null, $e->getMessage());
+        }
     }
 }

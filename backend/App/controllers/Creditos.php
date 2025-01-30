@@ -27,21 +27,14 @@ class Creditos extends Controller
         $js = <<<HTML
             <script>
                 {$this->mensajes}
-                {$this->consultaServidor}
                 {$this->configuraTabla}
+                {$this->actualizaDatosTabla}
+                {$this->consultaServidor}
+                {$this->respuestaError}
                 {$this->descargaExcel}
 
                 const idTablaPrincipal = "tablaPrincipal"
                 const regSuc = JSON.parse('$regSuc')
-
-                const actualizaDatosTabla = (id, datos) => {
-                    const tabla = $("#" + id).DataTable()
-                    tabla.clear().draw()
-                    datos.forEach((item) => {
-                        if (Array.isArray(item)) tabla.row.add(item).draw(false)
-                        else tabla.row.add(Object.values(item)).draw(false)
-                    })
-                }
 
                 const respuestaError = (mensaje) => {
                     $(".resultado").toggleClass("conDatos", false)
@@ -63,8 +56,8 @@ class Creditos extends Controller
 
                 const buscarReferencias = () => {
                     consultaServidor("/Creditos/GetReporteReferencias", getParametros(), (res) => {
-                        if (!res.success) return respuestaError(res.mensaje)
-                        if (res.datos.length === 0) return respuestaError("No se encontraron registros para los parámetros solicitados.")
+                        if (!res.success) return respuestaError(idTabla, res.mensaje)
+                        if (res.datos.length === 0) return respuestaError(idTabla, "No se encontraron registros para los parámetros solicitados.")
 
                         const tipo = getElementoRef()
                         const datos = res.datos.map((item) => {
@@ -154,9 +147,7 @@ class Creditos extends Controller
 
     public function ExportReporteReferencias()
     {
-
-        $estilos = \PHPSpreadsheet::GetEstilosExcel();
-        $texto = ['estilo' => $estilos['texto_centrado']];
+        $texto = ['estilo' => \PHPSpreadsheet::GetEstilosExcel('texto_centrado')];
 
         $columnas = [
             \PHPSpreadsheet::ColumnaExcel('GRUPO', 'Grupo'),

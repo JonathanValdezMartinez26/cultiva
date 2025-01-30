@@ -287,84 +287,84 @@ class Operaciones extends Controller
     public function ReportePLDDesembolsos()
     {
         $extraFooter = <<<HTML
-        <script>
-            function getParameterByName(name) {
-                name = name.replace(/[\[]/, "\\[").replace(/[\]]/, "\\]")
-                var regex = new RegExp("[\\?&]" + name + "=([^&#]*)"),
-                    results = regex.exec(location.search)
-                return results === null ? "" : decodeURIComponent(results[1].replace(/\+/g, " "))
-            }
+            <script>
+                function getParameterByName(name) {
+                    name = name.replace(/[\[]/, "\\[").replace(/[\]]/, "\\]")
+                    var regex = new RegExp("[\\?&]" + name + "=([^&#]*)"),
+                        results = regex.exec(location.search)
+                    return results === null ? "" : decodeURIComponent(results[1].replace(/\+/g, " "))
+                }
 
-            $(document).ready(function () {
-                $("#muestra-cupones").tablesorter()
-                var oTable = $("#muestra-cupones").DataTable({
-                    lengthMenu: [
-                        [13, 50, -1],
-                        [132, 50, "Todos"]
-                    ],
-                    columnDefs: [
-                        {
-                            orderable: false,
-                            targets: 0
-                        }
-                    ],
-                    order: false
+                $(document).ready(function () {
+                    $("#muestra-cupones").tablesorter()
+                    var oTable = $("#muestra-cupones").DataTable({
+                        lengthMenu: [
+                            [13, 50, -1],
+                            [132, 50, "Todos"]
+                        ],
+                        columnDefs: [
+                            {
+                                orderable: false,
+                                targets: 0
+                            }
+                        ],
+                        order: false
+                    })
+                    // Remove accented character from search input as well
+                    $("#muestra-cupones input[type=search]").keyup(function () {
+                        var table = $("#example").DataTable()
+                        table.search(jQuery.fn.DataTable.ext.type.search.html(this.value)).draw()
+                    })
+                    var checkAll = 0
+
+                    fecha1 = getParameterByName("Inicial")
+                    fecha2 = getParameterByName("Final")
+
+                    $("#export_excel_consulta").click(function () {
+                        $("#all").attr(
+                            "action",
+                            "/Operaciones/generarExcel/?Inicial=" + fecha1 + "&Final=" + fecha2
+                        )
+                        $("#all").attr("target", "_blank")
+                        $("#all").submit()
+                    })
                 })
-                // Remove accented character from search input as well
-                $("#muestra-cupones input[type=search]").keyup(function () {
-                    var table = $("#example").DataTable()
-                    table.search(jQuery.fn.DataTable.ext.type.search.html(this.value)).draw()
-                })
-                var checkAll = 0
 
-                fecha1 = getParameterByName("Inicial")
-                fecha2 = getParameterByName("Final")
+                function Validar() {
+                    fecha1 = moment((document.getElementById("Inicial").innerHTML = inputValue))
+                    fecha2 = moment((document.getElementById("Final").innerHTML = inputValue))
 
-                $("#export_excel_consulta").click(function () {
-                    $("#all").attr(
-                        "action",
-                        "/Operaciones/generarExcel/?Inicial=" + fecha1 + "&Final=" + fecha2
-                    )
-                    $("#all").attr("target", "_blank")
-                    $("#all").submit()
-                })
-            })
+                    dias = fecha2.diff(fecha1, "days")
+                    alert(dias)
 
-            function Validar() {
-                fecha1 = moment((document.getElementById("Inicial").innerHTML = inputValue))
-                fecha2 = moment((document.getElementById("Final").innerHTML = inputValue))
-
-                dias = fecha2.diff(fecha1, "days")
-                alert(dias)
-
-                if (dias == 1) {
-                    alert("si es")
+                    if (dias == 1) {
+                        alert("si es")
+                        return false
+                    }
                     return false
                 }
-                return false
-            }
 
-            Inicial.max = new Date().toISOString().split("T")[0]
-            Final.max = new Date().toISOString().split("T")[0]
+                Inicial.max = new Date().toISOString().split("T")[0]
+                Final.max = new Date().toISOString().split("T")[0]
 
-            function InfoAdmin() {
-                swal("Info", "Este registro fue capturado por una administradora en caja", "info")
-            }
+                function InfoAdmin() {
+                    swal("Info", "Este registro fue capturado por una administradora en caja", "info")
+                }
 
-            function InfoPhone() {
-                swal(
-                    "Info",
-                    "Este registro fue capturado por un ejecutivo en campo y procesado por una administradora",
-                    "info"
-                )
-            }
-        </script>
+                function InfoPhone() {
+                    swal(
+                        "Info",
+                        "Este registro fue capturado por un ejecutivo en campo y procesado por una administradora",
+                        "info"
+                    )
+                }
+            </script>
         HTML;
 
         $Inicial = $_GET['Inicial'];
         $Final = $_GET['Final'];
-        $vista = "";
-        $tabla = "";
+        $vista = '';
+        $tabla = '';
 
         if ($Inicial != '' || $Final != '') {
             $Consulta = OperacionesDao::ConsultarDesembolsos($Inicial, $Final);
@@ -1031,5 +1031,92 @@ class Operaciones extends Controller
         $filas = OperacionesDao::ConsultarPerfilTransaccional($_GET['Inicial'], $_GET['Final']);
 
         \PHPSpreadsheet::DescargaExcel('Perfil Transaccional Cultiva', 'Reporte', 'Perfil Transaccional Cultiva', $columnas, $filas);
+    }
+
+    public function ReporteAuditoria()
+    {
+        $extraFooter = <<<HTML
+            <script>
+                {$this->mensajes}
+                {$this->configuraTabla}
+                {$this->actualizaDatosTabla}
+                {$this->consultaServidor}
+                {$this->respuestaError}
+                {$this->respuestaSuccess}
+                {$this->descargaExcel}
+
+                const idTabla = 'reporteAuditoria'
+
+                const getParametros = (post = true) => {
+                    const p = {
+                        fechaI: $("#fechaI").val(),
+                        fechaF: $("#fechaF").val()
+                    }
+
+                    if (post) return p
+                    return Object.keys(p).map((key) => key + "=" + p[key]).join("&")
+                }
+
+                const generaReporte = () => {
+                    consultaServidor('/operaciones/GetReporteAuditoria', getParametros(), (res) => {
+                        if (!res.success) return respuestaError(idTabla, res.mensaje)
+                        if (res.datos.length === 0) return respuestaError(idTabla, "No se encontraron registros para los parámetros solicitados.")
+
+                        respuestaSuccess(idTabla, res.datos)
+                    })
+                }
+
+                $(document).ready(() => {
+                    configuraTabla(idTabla)
+
+                    $("#buscar").click(generaReporte)
+                    $("#exportar").click(() => descargaExcel("/Operaciones/ExportReporteAuditoria/?" + getParametros(false)))
+                })
+            </script>
+        HTML;
+
+        View::set('header', $this->_contenedor->header(self::GetExtraHeader("Reporte de auditoría")));
+        View::set('footer', $this->_contenedor->footer($extraFooter));
+        View::render('reporte_auditoria');
+    }
+
+    public function GetReporteAuditoria()
+    {
+        echo json_encode(OperacionesDao::ReporteAuditoria($_POST));
+    }
+
+    public function ExportReporteAuditoria()
+    {
+        $estilos = \PHPSpreadsheet::GetEstilosExcel();
+        $soloCentrado = [
+            'estilo' => $estilos['centrado']
+        ];
+
+        $columnas = [
+            \PHPSpreadsheet::ColumnaExcel('LOCALIDAD', 'LOCALIDAD'),
+            \PHPSpreadsheet::ColumnaExcel('SUCURSAL', 'SUCURSAL', $soloCentrado),
+            \PHPSpreadsheet::ColumnaExcel('TIPO_OPERACION', 'TIPO DE OPERACIÓN', $soloCentrado),
+            \PHPSpreadsheet::ColumnaExcel('ID_CLIENTE', 'ID CLIENTE', $soloCentrado),
+            \PHPSpreadsheet::ColumnaExcel('NUM_CUENTA', 'NUMERO DE CTA, CONTRATO, OPERACIÓN, PÓLIZA O NUMERO DE SEGURIDAD SOCIAL', $soloCentrado),
+            \PHPSpreadsheet::ColumnaExcel('INSTRUMENTO_MONETARIO', 'INSTRUMENTO MONETARIO', $soloCentrado),
+            \PHPSpreadsheet::ColumnaExcel('MONEDA', 'MONEDA', $soloCentrado),
+            \PHPSpreadsheet::ColumnaExcel('MONTO', 'MONTO', ['estilo' => $estilos['moneda'], 'total' => true]),
+            \PHPSpreadsheet::ColumnaExcel('FECHA_OPERACION', 'FECHA DE LA OPERACIÓN', $soloCentrado),
+            \PHPSpreadsheet::ColumnaExcel('TIPO_RECEPTOR', 'TIPO RECEPTOR', $soloCentrado),
+            \PHPSpreadsheet::ColumnaExcel('CLAVE_RECEPTOR', 'CLAVE DE RECEPTOR'),
+            \PHPSpreadsheet::ColumnaExcel('NUM_CAJA', 'CAJA', $soloCentrado),
+            \PHPSpreadsheet::ColumnaExcel('ID_CAJERO', 'CAJERO', $soloCentrado),
+            \PHPSpreadsheet::ColumnaExcel('FECHA_HORA', 'FECHA', $soloCentrado),
+            \PHPSpreadsheet::ColumnaExcel('NOTARJETA_CTA', 'NO. TARJETA O CTA DEPOSITO'),
+            \PHPSpreadsheet::ColumnaExcel('TIPOTARJETA', 'TIPO DE TARJETA', $soloCentrado),
+            \PHPSpreadsheet::ColumnaExcel('COD_AUTORIZACION', 'COD AUTORIZACION', $soloCentrado),
+            \PHPSpreadsheet::ColumnaExcel('ATRASO', 'ATRASO', $soloCentrado),
+            \PHPSpreadsheet::ColumnaExcel('OFICINA_CLIENTE', 'OFICINA CLIENTE', $soloCentrado)
+        ];
+
+        $filas = OperacionesDao::ReporteAuditoria($_GET);
+        $filas = $filas['success'] ? $filas['datos'] : [];
+
+        \PHPSpreadsheet::DescargaExcel('Reporte de Auditoría', 'Reporte', 'Reporte de Auditoría', $columnas, $filas);
     }
 }

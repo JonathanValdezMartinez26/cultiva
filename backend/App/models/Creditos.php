@@ -44,17 +44,11 @@ class Creditos extends Model
                 NS.NOMBRE AS GRUPO,
                 DT.CREDITO,
                 DT.CICLO AS ULTIMO_CICLO,
-                (SELECT
-                    CASE PRN.SITUACION
-                        WHEN 'E' THEN 'ENTREGADO'
-                        WHEN 'L' THEN 'LIQUIDADO'
-                        ELSE 'N/A'
-                    END
-                FROM
-                    PRN
-                WHERE
-                    PRN.CDGNS = DT.CREDITO
-                    AND PRN.CICLO = DT.CICLO) AS SITUACION,
+                CASE PRN2.SITUACION
+                    WHEN 'E' THEN 'ENTREGADO'
+                    WHEN 'L' THEN 'LIQUIDADO'
+                    ELSE 'N/A'
+                END AS SITUACION,
                 DT.SUCURSAL,
                 DT.REGION,
                 PPR.REF_PAYCASH AS REF_PAGO_PAYCASH,
@@ -101,6 +95,7 @@ class Creditos extends Model
                 AND CPR.CDGTPC = DT.CDGTPC
                 AND CPR.TIPO = '0'
             JOIN NS ON NS.CDGEM = 'EMPFIN' AND NS.CODIGO = DT.CREDITO
+            JOIN PRN PRN2 ON PRN2.CDGNS = DT.CREDITO AND PRN2.CICLO = DT.CICLO
         SQL;
 
         $filtros = '';

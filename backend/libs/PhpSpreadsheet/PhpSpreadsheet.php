@@ -21,7 +21,7 @@ class PHPSpreadsheet
      * Genera una configuración de columna para Excel.
      *
      * @param string $campo El nombre del campo asociado a la columna.
-     * @param string $titulo (Opcional) El título de la columna. Si no se proporciona, se usará el nombre del campo.
+     * @param string|mixed $titulo (Opcional) El título de la columna. Si no se proporciona, se usará el nombre del campo. Si es un arreglo, se considera que la columna tiene subcolumnas.
      * @param array $configuracion (Opcional) Un arreglo con la configuración adicional de la columna:
      * - 'letra': La letra de la columna en la hoja de cálculo.
      * - 'estilo': Un arreglo con los estilos de la celda.
@@ -56,14 +56,18 @@ class PHPSpreadsheet
      * - 'fecha': Alineación centrada con un formato de fecha (DD/MM/YYYY).
      * - 'fecha_hora': Alineación centrada con un formato de fecha y hora (DD/MM/YYYY HH:MM:SS).
      * - 'moneda': Alineación a la derecha con un formato de moneda simple ($1,000.00).
-     * - 'porcentaje': Alineacion centrada con el formato de porcentaje (0.00%).
-     * - 'texto': Forza la interptetación del dato como texto y lo alinea a la izquierda
+     * - 'porcentaje': Alineación centrada con el formato de porcentaje (0.00%).
+     * - 'texto_centrado': Forza la interpretacion del valor como si fuera texto y pone la alineación centrada
+     * - 'texto_izquierda': Forza la interpretacion del valor como si fuera texto y pone la alineación a la izquierda
+     * - 'texto_derecha': Forza la interpretacion del valor como si fuera texto y pone la alineación a la derecha
      * 
-     * @return array Un array asociativo de estilos para celdas de Excel.
+     * @param string Estilo unico deseado.
+     * 
+     * @return array Un array con la configuración del estilo seleccionado.
      */
-    public static function GetEstilosExcel()
+    public static function GetEstilosExcel($estilo = null)
     {
-        return [
+        $estilos = [
             'titulo' => [
                 'font' => [
                     'bold' => true,
@@ -122,6 +126,8 @@ class PHPSpreadsheet
                 'alignment' => ['horizontal' => Style\Alignment::HORIZONTAL_RIGHT]
             ]
         ];
+
+        return $estilos[$estilo] ?? $estilos;
     }
 
     /**
@@ -161,7 +167,7 @@ class PHPSpreadsheet
 
                 $hoja->setCellValue($r1, $columna['campo']);
                 $hoja->mergeCells("$r1:$r2");
-                $hoja->getStyle("$r1:$r2")->applyFromArray(self::GetEstilosExcel()['encabezado']);
+                $hoja->getStyle("$r1:$r2")->applyFromArray(self::GetEstilosExcel('encabezado'));
                 $c2--;
             }
         }
@@ -179,11 +185,11 @@ class PHPSpreadsheet
             if ($tituloDoble && !$hoja->getCell($columna['letra'] . $fe - 1)->isInMergeRange()) {
                 $fe--;
                 $hoja->mergeCells($columna['letra'] . $fe . ':' . $columna['letra'] . $filaEncabezados);
-                $hoja->getStyle($columna['letra'] . $filaEncabezados)->applyFromArray(self::GetEstilosExcel()['encabezado']);
+                $hoja->getStyle($columna['letra'] . $filaEncabezados)->applyFromArray(self::GetEstilosExcel('encabezado'));
             }
 
             $hoja->setCellValue($columna['letra'] . $fe, $columna['titulo']);
-            $hoja->getStyle($columna['letra'] . $fe)->applyFromArray(self::GetEstilosExcel()['encabezado']);
+            $hoja->getStyle($columna['letra'] . $fe)->applyFromArray(self::GetEstilosExcel('encabezado'));
             $hoja->getColumnDimension($columna['letra'])->setAutoSize(true);
             if ($columna['total']) array_push($totales, $columna);
         }
@@ -191,7 +197,7 @@ class PHPSpreadsheet
         // Título del reporte
         $hoja->setCellValue("A$filaTitulo", $titulo_reporte);
         $hoja->mergeCells("A$filaTitulo:" . $columnas[count($columnas) - 1]['letra'] . $filaTitulo);
-        $hoja->getStyle("A$filaTitulo")->applyFromArray(self::GetEstilosExcel()['titulo']);
+        $hoja->getStyle("A$filaTitulo")->applyFromArray(self::GetEstilosExcel('titulo'));
 
         // Filas de datos
         $filaInicial = $filaEncabezados + 1;
@@ -210,11 +216,11 @@ class PHPSpreadsheet
                 $estiloCelda['borders']['left']['borderStyle'] = Style\Border::BORDER_THIN;
                 $estiloCelda['borders']['right']['borderStyle'] = Style\Border::BORDER_THIN;
 
-                if ($columna['estilo'] === self::GetEstilosExcel()['fecha'])
+                if ($columna['estilo'] === self::GetEstilosExcel('fecha'))
                     $hoja->setCellValue($columna['letra'] . $noFila, self::convierteFecha('d/m/Y', $fila[$columna['campo']]));
-                else if ($columna['estilo'] === self::GetEstilosExcel()['fecha_hora'])
+                else if ($columna['estilo'] === self::GetEstilosExcel('fecha_hora'))
                     $hoja->setCellValue($columna['letra'] . $noFila, self::convierteFecha('d/m/Y H:i:s', $fila[$columna['campo']]));
-                else if ($columna['estilo'] === self::GetEstilosExcel()['texto_centrado'] || $columna['estilo'] === self::GetEstilosExcel()['texto_izquierda'] || $columna['estilo'] === self::GetEstilosExcel()['texto_derecha'])
+                else if ($columna['estilo'] === self::GetEstilosExcel('texto_centrado') || $columna['estilo'] === self::GetEstilosExcel('texto_izquierda') || $columna['estilo'] === self::GetEstilosExcel('texto_derecha'))
                     $hoja->setCellValueExplicit($columna['letra'] . $noFila, html_entity_decode($fila[$columna['campo']], ENT_QUOTES, "UTF-8"), DataType::TYPE_STRING);
                 else
                     $hoja->setCellValue($columna['letra'] . $noFila, html_entity_decode($fila[$columna['campo']], ENT_QUOTES, "UTF-8"));
@@ -334,14 +340,16 @@ class PHPSpreadsheet
      * @param array $columnas Arreglo de columnas con la estructura obtenida en ColumnaExcel.
      * @param array $filas Arreglo de filas con los datos a incluir en el reporte.
      *
-     * @return void
+     * @return string La ruta del archivo Excel generado.
      */
     public static function GuardaExcel($nombre_archivo, $nombre_hoja, $titulo_reporte, $columnas, $filas)
     {
         $libro = self::GeneraExcel($nombre_hoja, $titulo_reporte, $columnas, $filas);
+        $ruta = __DIR__ . "/{$nombre_archivo}.xlsx";
 
         $writer = new Xlsx($libro);
-        $writer->save(__DIR__ . "/{$nombre_archivo}.xlsx");
+        $writer->save($ruta);
+        return $ruta;
     }
 
     /**
@@ -385,6 +393,15 @@ class PHPSpreadsheet
         return $f;
     }
 
+    /**
+     * aplanarColumnas
+     * 
+     * Pone las subcolumnas al mismo nivel que las columnas principales para procesarlas.
+     * 
+     * @param array $columnas Arreglo de columnas con la estructura obtenida en ColumnaExcel.
+     * 
+     * @return array Un arreglo con las columnas aplanadas.
+     */
     private static function aplanarColumnas($columnas)
     {
         $resultado = [];

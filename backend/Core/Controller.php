@@ -99,6 +99,28 @@ class Controller
             $("#" + id).DataTable(configuracion)
         }
     JAVASCRIPT;
+    public $actualizaDatosTabla = <<<JAVASCRIPT
+        const actualizaDatosTabla = (id, datos) => {
+            const tabla = $("#" + id).DataTable()
+            tabla.clear().draw()
+            datos.forEach((item) => {
+                if (Array.isArray(item)) tabla.row.add(item).draw(false)
+                else tabla.row.add(Object.values(item)).draw(false)
+            })
+        }
+    JAVASCRIPT;
+    public $respuestaError = <<<JAVASCRIPT
+        const respuestaError = (tabla, mensaje) => {
+            $(".resultado").toggleClass("conDatos", false)
+            showError(mensaje).then(() => actualizaDatosTabla(tabla, []))
+        }
+    JAVASCRIPT;
+    public $respuestaSuccess = <<<JAVASCRIPT
+        const respuestaSuccess = (tabla, datos) => {
+            actualizaDatosTabla(tabla, datos)
+            $(".resultado").toggleClass("conDatos", true)
+        }
+    JAVASCRIPT;
     public $descargaExcel = <<<JAVASCRIPT
         const descargaExcel = (url) => {
             swal({ text: "Generando archivo, espere un momento...", icon: "/img/wait.gif", closeOnClickOutside: false, closeOnEsc: false })
