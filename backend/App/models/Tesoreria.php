@@ -27,7 +27,7 @@ class Tesoreria extends Model
                 INNER JOIN CL ON CL.CODIGO = SC.CDGCL
                 INNER JOIN CO ON CO.CODIGO = NS.CDGCO
             WHERE
-                SOLICITUD BETWEEN TO_DATE(:inicio, 'YY-mm-dd') AND TO_DATE(:fin, 'YY-mm-dd')
+                SC.SOLICITUD BETWEEN TO_DATE(:inicio, 'YY-mm-dd') AND TO_DATE(:fin, 'YY-mm-dd')
             ORDER BY
                 SC.SOLICITUD ASC
         SQL;

@@ -32,6 +32,7 @@ class Login
                 , 'OFCLD' ------- USUARIO CAJA (EXTRA)
                 , 'PLDCO' ----- USUARIO OCOF
                 , 'REPOR' 
+                , 'CONS' 
             )
         sql;
 
