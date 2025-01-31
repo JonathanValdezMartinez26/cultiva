@@ -12,11 +12,13 @@ class Login
     {
         $query1 = <<<sql
         SELECT
-            CONCATENA_NOMBRE(PE.NOMBRE1, PE.NOMBRE2, PE.PRIMAPE, PE.SEGAPE) NOMBRE,
-            UT.CDGTUS PERFIL, PE.PUESTO , PE.CDGCO, PE.CODIGO 
+            CONCATENA_NOMBRE(PE.NOMBRE1, PE.NOMBRE2, PE.PRIMAPE, PE.SEGAPE) NOMBRE
+            , UT.CDGTUS PERFIL
+            , PE.PUESTO
+            , PE.CDGCO, PE.CODIGO 
         FROM
-            PE,
-            UT
+            PE
+            , UT
         WHERE
             PE.CODIGO = UT.CDGPE
             AND PE.CDGEM = UT.CDGEM
@@ -25,10 +27,11 @@ class Login
             AND (PE.BLOQUEO = 'N' OR PE.BLOQUEO IS NULL)
             AND PE.CODIGO = :usuario
             AND PE.CLAVE LIKE (SELECT CODIFICA(:password) as pass FROM DUAL)
-            AND (
-                UT.CDGTUS = 'ADMIN' ------ USUARIO ADMIN
-                OR UT.CDGTUS = 'OFCLD' ------- USUARIO CAJA (EXTRA)
-                OR UT.CDGTUS = 'PLDCO' ----- USUARIO OCOF
+            AND UT.CDGTUS IN (
+            	'ADMIN' ------ USUARIO ADMIN
+                , 'OFCLD' ------- USUARIO CAJA (EXTRA)
+                , 'PLDCO' ----- USUARIO OCOF
+                , 'REPOR' 
             )
         sql;
 
