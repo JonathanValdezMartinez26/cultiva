@@ -86,6 +86,27 @@ class Database
         }
     }
 
+    public function insertarBlob($sql, $datos, $blob = [], $clob = [])
+    {
+        try {
+            $this->db_activa->beginTransaction();
+            $stmt = $this->db_activa->prepare($sql);
+
+            foreach ($datos as $key => $value) {
+                if (in_array($key, $blob)) $stmt->bindParam($key, $datos[$key], PDO::PARAM_LOB);
+                else if (in_array($key, $clob)) $stmt->bindParam($key, $datos[$key], PDO::PARAM_STR, strlen($datos[$key]));
+                else $stmt->bindParam($key, $datos[$key]);
+            }
+
+            if (!$stmt->execute()) throw new \Exception("Error en insertarBlob: " . print_r($this->db_activa->errorInfo(), 1) . "\nSql : $sql \nDatos : " . print_r($datos, 1));
+            $this->db_activa->commit();
+        } catch (\PDOException $e) {
+            throw new \Exception("Error en insertarBlob: " . $e->getMessage() . "\nSql : $sql \nDatos : " . print_r($datos, 1));
+        } catch (\Exception $e) {
+            throw new \Exception($e->getMessage());
+        }
+    }
+
     public function insertar($sql, $datos)
     {
         try {

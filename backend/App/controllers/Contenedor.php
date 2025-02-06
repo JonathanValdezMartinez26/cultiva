@@ -139,6 +139,19 @@ class Contenedor extends Controller
             HTML;
         }
 
+        $perimisos = ['AMGM'];
+        if (in_array($this->__usuario, $perimisos)) {
+            $menu .= <<<HTML
+            <ul class="nav side-menu">
+                <li><a><i class="glyphicon glyphicon-ok-circle">&nbsp;</i>Circulo de Crédito<span class="fa fa-chevron-down"></span></a>
+                    <ul class="nav child_menu">
+                        <li><a href="/CDC/Consulta">Consulta</a></li>
+                    </ul>
+                </li>
+            </ul>
+            HTML;
+        }
+
         $menu .= <<<HTML
                                 </div>
                             </div>

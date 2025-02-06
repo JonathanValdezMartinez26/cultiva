@@ -33,13 +33,8 @@ class Creditos extends Controller
                 {$this->respuestaError}
                 {$this->descargaExcel}
 
-                const idTablaPrincipal = "tablaPrincipal"
+                const idTabla = "tablaPrincipal"
                 const regSuc = JSON.parse('$regSuc')
-
-                const respuestaError = (mensaje) => {
-                    $(".resultado").toggleClass("conDatos", false)
-                    showError(mensaje).then(() => actualizaDatosTabla(idTablaPrincipal, []))
-                }
 
                 const getParametros = () => {
                     const p = {}
@@ -79,7 +74,7 @@ class Creditos extends Controller
                             ]
                         })
 
-                        actualizaDatosTabla(idTablaPrincipal, datos)
+                        actualizaDatosTabla(idTabla, datos)
                         $(".resultado").toggleClass("conDatos", true)
                     })
                 }
@@ -117,7 +112,7 @@ class Creditos extends Controller
                 }
 
                 $(document).ready(() => {
-                    configuraTabla(idTablaPrincipal)
+                    configuraTabla(idTabla)
                     $("#buscar").click(buscarReferencias)
                     $("#descargarExcel").click(exportarExcel)
 

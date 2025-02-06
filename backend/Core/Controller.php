@@ -26,8 +26,6 @@ class Controller
             }
             return tipoMensaje(mensaje, "/img/wait.gif", config)
         }
-    JAVASCRIPT;
-    public $confirmarMovimiento = <<<JAVASCRIPT
         const confirmarMovimiento = async (titulo, mensaje, html = null) => {
             return await swal({ title: titulo, content: html, text: mensaje, icon: "warning", buttons: ["No", "Si, continuar"], dangerMode: true })
         }
@@ -133,6 +131,28 @@ class Controller
             }, 1000)
 
             window.focus()
+        }
+    JAVASCRIPT;
+    public $muestraPDF = <<<JAVASCRIPT
+        const muestraPDF = (titulo, ruta) => {
+            const host = window.location.origin
+
+            let plantilla = '<!DOCTYPE html>'
+                plantilla += '<html lang="es">'
+                plantilla += '<head>'
+                plantilla += '<meta charset="UTF-8">'
+                plantilla += '<meta name="viewport" content="width=device-width, initial-scale=1.0">'
+                plantilla += '<link rel="shortcut icon" href="' + host + '/img/logo_ico.png">'
+                plantilla += '<title>' + titulo + '</title>'
+                plantilla += '</head>'
+                plantilla += '<body style="margin: 0; padding: 0; background-color: #333333;">'
+                plantilla += '<iframe src="' + ruta + '" style="width: 100%; height: 99vh; border: none; margin: 0; padding: 0;"></iframe>'
+                plantilla += '</body>'
+                plantilla += '</html>'
+            
+                const blob = new Blob([plantilla], { type: 'text/html' })
+                const url = URL.createObjectURL(blob)
+                window.open(url, '_blank')
         }
     JAVASCRIPT;
 
