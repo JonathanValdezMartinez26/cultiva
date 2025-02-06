@@ -16,14 +16,14 @@
                         <div class="col-md-2">
                             <div class="form-group">
                                 <label>Desde</label>
-                                <input type="date" class="form-control" id="fechaI" value="<?= date('Y-m-d'); ?>" max="<?= date('Y-m-d'); ?>">
+                                <input type="date" class="form-control" id="fechaI" value="<?= date('Y-m-d'); ?>" max="<?= date('Y-m-d', strtotime("+ 7 day")); ?>">
                             </div>
                         </div>
 
                         <div class="col-md-2">
                             <div class="form-group">
                                 <label>Hasta</label>
-                                <input type="date" class="form-control" id="fechaF" value="<?= date('Y-m-d'); ?>" max="<?= date('Y-m-d'); ?>">
+                                <input type="date" class="form-control" id="fechaF" value="<?= date('Y-m-d'); ?>" max="<?= date('Y-m-d', strtotime("+ 7 day")); ?>">
                             </div>
                         </div>
                         <div class="col-md-2" style="min-height: 68px; display: flex; justify-content: space-between; align-items: center;">

@@ -134,7 +134,7 @@ class Login
         $usuario->_usuario = MasterDom::getData("usuario");
         $usuario->_password = MasterDom::getData("password");
         $user = LoginDao::getById($usuario);
-
+        
         if (count($user) >= 1) {
             $user['NOMBRE'] = mb_convert_encoding($user['NOMBRE'], 'UTF-8');
             echo json_encode($user);
