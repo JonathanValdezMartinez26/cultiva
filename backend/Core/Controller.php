@@ -164,6 +164,9 @@ class Controller
 
     public function __construct()
     {
+        $modo = $_POST['modo'] ?? $_GET['modo'] ?? null;
+        if ($modo === 'API') return;
+
         session_start();
         if ($_SESSION['usuario'] == '' || empty($_SESSION['usuario'])) {
             unset($_SESSION);
@@ -178,6 +181,47 @@ class Controller
             $this->__cdgco = $_SESSION['cdgco'];
             $this->__perfil = $_SESSION['perfil'];
         }
+    }
+
+    public function GetRespuesta($success, $mensaje, $datos = null, $error = null)
+    {
+        $respuesta = [
+            "success" => $success,
+            "mensaje" => $mensaje
+        ];
+
+        if ($datos !== null) $respuesta['datos'] = $datos;
+        if ($error !== null) $respuesta['error'] = $error;
+
+        return $respuesta;
+    }
+
+    public function RespondeJSON($respuesta)
+    {
+        echo json_encode($respuesta);
+    }
+
+    public function Responde($success, $mensaje, $datos = null, $error = null)
+    {
+        self::RespondeJSON(self::GetRespuesta($success, $mensaje, $datos, $error));
+    }
+
+    public function ErrorPDF($mensaje)
+    {
+        return <<<HTML
+            <html>
+                <head>
+                    <title>Error</title>
+                </head>
+                <body style="background-color: #333333; color: #ffffff; font-weight: bold; font-family: sans-serif; text-align: center;">
+                    <div style="height: 100%; width: 100%; display: flex; justify-content: center; align-items: center;">
+                        <h1>
+                            $mensaje
+                        </h1>
+                    <div>
+                </body>
+            </html>
+        HTML;
     }
 
     public function GetExtraHeader($titulo, $elementos = [])

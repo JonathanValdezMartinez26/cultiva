@@ -63,7 +63,7 @@
             <div class="modal-header">
                 <button type="button" class="close" data-dismiss="modal">&times;</button>
                 <center>
-                    <h2 class="modal-title" id="modalCDCLabel">Datos del cliente</h2>
+                    <h2 class="modal-title" id="modalCDCLabel">Datos de consulta</h2>
                 </center>
             </div>
             <div class="modal-body">
@@ -203,7 +203,7 @@
             <img id="cargando" src="/img/wait.gif" alt="Cargando..." style="width: 100px; height: 100px; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); z-index: 101;">
         </div>
         <div id="botones">
-            <button type="button" class="btn btn-primary" id="cerrarPDF" onclick=cerrarPDF()>Cerrar</button>
+            <button class="btn btn-primary" id="cerrarPDF" onclick=cerrarPDF()>Cerrar</button>
         </div>
     </div>
 </dialog>

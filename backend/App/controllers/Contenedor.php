@@ -8,6 +8,7 @@ use \Core\Controller;
 
 require_once dirname(__DIR__) . '../../libs/mpdf/mpdf.php';
 require_once dirname(__DIR__) . '../../libs/PhpSpreadsheet/PhpSpreadsheet.php';
+require_once dirname(__DIR__) . '../../libs/SignatureService.php';
 
 class Contenedor extends Controller
 {
@@ -145,7 +146,10 @@ class Contenedor extends Controller
             <ul class="nav side-menu">
                 <li><a><i class="glyphicon glyphicon-ok-circle">&nbsp;</i>Circulo de Crédito<span class="fa fa-chevron-down"></span></a>
                     <ul class="nav child_menu">
-                        <li><a href="/CDC/Consulta">Consulta</a></li>
+                        <li><a href="/CDC/Consulta">Consulta por Cliente</a></li>
+                        <li><a href="/CDC/Consulta">Mis Consultas</a></li>
+                        <li><a href="/CDC/ConsultaAdmin">Consulta por Cliente (Admin)</a></li>
+                        <li><a href="/CDC/ConsultaAdmin">Consultas Globales</a></li>
                     </ul>
                 </li>
             </ul>

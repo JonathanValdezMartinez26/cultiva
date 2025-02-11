@@ -9,7 +9,7 @@ use Core\Model;
 
 class CDC extends Model
 {
-    public static function GetResultadoCDC($datos)
+    public static function GetResultadosCDC($datos)
     {
         $qry = <<<SQL
             SELECT
@@ -31,7 +31,15 @@ class CDC extends Model
                 LO.NOMBRE AS CIUDAD,
                 EF.NOMBRE AS ESTADO_NOMBRE,
                 EF.CCC AS ESTADO,
-                COL.CDGPOSTAL AS CP
+                COL.CDGPOSTAL AS CP,
+                CASE
+                    WHEN BCC.AUTORIZACION_PDF IS NULL THEN 0
+                    ELSE 1
+                END AS AUTORIZACION,
+                CASE
+                    WHEN BCC.IDENTIFICACION_PDF IS NULL THEN 0
+                    ELSE 1
+                END AS IDENTIFICACION
             FROM
                 CL
                 LEFT JOIN BITACORA_CIRCULO_CREDITO BCC ON CL.CODIGO = BCC.CDGCL
@@ -64,18 +72,36 @@ class CDC extends Model
             INSERT INTO BITACORA_CIRCULO_CREDITO
                 (CDGCL, FOLIO_CONSULTA, RES_CONSULTA, FECHA_CONSULTA, ESTATUS, CDGPE, AUTORIZACION_PDF, IDENTIFICACION_PDF)
             VALUES
-                (:cliente, :folio, :resultado, SYSDATE, 'A', :usuario, EMPTY_BLOB(), EMPTY_BLOB())
-            RETURNING AUTORIZACION_PDF, IDENTIFICACION_PDF INTO :autorizacion, :ine
+                (:cliente, :folio, :resultado, SYSDATE, 'A', :usuario, _AUTORIZACION_, _INE_)
         SQL;
 
         $prm = [
             'cliente' => $datos['cliente'],
             'folio' => $datos['folio'],
             'resultado' => $datos['resultado'],
-            'usuario' => $datos['usuario'],
-            'autorizacion' => $datos['autorizacion'] ?? null,
-            'ine' => $datos['ine'] ?? null
+            'usuario' => $datos['usuario']
         ];
+
+        $columnas = [];
+        $parametros = [];
+
+        if (!isset($datos['autorizacion'])) $qry = str_replace('_AUTORIZACION_', 'NULL', $qry);
+        else {
+            $prm['autorizacion'] = $datos['autorizacion'];
+            $qry = str_replace('_AUTORIZACION_', 'EMPTY_BLOB()', $qry);
+            $columnas[] = 'AUTORIZACION_PDF';
+            $parametros[] = ':autorizacion';
+        }
+
+        if (!isset($datos['ine'])) $qry = str_replace('_INE_', 'NULL', $qry);
+        else {
+            $prm['ine'] = $datos['ine'];
+            $qry = str_replace('_INE_', 'EMPTY_BLOB()', $qry);
+            $columnas[] = 'IDENTIFICACION_PDF';
+            $parametros[] = ':ine';
+        }
+
+        if (count($columnas) > 0) $qry .= 'RETURNING ' . implode(', ', $columnas) . ' INTO ' . implode(', ', $parametros);
 
         try {
             $db = new Database();
@@ -83,6 +109,41 @@ class CDC extends Model
             return self::Responde(true, "Consulta registrada exitosamente.", $res);
         } catch (\Exception $e) {
             return self::Responde(false, 'Error al guardar los datos en la base.', null, $e->getMessage());
+        }
+    }
+
+    public static function SetDocumentosCDC($datos)
+    {
+        $qry = <<<SQL
+            UPDATE
+                BITACORA_CIRCULO_CREDITO
+            SET
+                AUTORIZACION_PDF = :autorizacion,
+                IDENTIFICACION_PDF = :ine
+            WHERE
+                CDGCL = :cliente
+                AND FOLIO_CONSULTA = :folio
+            RETURNING
+                AUTORIZACION_PDF,
+                IDENTIFICACION_PDF
+            INTO
+                :autorizacion,
+                :ine
+        SQL;
+
+        $prm = [
+            'cliente' => $datos['cliente'],
+            'folio' => $datos['folio'],
+            'autorizacion' => $datos['autorizacion'],
+            'ine' => $datos['ine']
+        ];
+
+        try {
+            $db = new Database();
+            $res = $db->insertarBlob($qry, $prm, ['autorizacion', 'ine']);
+            return self::Responde(true, "Registro actualizado exitosamente.", $res);
+        } catch (\Exception $e) {
+            return self::Responde(false, 'Error al actualizar los datos en la base.', null, $e->getMessage());
         }
     }
 
@@ -96,6 +157,8 @@ class CDC extends Model
             WHERE
                 CDGCL = :cliente
                 AND FOLIO_CONSULTA = :folio
+            ORDER BY
+                FECHA_CONSULTA DESC
         SQL;
 
         $prm = [
@@ -103,7 +166,7 @@ class CDC extends Model
             'folio' => $datos['folio']
         ];
 
-        $columna = $datos['documento'] == 'autorizacion' ? 'AUTORIZACION_PDF' : 'IDENTIFICACION_PDF';
+        $columna = $datos['documento'] === 'autorizacion' ? 'AUTORIZACION_PDF' : 'IDENTIFICACION_PDF';
         $qry = str_replace('columna', $columna, $qry);
 
         try {
@@ -111,33 +174,7 @@ class CDC extends Model
             $res = $db->queryOne($qry, $prm);
             return self::Responde(true, "Consulta exitosa", $res);
         } catch (\Exception $e) {
-            return self::Responde(false, 'Error al ejecutar la consulta', null, $e->getMessage());
-        }
-    }
-
-    public static function GetIdentificacion($datos)
-    {
-        $qry = <<<SQL
-            SELECT
-                IDENTIFICACION_PDF AS PDF
-            FROM
-                BITACORA_CIRCULO_CREDITO
-            WHERE
-                CDGCL = :cliente
-                AND FOLIO_CONSULTA = :folio
-        SQL;
-
-        $prm = [
-            'cliente' => $datos['cliente'],
-            'folio' => $datos['folio']
-        ];
-
-        try {
-            $db = new Database();
-            $res = $db->queryOne($qry, $prm);
-            return self::Responde(true, "Consulta exitosa", $res);
-        } catch (\Exception $e) {
-            return self::Responde(false, 'Error al ejecutar la consulta', null, $e->getMessage());
+            return self::Responde(false, 'Error al recuperar el documento de la base de datos.', null, $e->getMessage());
         }
     }
 }
