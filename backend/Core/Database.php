@@ -88,21 +88,31 @@ class Database
 
     public function insertarBlob($sql, $datos, $blob = [], $clob = [])
     {
+        if (!is_array($sql)) {
+            $sql = [$sql];
+            $datos = [$datos];
+        }
+
         try {
             $this->db_activa->beginTransaction();
-            $stmt = $this->db_activa->prepare($sql);
 
-            foreach ($datos as $key => $value) {
-                if (in_array($key, $blob)) $stmt->bindParam($key, $datos[$key], PDO::PARAM_LOB);
-                else if (in_array($key, $clob)) $stmt->bindParam($key, $datos[$key], PDO::PARAM_STR, strlen($datos[$key]));
-                else $stmt->bindParam($key, $datos[$key]);
+            foreach ($sql as $i => $value) {
+                $stmt = $this->db_activa->prepare($sql[$i]);
+                foreach ($datos[$i] as $key => $value) {
+                    if (in_array($key, $blob)) $stmt->bindParam($key, $datos[$i][$key], PDO::PARAM_LOB);
+                    else if (in_array($key, $clob)) $stmt->bindParam($key, $datos[$i][$key], PDO::PARAM_STR, strlen($datos[$i][$key]));
+                    else $stmt->bindParam($key, $datos[$i][$key]);
+                }
+
+                if (!$stmt->execute()) throw new \Exception("Error en insertarBlob: " . print_r($this->db_activa->errorInfo(), 1) . "\nSql : $sql[$i] \nDatos : " . print_r($datos[$i], 1));
+                if ($stmt->errorInfo()[0] != '00000') throw new \Exception("Error en insertarBlob: " . print_r($stmt->errorInfo(), 1) . "\nSql : $sql[$i] \nDatos : " . print_r($datos[$i], 1));
             }
-
-            if (!$stmt->execute()) throw new \Exception("Error en insertarBlob: " . print_r($this->db_activa->errorInfo(), 1) . "\nSql : $sql \nDatos : " . print_r($datos, 1));
             $this->db_activa->commit();
         } catch (\PDOException $e) {
-            throw new \Exception("Error en insertarBlob: " . $e->getMessage() . "\nSql : $sql \nDatos : " . print_r($datos, 1));
+            $this->db_activa->rollBack();
+            throw new \Exception($e->getMessage());
         } catch (\Exception $e) {
+            $this->db_activa->rollBack();
             throw new \Exception($e->getMessage());
         }
     }

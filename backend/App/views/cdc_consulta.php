@@ -4,7 +4,7 @@
     <div class="panel">
         <div class="panel-header" style="padding: 10px;">
             <div class="x_title">
-                <label style="font-size: large;">Consulta de circulo de crédito</label>
+                <label style="font-size: large;">Reporte de circulo de crédito</label>
                 <div class="clearfix"></div>
             </div>
             <div class="row">
@@ -23,7 +23,7 @@
                                 </div>
                                 <div class="col-md-2">
                                     <div class="form-group" style="min-height: 68px; display: flex; align-items: center; justify-content: space-between;">
-                                        <button type="button" class="btn btn-primary" id="buscar"><i class="fa fa-search"></i> Buscar</button>
+                                        <button type="button" class="btn btn-primary" id="buscar"><i class="fa fa-search">&nbsp;</i>Buscar</button>
                                     </div>
                                 </div>
                             </div>
@@ -56,7 +56,6 @@
     </div>
 </div>
 
-<!-- Modal para solicitar los documentos de autorizacion y captura de datos requeridos -->
 <div class="modal fade" id="modalCDC" tabindex="-1" role="dialog" aria-hidden="true">
     <div class="modal-dialog modal-lg" role="document">
         <div class="modal-content">
@@ -177,8 +176,8 @@
                         </div>
                         <div class="col-md-6">
                             <div class="form-group">
-                                <label for="autorizacion">Documento de identificación</label>
-                                <input type="file" class="form-control" id="ine" accept="application/pdf">
+                                <label for="identificacion">Documento de identificación</label>
+                                <input type="file" class="form-control" id="identificacion" accept="application/pdf">
                             </div>
                         </div>
                     </div>

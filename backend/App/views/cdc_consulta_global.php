@@ -4,26 +4,45 @@
     <div class="panel">
         <div class="panel-header" style="padding: 10px;">
             <div class="x_title">
-                <label style="font-size: large;">Reporte de circulo de crédito</label>
+                <label style="font-size: large;">Reporte de circulo de crédito global</label>
                 <div class="clearfix"></div>
             </div>
             <div class="row">
                 <div class="col-md-12">
                     <div class="card">
                         <div class="card-header" style="margin: 20px 0;">
-                            <span class="card-title">Ingrese un numero de cliente</span>
+                            <span class="card-title">Puede configurar los filtros para reducir los resultados.</span>
                         </div>
                         <div class="card-body">
                             <div class="row">
                                 <div class="col-md-2">
                                     <div class="form-group">
-                                        <label for="cliente">No. de cliente</label>
-                                        <input type="text" class="form-control" id="cliente" placeholder="000000" maxlength="6">
+                                        <label for="region">Region</label>
+                                        <select class="form-control" id="region">
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="col-md-2">
+                                    <div class="form-group">
+                                        <label for="sucursal">Sucursal</label>
+                                        <select class="form-control" id="sucursal">
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="col-md-2">
+                                    <div class="form-group">
+                                        <label for="grupo">Grupo</label>
+                                        <input type="text" class="form-control" id="grupo" />
                                     </div>
                                 </div>
                                 <div class="col-md-2">
                                     <div class="form-group" style="min-height: 68px; display: flex; align-items: center; justify-content: space-between;">
-                                        <button type="button" class="btn btn-primary" id="buscar"><i class="fa fa-search">&nbsp;</i> Buscar</button>
+                                        <button type="button" class="btn btn-primary" id="buscar"><i class="fa fa-search">&nbsp;</i>Buscar</button>
+                                    </div>
+                                </div>
+                                <div class="col-md-2 col-md-offset-2 col-md-pull-0">
+                                    <div class="form-group" style="min-height: 68px; display: flex; align-items: center; justify-content: flex-end;">
+                                        <button type="button" class="btn btn-dark" id="cargaMasiva"><i class="glyphicon glyphicon-cloud-upload">&nbsp;</i>Carga Masiva</button>
                                     </div>
                                 </div>
                             </div>
@@ -39,6 +58,9 @@
                     <table class="table table-striped table-bordered table-hover" id="tablaPrincipal">
                         <thead>
                             <tr>
+                                <th rowspan="2">Region</th>
+                                <th rowspan="2">Sucursal</th>
+                                <th rowspan="2">Grupo</th>
                                 <th rowspan="2">Cliente</th>
                                 <th rowspan="2">Nombre</th>
                                 <th rowspan="2">Folio consulta</th>

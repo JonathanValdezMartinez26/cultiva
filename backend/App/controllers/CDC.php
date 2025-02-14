@@ -8,217 +8,74 @@ use Core\View;
 use Core\Controller;
 use App\models\CDC as CDCDao;
 use Core\App;
+use Error;
 
 class CDC extends Controller
 {
     private $_contenedor;
     private $cnfg;
 
+    private $validaCaducidad = <<<JAVASCRIPT
+        const validaCaducidad = (fecha) => {
+            if (!fecha) return false
+
+            const partes = fecha.split("/")
+            const caducidad = new Date(
+                parseInt(partes[2], 10),
+                parseInt(partes[1], 10) - 1,
+                parseInt(partes[0], 10)
+            )
+            const hoy = new Date().setHours(0, 0, 0, 0)
+            return caducidad < hoy
+        }
+    JAVASCRIPT;
+    private $consultaCDC = <<<JAVASCRIPT
+        const consultaCDC = () => {
+            const aut = $("#autorizacion")[0].files[0]
+            const id = $("#identificacion")[0].files[0]
+
+            if (validaArchivo(aut) !== true) return
+            if (validaArchivo(id) !== true) return
+
+            confirmarMovimiento("Circulo de crédito", "¿Seguro desea consultar la información de este cliente?")
+            .then((continuar) => {
+                if (!continuar) return
+                
+                const parametros = getParametrosConsulta()
+                consultaServidor("/CDC/GeneraConsultaCDC_POST", parametros, (res) => {  
+                    if (!res.success) return showError(res.mensaje)
+                    showSuccess(res.mensaje)
+
+                    $("#modalCDC").modal("hide")
+                    buscarConsultas()
+                }, "POST", "JSON", false, false)
+            })
+
+        }
+    JAVASCRIPT;
+    private $verPDF = <<<JAVASCRIPT
+        const verPDF = (cliente, folio = "", documento = "") => {
+            let metodo = "GetDocumento"
+            if (documento === "reporte") metodo = "GetReporteCDC"
+            $("#PDF").append($("<embed>", {
+                src: "http://192.168.1.2:7002/CDC/" + metodo + "/?cliente=" + cliente + "&folio=" + folio + "&documento=" + documento,
+                style: "width: 100%; height: 100%; z-index: 1000; position: relative;",
+                id: "PDF_viewer"
+            }))
+
+            document.querySelector("#muestraPDF").show()
+        }
+        const cerrarPDF = () => {
+            $("#PDF_viewer").remove()
+            document.querySelector("#muestraPDF").close()
+        }
+    JAVASCRIPT;
+
     function __construct()
     {
         parent::__construct();
         $this->_contenedor = new Contenedor;
         $this->cnfg = App::getConfig();
-    }
-
-    public function ConsultaAdmin()
-    {
-        $js = <<<HTML
-            <script>
-                {$this->mensajes}
-                {$this->configuraTabla}
-                {$this->actualizaDatosTabla}
-                {$this->consultaServidor}
-                {$this->respuestaError}
-                {$this->muestraPDF}
-
-                const idTabla = "tablaPrincipal"
-
-                const getParametrosBusqueda = () => {
-                    if (!$("#cliente").val()) return showError("Debe proporcionar un número de cliente.")
-                    
-                    const p = {}
-
-                    p.cliente = $("#cliente").val()
-
-                    return p
-                }
-
-                const getParametrosConsulta = () => {
-                    if (!$("#autorizacion")[0].files[0]) return showError("Debe seleccionar el archivo de autorización.")
-                    if (!$("#ine")[0].files[0]) return showError("Debe seleccionar el archivo de INE.")
-
-                    const datos = new FormData();
-
-                    datos.append("cliente", $("#noCliente").val())
-                    datos.append("nombre1", $("#nombre1").val())
-                    datos.append("nombre2", $("#nombre2").val() ?? null)
-                    datos.append("apellido1", $("#apellido1").val())
-                    datos.append("apellido2", $("#apellido2").val())
-                    datos.append("fecha", $("#fechaN").val())
-                    datos.append("rfc", $("#rfc").val())
-                    datos.append("calle", $("#calle").val())
-                    datos.append("colonia", $("#colonia").val())
-                    datos.append("municipio", $("#municipio").val())
-                    datos.append("ciudad", $("#ciudad").val())
-                    datos.append("estado", $("#estado").val())
-                    datos.append("cp", $("#cp").val())
-
-                    datos.append("autorizacion", $("#autorizacion")[0].files[0])
-                    datos.append("ine", $("#ine")[0].files[0])
-
-                    return datos
-                }
-
-                const buscarConsultas = () => {
-                    const parametros = getParametrosBusqueda()
-
-                    consultaServidor("/CDC/GetResultadosCDC", parametros, (res) => {
-                        if (!res.success) return respuestaError(idTabla, res.mensaje)
-                        if (res.datos.length === 0) return respuestaError(idTabla, "No se encontró información para el número de cliente proporcionado.")
-
-                        const datos = res.datos.map((item, fila) => {
-                            let boton = ""
-
-                            if (item.FOLIO === null) {
-                                boton += "<button type='button' class='btn btn-primary' onclick=capturaDatosConsulta(" + fila + ")>Consultar</button>"
-                                boton += "<input type='hidden' value='" + JSON.stringify(item) + "' id='" + fila + "'/>"
-                            } else {
-                                if (fila === 0 && validaCaducidad(item.CADUCIDAD)) {
-                                    boton += "<button type='button' class='btn btn-danger' onclick=capturaDatosConsulta(" + fila + ")><i class='glyphicon glyphicon-refresh'>&nbsp;</i>Actualiza consulta</button>"
-                                    boton += "<input type='hidden' value='" + JSON.stringify(item) + "' id='" + fila + "'/>"
-                                } else {
-                                    boton += "<button type='button' class='btn btn-primary' onclick='verPDF(" + item.FOLIO + ", \"autorizacion\")'><i class='glyphicon glyphicon-file'>&nbsp;</i>Autorización</button>"
-                                    boton += "<button type='button' class='btn btn-primary' onclick='verPDF(" + item.FOLIO + ",  \"identificacion\")'><i class='glyphicon glyphicon-user'>&nbsp;</i>Identificación</button>"
-                                    boton += "<button type='button' class='btn btn-success' onclick='verPDF(" + item.FOLIO + ",  \"reporte\")'><i class='glyphicon glyphicon-eye-open'>&nbsp;</i>Reporte</button>"
-                                }
-                            }
-                            
-                            return [
-                                item.CLIENTE,
-                                item.NOMBRE,
-                                item.FOLIO,
-                                item.FECHA,
-                                item.CADUCIDAD,
-                                boton
-                            ]
-                        })
-
-
-                        actualizaDatosTabla(idTabla, datos)
-                        $(".resultado").toggleClass("conDatos", true)
-                    })
-                }
-
-                const validaCaducidad = (fecha) => {
-                    const partes = fecha.split("/")
-                    const caducidad = new Date(
-                        parseInt(partes[2], 10),
-                        parseInt(partes[1], 10) - 1,
-                        parseInt(partes[0], 10)
-                    )
-                    const hoy = new Date().setHours(0, 0, 0, 0)
-                    return caducidad < hoy
-                }
-
-                const generaRazones = (razones) => {
-                    let ul = "<ul style='padding: 0; margin: 0 15px; text-align: left;'>"
-                    razones.forEach((item) => {
-                        ul += "<li>" + item.descripcion + "</li>"
-                    })
-
-                    ul += "</ul>"
-                    return ul
-                }
-
-                const actualizaModal = (datos = {}) => {
-                    $("#noCliente").val(datos.CLIENTE ?? "")
-                    $("#rfc").val(datos.RFC ?? "")
-                    $("#fecha").val(datos.NACIMIENTO ?? "")
-                    $("#nombre1").val(datos.NOMBRE1 ?? "")
-                    $("#nombre2").val(datos.NOMBRE2 ?? "")
-                    $("#apellido1").val(datos.PRIMAPE ?? "")
-                    $("#apellido2").val(datos.SEGAPE ?? "")
-                    $("#calle").val(datos.CALLE ?? "")
-                    $("#colonia").val(datos.COLONIA ?? "")
-                    $("#municipio").val(datos.MUNICIPIO ?? "")
-                    $("#ciudad").val(datos.CIUDAD ?? "")
-                    $("#estadoNombre").val(datos.ESTADO_NOMBRE ?? "")
-                    $("#estado").val(datos.ESTADO ?? "")
-                    $("#cp").val(datos.CP ?? "")
-
-                    $("#autorizacion").val("")
-                    $("#ine").val("")
-                }
-
-                const capturaDatosConsulta = (id) => {
-                    const fila = JSON.parse($("#" + id).val())
-                    actualizaModal(fila)
-                    $("#modalCDC").modal("show")
-                }
-
-                const consultaCDC = () => {
-                    const aut = $("#autorizacion")[0].files[0]
-                    const ine = $("#ine")[0].files[0]
-
-                    if (validaArchivo(aut) !== true) return
-                    if (validaArchivo(ine) !== true) return
-
-                    confirmarMovimiento("Circulo de crédito", "¿Seguro desea consultar la información de este cliente?")
-                    .then((continuar) => {
-                        if (!continuar) return
-                        
-                        const parametros = getParametrosConsulta()
-                        consultaServidor("/CDC/GeneraConsultaCDC_POST", parametros, (res) => {  
-                            if (!res.success) return showError(res.mensaje)
-                            showSuccess(res.mensaje)
-
-                            $("#modalCDC").modal("hide")
-                            buscarConsultas()
-                        }, "POST", "JSON", false, false)
-                    })
-
-                }
-
-                const validaArchivo = (archivo) => {
-                    if (!archivo) return showError("Debe seleccionar los archivos de soporte.")
-                    if (archivo.size > 2097152) return showError("El archivo no debe superar los 2MB.")
-                    if (archivo.type !== "application/pdf") return showError("El archivo debe ser de tipo PDF.")
-
-                    return true
-                }
-
-                const verPDF = (folio, documento) => {
-                    const cliente = $("#" + idTabla + " tbody tr").eq(0).find("td").eq(0).text()
-                    let metodo = "GetDocumento"
-                    if (documento === "reporte") metodo = "GetReporteCDC"
-                    $("#PDF").append($("<embed>", {
-                        src: "http://192.168.1.2:7002/CDC/" + metodo + "/?cliente=" + cliente + "&folio=" + folio + "&documento=" + documento,
-                        // type: "application/pdf",
-                        style: "width: 100%; height: 100%; z-index: 1000; position: relative;",
-                        id: "PDF_viewer"
-                    }))
-
-                    document.querySelector("#muestraPDF").show()
-                }
-
-                const cerrarPDF = () => {
-                    $("#PDF_viewer").remove()
-                    document.querySelector("#muestraPDF").close()
-                }
-
-                $(document).ready(() => {
-                    configuraTabla(idTabla)
-                    $("#cliente").keypress((e) => { if (e.which === 13) buscarConsultas() })
-                    $("#buscar").click(buscarConsultas)
-                    $("#consultaCDC").click(consultaCDC)
-                })
-            </script>
-        HTML;
-
-        View::set('header', $this->_contenedor->header(self::GetExtraHeader("Reporte de Referencias")));
-        View::set('footer', $this->_contenedor->footer($js));
-        View::render('cdc_consulta_admin');
     }
 
     public function Consulta()
@@ -230,7 +87,8 @@ class CDC extends Controller
                 {$this->actualizaDatosTabla}
                 {$this->consultaServidor}
                 {$this->respuestaError}
-                {$this->muestraPDF}
+                {$this->validaCaducidad}
+                {$this->verPDF}
 
                 const idTabla = "tablaPrincipal"
 
@@ -246,7 +104,7 @@ class CDC extends Controller
 
                 const getParametrosConsulta = () => {
                     if (!$("#autorizacion")[0].files[0]) return showError("Debe seleccionar el archivo de autorización.")
-                    if (!$("#ine")[0].files[0]) return showError("Debe seleccionar el archivo de INE.")
+                    if (!$("#identificacion")[0].files[0]) return showError("Debe seleccionar el archivo de identificación del cliente.")
 
                     const datos = new FormData();
 
@@ -265,14 +123,14 @@ class CDC extends Controller
                     datos.append("cp", $("#cp").val())
 
                     datos.append("autorizacion", $("#autorizacion")[0].files[0])
-                    datos.append("ine", $("#ine")[0].files[0])
+                    datos.append("identificacion", $("#identificacion")[0].files[0])
 
                     return datos
                 }
 
                 const getParametrosActualizacion = () => {
                     if (!$("#autorizacion")[0].files[0]) return showError("Debe seleccionar el archivo de autorización.")
-                    if (!$("#ine")[0].files[0]) return showError("Debe seleccionar el archivo del INE.")
+                    if (!$("#identificacion")[0].files[0]) return showError("Debe seleccionar el archivo de identificación del cliente.")
 
                     const datos = new FormData();
 
@@ -280,33 +138,37 @@ class CDC extends Controller
                     datos.append("folio", $("#" + idTabla + " tbody tr").eq(0).find("td").eq(2).text())
 
                     datos.append("autorizacion", $("#autorizacion")[0].files[0])
-                    datos.append("ine", $("#ine")[0].files[0])
+                    datos.append("identificacion", $("#identificacion")[0].files[0])
 
                     return datos
                 }
 
+                const getIcono = (icono, color, funcion) => {
+                    return "<i class='glyphicon glyphicon-" + icono + "' style='cursor: pointer; font-size: 1.5em; color: " + color + "; ' onclick='" + funcion + "'></i>"
+                }
+
                 const buscarConsultas = () => {
                     const parametros = getParametrosBusqueda()
+                    if (!parametros) return
 
-                    consultaServidor("/CDC/GetResultadosCDC", parametros, (res) => {
+                    consultaServidor("/CDC/GetConsultaCliente", parametros, (res) => {
                         if (!res.success) return respuestaError(idTabla, res.mensaje)
                         if (res.datos.length === 0) return respuestaError(idTabla, "No se encontró información para el número de cliente proporcionado.")
                         
                         const datos = res.datos.map((item, fila) => {
-                            const caducidad = new Date(item.CADUCIDAD)
                             let boton = ""
 
                             if (item.FOLIO === null) {
-                                boton += "<button type='button' class='btn btn-primary' onclick='capturaDatosConsulta(" + fila + ", true)'>Consultar</button>"
+                                boton += getIcono("refresh", "blue", "capturaDatosConsulta(" + fila + ", true)")
                                 boton += "<input type='hidden' value='" + JSON.stringify(item) + "' id='" + fila + "'/>"
                             } else if (item.AUTORIZACION == 0 || item.IDENTIFICACION == 0) {
-                                boton += "<button type='button' class='btn btn-primary' onclick='capturaDatosConsulta(" + fila + ", false)'><i class='glyphicon glyphicon-cloud-upload'>&nbsp;</i>Subir Documentos</button>"
+                                boton += getIcono("cloud-upload", "red", "capturaDatosConsulta(" + fila + ", false)")
                                 boton += "<input type='hidden' value='" + JSON.stringify(item) + "' id='" + fila + "'/>"
                             } else {
                                 if (fila === 0 && validaCaducidad(item.CADUCIDAD)) {
-                                    boton += "<button type='button' class='btn btn-danger' onclick='capturaDatosConsulta(" + fila + ", true)'><i class='glyphicon glyphicon-refresh'>&nbsp;</i>Actualiza consulta</button>"
+                                    boton += getIcono("refresh", "blue", "capturaDatosConsulta(" + fila + ", true)")
                                     boton += "<input type='hidden' value='" + JSON.stringify(item) + "' id='" + fila + "'/>"
-                                } else boton += "<button type='button' class='btn btn-success' onclick=verPDF()><i class='glyphicon glyphicon-eye-open'>&nbsp;</i>Reporte</button>"
+                                } else boton += "<button type='button' class='btn btn-success' onclick='verPDF(" + item.CLIENTE + "," + item.FOLIO + ", \"reporte\")'><i class='glyphicon glyphicon-eye-open'>&nbsp;</i>Reporte</button>"
                             }
                             
                             return [
@@ -322,17 +184,6 @@ class CDC extends Controller
                         actualizaDatosTabla(idTabla, datos)
                         $(".resultado").toggleClass("conDatos", true)
                     })
-                }
-
-                const validaCaducidad = (fecha) => {
-                    const partes = fecha.split("/")
-                    const caducidad = new Date(
-                        parseInt(partes[2], 10),
-                        parseInt(partes[1], 10) - 1,
-                        parseInt(partes[0], 10)
-                    )
-                    const hoy = new Date().setHours(0, 0, 0, 0)
-                    return caducidad < hoy
                 }
 
                 const actualizaModal = (datos = {}) => {
@@ -352,7 +203,7 @@ class CDC extends Controller
                     $("#cp").val(datos.CP ?? "")
 
                     $("#autorizacion").val("")
-                    $("#ine").val("")
+                    $("#identificacion").val("")
                 }
 
                 const capturaDatosConsulta = (id, consulta) => {
@@ -365,10 +216,10 @@ class CDC extends Controller
 
                 const consultaCDC = () => {
                     const aut = $("#autorizacion")[0].files[0]
-                    const ine = $("#ine")[0].files[0]
+                    const id = $("#identificacion")[0].files[0]
 
                     if (validaArchivo(aut) !== true) return
-                    if (validaArchivo(ine) !== true) return
+                    if (validaArchivo(id) !== true) return
 
                     let msjConf = "", metodo = "", parametros = {}
                     if ($("#consultaCDC").text() === "Consultar") {
@@ -404,20 +255,508 @@ class CDC extends Controller
                     return true
                 }
 
-                const verPDF = () => {
-                    const cliente = $("#" + idTabla + " tbody tr").eq(0).find("td").eq(0).text()
-                    $("#PDF").append($("<embed>", {
-                        src: "http://192.168.1.2:7002/CDC/GetReporteCDC/?cliente=" + cliente,
-                        style: "width: 100%; height: 100%; z-index: 1000; position: relative;",
-                        id: "PDF_viewer"
-                    }))
+                $(document).ready(() => {
+                    configuraTabla(idTabla)
+                    $("#cliente").keypress((e) => { if (e.which === 13) buscarConsultas() })
+                    $("#buscar").click(buscarConsultas)
+                    $("#consultaCDC").click(consultaCDC)
+                })
+            </script>
+        HTML;
 
-                    document.querySelector("#muestraPDF").show()
+        View::set('header', $this->_contenedor->header(self::GetExtraHeader("Consulta CDC (Admin)")));
+        View::set('footer', $this->_contenedor->footer($js));
+        View::render('cdc_consulta');
+    }
+
+    public function ConsultaGrupal()
+    {
+        $regSuc = CDCDao::GetRegionSucursal();
+        $regSuc = $regSuc['success'] ? json_encode($regSuc['datos']) : [];
+        $suc = ''; //$_SESSION['cdgco'] ?? '';
+
+        $js = <<<HTML
+            <script>
+                {$this->mensajes}
+                {$this->configuraTabla}
+                {$this->actualizaDatosTabla}
+                {$this->consultaServidor}
+                {$this->respuestaError}
+                {$this->validaCaducidad}
+                {$this->verPDF}
+
+                const idTabla = "tablaPrincipal"
+                const regSuc = JSON.parse('$regSuc')
+
+                const getParametrosBusqueda = () => {
+                    const p = {}
+
+                    p.region = $("#region").val()
+                    p.sucursal = $("#sucursal").val()
+                    p.grupo = $("#grupo").val()
+
+                    return p
                 }
 
-                const cerrarPDF = () => {
-                    $("#PDF_viewer").remove()
-                    document.querySelector("#muestraPDF").close()
+                const getParametrosConsulta = () => {
+                    if (!$("#autorizacion")[0].files[0]) return showError("Debe seleccionar el archivo de autorización.")
+                    if (!$("#identificacion")[0].files[0]) return showError("Debe seleccionar el archivo de identificación del cliente.")
+
+                    const datos = new FormData();
+
+                    datos.append("cliente", $("#noCliente").val())
+                    datos.append("nombre1", $("#nombre1").val())
+                    datos.append("nombre2", $("#nombre2").val() ?? null)
+                    datos.append("apellido1", $("#apellido1").val())
+                    datos.append("apellido2", $("#apellido2").val())
+                    datos.append("fecha", $("#fechaN").val())
+                    datos.append("rfc", $("#rfc").val())
+                    datos.append("calle", $("#calle").val())
+                    datos.append("colonia", $("#colonia").val())
+                    datos.append("municipio", $("#municipio").val())
+                    datos.append("ciudad", $("#ciudad").val())
+                    datos.append("estado", $("#estado").val())
+                    datos.append("cp", $("#cp").val())
+
+                    datos.append("autorizacion", $("#autorizacion")[0].files[0])
+                    datos.append("identificacion", $("#identificacion")[0].files[0])
+
+                    return datos
+                }
+
+                const getParametrosActualizacion = () => {
+                    if (!$("#autorizacion")[0].files[0]) return showError("Debe seleccionar el archivo de autorización.")
+                    if (!$("#identificacion")[0].files[0]) return showError("Debe seleccionar el archivo de identificación del cliente.")
+
+                    const datos = new FormData();
+
+                    datos.append("cliente", $("#noCliente").val())
+                    datos.append("folio", $("#folio").val())
+
+                    datos.append("autorizacion", $("#autorizacion")[0].files[0])
+                    datos.append("identificacion", $("#identificacion")[0].files[0])
+
+                    return datos
+                }
+
+                const getDatosCliente = (datos) => {
+                    const cliente = { ...datos }
+                    delete cliente.REGION
+                    delete cliente.SUCURSAL
+                    delete cliente.GRUPO
+
+                    return cliente
+                }
+
+                const getIcono = (icono, color, funcion) => {
+                    return "<i class='glyphicon glyphicon-" + icono + "' style='cursor: pointer; font-size: 1.5em; color: " + color + "; ' onclick='" + funcion + "'></i>"
+                }
+
+                const generaTablaClientes = (clientes, fila) => {
+                    const tabla = document.createElement("table")
+                    const cabecera = document.createElement("thead")
+                    const cuerpo = document.createElement("tbody")
+                    const filaCabecera = document.createElement("tr")
+                    const campos = ["Cliente", "Nombre", "Folio", "Fecha", "Caducidad", "Reporte"]
+                    campos.forEach((campo) => {
+                        const th = document.createElement("th")
+                        th.innerText = campo
+                        filaCabecera.appendChild(th)
+                    })
+                    cabecera.appendChild(filaCabecera)
+                    tabla.appendChild(cabecera)
+
+                    const datosVisibles = ["CLIENTE", "NOMBRE", "FOLIO", "FECHA", "CADUCIDAD"]
+                    clientes.forEach((cliente) => {
+                        const tr = document.createElement("tr")
+                        Object.keys(cliente).forEach((campo) => {
+                            if (!datosVisibles.includes(campo)) return
+                            const td = document.createElement("td")
+                            td.innerText = cliente[campo]
+                            tr.appendChild(td)
+                        })
+                        const reporte = document.createElement("td")
+
+                        if (cliente.FOLIO === null) {
+                                reporte.innerHTML += getIcono("refresh", "blue", "capturaDatosConsulta(" + fila + ", true)")
+                                reporte.innerHTML += "<input type='hidden' value='" + JSON.stringify(item) + "' id='" + fila + "'/>"
+                            } else if (cliente.AUTORIZACION == 0 || cliente.IDENTIFICACION == 0) {
+                                reporte.innerHTML += getIcono("cloud-upload", "red", "capturaDatosConsulta(" + fila + ", false)")
+                                reporte.innerHTML += "<input type='hidden' value='" + JSON.stringify(cliente) + "' id='" + fila + "'/>"
+                            } else {
+                                if (fila === 0 && validaCaducidad(cliente.CADUCIDAD)) {
+                                    reporte.innerHTML += getIcono("refresh", "blue", "capturaDatosConsulta(" + fila + ", true)")
+                                    reporte.innerHTML += "<input type='hidden' value='" + JSON.stringify(cliente) + "' id='" + fila + "'/>"
+                                } else reporte.innerHTML += getIcono("eye-open", "green" , "verPDF(" + cliente.CLIENTE + "," + cliente.FOLIO + ", \"reporte\")")
+                            }
+
+                        tr.appendChild(reporte)
+                        cuerpo.appendChild(tr)
+                    })
+
+
+                    tabla.style = "width: 100%; margin-top: 10px;"
+                    tabla.appendChild(cuerpo)
+                    return tabla.outerHTML
+                }
+
+                const buscarConsultas = () => {
+                    const parametros = getParametrosBusqueda()
+                    if (!parametros) return
+
+                    consultaServidor("/CDC/GetConsultaGlobal", parametros, (res) => {
+                        if (!res.success) return respuestaError(idTabla, res.mensaje)
+                        if (res.datos.length === 0) return respuestaError(idTabla, "No se encontró información para el número de cliente proporcionado.")
+                        
+                        const agrupado = []
+                        
+                        res.datos.forEach((item, fila) => {
+                            let existente = agrupado.find(r => 
+                                r.REGION === item.REGION && 
+                                r.SUCURSAL === item.SUCURSAL && 
+                                r.GRUPO === item.GRUPO
+                            );
+
+                            if (existente) existente.CLIENTES.push(getDatosCliente(item, fila));
+                            else {
+                                agrupado.push({
+                                    REGION: item.REGION,
+                                    SUCURSAL: item.SUCURSAL,
+                                    GRUPO: item.GRUPO,
+                                    CLIENTES: [getDatosCliente(item)]
+                                });
+                            }
+                        });
+
+                        const datos = agrupado.map((item, fila) => {
+                            const detalles = $("<details>")
+                            const titulo = $("<summary>")
+
+                            titulo.html("<i class='glyphicon glyphicon-user'>&nbsp;</i>Mostrar")
+                            titulo.css("cursor", "pointer")
+
+                            detalles.append(titulo)
+                            detalles.append(generaTablaClientes(item.CLIENTES))
+                            detalles.css("text-align", "left")
+
+                            return [
+                                item.REGION,
+                                item.SUCURSAL,
+                                item.GRUPO,
+                                detalles.prop("outerHTML")
+                            ]
+                        })
+
+                        actualizaDatosTabla(idTabla, datos)
+                        $(".resultado").toggleClass("conDatos", true)
+                    })
+                }
+
+                const actualizaSucursales = () => {
+                    const region = $("#region").val()
+                    $("#sucursal").empty()
+                    $("#sucursal").append(new Option("Todas", ""))
+
+                    regSuc.filter((reg) => reg.REGION === region || region === "")
+                        .sort((a, b) => a.NOMBRE_SUCURSAL.localeCompare(b.NOMBRE_SUCURSAL))
+                        .forEach((suc) => {
+                            if (suc.REGION === region || region === "") $("#sucursal").append(new Option(suc.NOMBRE_SUCURSAL, suc.SUCURSAL))
+                            if (suc.SUCURSAL === "$suc") $("#sucursal").val(suc.SUCURSAL)
+                        })
+                }
+
+                const actualizaModal = (datos = {}) => {
+                    $("#noCliente").val(datos.CLIENTE ?? "")
+                    $("#folio").val(datos.FOLIO ?? "")
+                    $("#rfc").val(datos.RFC ?? "")
+                    $("#fecha").val(datos.NACIMIENTO ?? "")
+                    $("#nombre1").val(datos.NOMBRE1 ?? "")
+                    $("#nombre2").val(datos.NOMBRE2 ?? "")
+                    $("#apellido1").val(datos.PRIMAPE ?? "")
+                    $("#apellido2").val(datos.SEGAPE ?? "")
+                    $("#calle").val(datos.CALLE ?? "")
+                    $("#colonia").val(datos.COLONIA ?? "")
+                    $("#municipio").val(datos.MUNICIPIO ?? "")
+                    $("#ciudad").val(datos.CIUDAD ?? "")
+                    $("#estadoNombre").val(datos.ESTADO_NOMBRE ?? "")
+                    $("#estado").val(datos.ESTADO ?? "")
+                    $("#cp").val(datos.CP ?? "")
+
+                    $("#autorizacion").val("")
+                    $("#identificacion").val("")
+                }
+
+                const capturaDatosConsulta = (id, consulta) => {
+                    const fila = JSON.parse($("#" + id).val())
+                    actualizaModal(fila)
+
+                    $("#consultaCDC").text(consulta ? "Consultar": "Subir Documentos")
+                    $("#modalCDC").modal("show")
+                }
+
+                const consultaCDC = () => {
+                    const aut = $("#autorizacion")[0].files[0]
+                    const id = $("#identificacion")[0].files[0]
+
+                    if (validaArchivo(aut) !== true) return
+                    if (validaArchivo(id) !== true) return
+
+                    let msjConf = "", metodo = "", parametros = {}
+                    if ($("#consultaCDC").text() === "Consultar") {
+                        msjConf = "¿Seguro desea consultar la información de este cliente?"
+                        metodo = "GeneraConsultaCDC_POST"
+                        parametros = getParametrosConsulta()
+                    } else {
+                        msjConf = "¿Seguro desea subir estos archivos?"
+                        metodo = "SubeDocumentosCDC"
+                        parametros = getParametrosActualizacion()
+                    }
+
+                    confirmarMovimiento("Circulo de crédito", msjConf)
+                    .then((continuar) => {
+                        if (!continuar) return
+                        
+                        const parametros = getParametrosActualizacion()
+                        consultaServidor("/CDC/" + metodo, parametros, (res) => {  
+                            if (!res.success) return showError(res.mensaje)
+                            showSuccess(res.mensaje)
+
+                            $("#modalCDC").modal("hide")
+                            buscarConsultas()
+                        }, "POST", "JSON", false, false)
+                    })
+                }
+
+                const validaArchivo = (archivo) => {
+                    if (!archivo) return showError("Debe seleccionar los archivos de soporte.")
+                    if (archivo.size > 2097152) return showError("El archivo no debe superar los 2MB.")
+                    if (archivo.type !== "application/pdf") return showError("El archivo debe ser de tipo PDF.")
+
+                    return true
+                }
+
+                $(document).ready(() => {
+                    configuraTabla(idTabla)
+                    $("#region").append(new Option("Todas", ""))
+                    regSuc.forEach((reg) => {
+                        if ($("#region option[value='" + reg.REGION + "']").length === 0)
+                            $("#region").append(new Option(reg.NOMBRE_REGION, reg.REGION))
+                        
+                        if (reg.SUCURSAL === "$suc") $("#region").val(reg.REGION)
+                    })
+
+                    $("#region").change(actualizaSucursales)
+                    $("#cliente").keypress((e) => { if (e.which === 13) buscarConsultas() })
+                    $("#buscar").click(buscarConsultas)
+                    $("#consultaCDC").click(consultaCDC)
+
+                    actualizaSucursales()
+                    buscarConsultas()
+                })
+
+                $(document).on("click", "summary", function () {
+                    let detalles = $(this).parent();
+                    $(this).html("<i class='glyphicon glyphicon-user'>&nbsp;</i>" + (detalles.prop("open") ? "Mostrar" : "Ocultar"));
+                })
+            </script>
+        HTML;
+
+        View::set('header', $this->_contenedor->header(self::GetExtraHeader("Mis consultas")));
+        View::set('footer', $this->_contenedor->footer($js));
+        View::render('cdc_consulta_grupal');
+    }
+
+    public function ConsultaAdmin()
+    {
+        $js = <<<HTML
+            <script>
+                {$this->mensajes}
+                {$this->configuraTabla}
+                {$this->actualizaDatosTabla}
+                {$this->consultaServidor}
+                {$this->respuestaError}
+                {$this->muestraPDF}
+                {$this->consultaCDC}
+                {$this->verPDF}
+
+                const idTabla = "tablaPrincipal"
+
+                const getParametrosBusqueda = () => {
+                    if (!$("#cliente").val()) return showError("Debe proporcionar un número de cliente.")
+                    
+                    const p = {}
+
+                    p.cliente = $("#cliente").val()
+
+                    return p
+                }
+
+                const getParametrosConsulta = () => {
+                    if (!$("#autorizacion")[0].files[0]) return showError("Debe seleccionar el archivo de autorización.")
+                    if (!$("#identificacion")[0].files[0]) return showError("Debe seleccionar el archivo de identificación del cliente.")
+
+                    const datos = new FormData();
+
+                    datos.append("cliente", $("#noCliente").val())
+                    datos.append("nombre1", $("#nombre1").val())
+                    datos.append("nombre2", $("#nombre2").val() ?? null)
+                    datos.append("apellido1", $("#apellido1").val())
+                    datos.append("apellido2", $("#apellido2").val())
+                    datos.append("fecha", $("#fechaN").val())
+                    datos.append("rfc", $("#rfc").val())
+                    datos.append("calle", $("#calle").val())
+                    datos.append("colonia", $("#colonia").val())
+                    datos.append("municipio", $("#municipio").val())
+                    datos.append("ciudad", $("#ciudad").val())
+                    datos.append("estado", $("#estado").val())
+                    datos.append("cp", $("#cp").val())
+
+                    datos.append("autorizacion", $("#autorizacion")[0].files[0])
+                    datos.append("identificacion", $("#identificacion")[0].files[0])
+
+                    return datos
+                }
+
+                const getConfirmacionCargaArchivo = () => {
+                    const confirmacion = document.createElement("div")
+                    const t1 = document.createElement("p")
+                    const condiciones = document.createElement("ul")
+                    const archivos = document.createElement("input")
+
+                    t1.innerText = "Para realizar la carga de documentos los archivos deben cumplir las siguientes condiciones:"
+
+                    condiciones.style = "text-align: left; margin-left: 50px;"
+                    condiciones.innerHTML += "<li>El archivo debe ser de tipo PDF.</li>"
+                    condiciones.innerHTML += "<li>El archivo no debe superar los 2MB.</li>"
+                    
+                    archivos.type = "file"
+                    archivos.accept = ".pdf"
+                    archivos.style = "width: 100%;"
+
+                    confirmacion.id = "confirmacion"
+                    confirmacion.appendChild(t1)
+                    confirmacion.appendChild(condiciones)
+                    confirmacion.appendChild(archivos)
+
+                    return confirmacion
+                }
+
+                const getIcono = (icono, color, funcion) => {
+                    return "<i class='glyphicon glyphicon-" + icono + "' style='cursor: pointer; font-size: 1.5em; color: " + color + "; ' onclick='" + funcion + "'></i>"
+                }
+
+                const buscarConsultas = () => {
+                    const parametros = getParametrosBusqueda()
+                    if (!parametros) return
+
+                    consultaServidor("/CDC/GetConsultaCliente", parametros, (res) => {
+                        if (!res.success) return respuestaError(idTabla, res.mensaje)
+                        if (res.datos.length === 0) return respuestaError(idTabla, "No se encontró información para el número de cliente proporcionado.")
+
+                        const datos = res.datos.map((item, fila) => {
+                            let autorizacion = ""
+                            let identificacion = ""
+                            let reporte = ""
+
+                            if (item.AUTORIZACION == 0) autorizacion += getIcono("cloud-upload", "red", "cargaArchivo(" + item.CLIENTE + "," + item.FOLIO + ", \"autorizacion\")")
+                            else autorizacion += getIcono("ok-circle", "green", "verPDF(" + item.CLIENTE + "," + item.FOLIO + ", \"autorizacion\")")
+
+                            if (item.IDENTIFICACION == 0) identificacion += getIcono("cloud-upload", "red", "cargaArchivo(" + item.CLIENTE + "," + item.FOLIO + ", \"identificacion\")")
+                            else identificacion += getIcono("ok-circle", "green", "verPDF(" + item.CLIENTE + "," + item.FOLIO + ", \"identificacion\")")
+
+
+                            if (fila === 0 && validaCaducidad(item.CADUCIDAD)) {    
+                                reporte += getIcono("refresh", "blue", "capturaDatosConsulta(" + fila + ")")
+                                reporte += "<input type='hidden' value='" + JSON.stringify(item) + "' id='" + fila + "'/>"
+                            } else reporte += getIcono("eye-open", "black", "verPDF(" + item.CLIENTE + "," + item.FOLIO + ", \"reporte\")")
+                        
+                            const documentos = "<div style='display: flex; justify-content: space-evenly;'>" + autorizacion + "|" + identificacion + "|" + reporte + "</div>"
+                            
+                            return [
+                                item.CLIENTE,
+                                item.NOMBRE,
+                                item.FOLIO,
+                                item.FECHA,
+                                item.CADUCIDAD,
+                                documentos
+                            ]
+                        })
+
+                        actualizaDatosTabla(idTabla, datos)
+                        $(".resultado").toggleClass("conDatos", true)
+                    })
+                }
+
+                const validaCaducidad = (fecha) => {
+                    const partes = fecha.split("/")
+                    const caducidad = new Date(
+                        parseInt(partes[2], 10),
+                        parseInt(partes[1], 10) - 1,
+                        parseInt(partes[0], 10)
+                    )
+                    const hoy = new Date().setHours(0, 0, 0, 0)
+                    return caducidad < hoy
+                }
+
+                const cargaArchivo = (cliente, folio, documento) => {
+                    confirmarMovimiento("Circulo de crédito", null, getConfirmacionCargaArchivo())
+                    .then((continuar) => {
+                        if (!continuar) return
+
+                        const archivos = $("#confirmacion input[type='file']")[0].files
+                        if (archivos.length === 0) return showError("Debe seleccionar un archivo.")
+                        if (!validaArchivo(archivos)) return
+                        
+                        confirmarMovimiento("Circulo de crédito", "Se guardara este archivo como " + documento + ".\\n¿continuar?")
+                        .then((continuar) => {
+                            if (!continuar) return
+                            
+                            const datos = new FormData()
+                            datos.append("cliente", cliente)
+                            datos.append("folio", folio)
+                            datos.append(documento, archivos[0])
+                            datos.append("unico", "true")
+                            
+                            consultaServidor("/CDC/SubeDocumentosCDC", datos, (res) => {
+                                if (!res.success) return showError(res.mensaje)
+                                showSuccess(res.mensaje).then(() => buscarConsultas())
+                            }, "POST", "JSON", false, false)
+                        })
+                    })
+                }
+
+                const actualizaModal = (datos = {}) => {
+                    $("#noCliente").val(datos.CLIENTE ?? "")
+                    $("#rfc").val(datos.RFC ?? "")
+                    $("#fecha").val(datos.NACIMIENTO ?? "")
+                    $("#nombre1").val(datos.NOMBRE1 ?? "")
+                    $("#nombre2").val(datos.NOMBRE2 ?? "")
+                    $("#apellido1").val(datos.PRIMAPE ?? "")
+                    $("#apellido2").val(datos.SEGAPE ?? "")
+                    $("#calle").val(datos.CALLE ?? "")
+                    $("#colonia").val(datos.COLONIA ?? "")
+                    $("#municipio").val(datos.MUNICIPIO ?? "")
+                    $("#ciudad").val(datos.CIUDAD ?? "")
+                    $("#estadoNombre").val(datos.ESTADO_NOMBRE ?? "")
+                    $("#estado").val(datos.ESTADO ?? "")
+                    $("#cp").val(datos.CP ?? "")
+
+                    $("#autorizacion").val("")
+                    $("#identificacion").val("")
+                }
+
+                const capturaDatosConsulta = (id) => {
+                    const fila = JSON.parse($("#" + id).val())
+                    actualizaModal(fila)
+                    $("#modalCDC").modal("show")
+                }
+
+                const validaArchivo = (archivo) => {
+                    if (!archivo) return showError("Debe seleccionar los archivos de soporte.")
+                    if (archivo.size > 2097152) return showError("El archivo no debe superar los 2MB.")
+                    if (archivo.type !== "application/pdf") return showError("El archivo debe ser de tipo PDF.")
+
+                    return true
                 }
 
                 $(document).ready(() => {
@@ -429,9 +768,338 @@ class CDC extends Controller
             </script>
         HTML;
 
-        View::set('header', $this->_contenedor->header(self::GetExtraHeader("Reporte de Referencias")));
+        View::set('header', $this->_contenedor->header(self::GetExtraHeader("Consulta CDC por cliente")));
         View::set('footer', $this->_contenedor->footer($js));
-        View::render('cdc_consulta');
+        View::render('cdc_consulta_admin');
+    }
+
+    public function ConsultaGlobal()
+    {
+        $regSuc = CDCDao::GetRegionSucursal();
+        $regSuc = $regSuc['success'] ? json_encode($regSuc['datos']) : [];
+
+        $js = <<<HTML
+            <script>
+                {$this->mensajes}
+                {$this->configuraTabla}
+                {$this->actualizaDatosTabla}
+                {$this->consultaServidor}
+                {$this->respuestaError}
+                {$this->validaCaducidad}
+                {$this->consultaCDC}
+                {$this->verPDF}
+
+                const idTabla = "tablaPrincipal"
+                const regSuc = JSON.parse('$regSuc')
+
+                const getParametrosBusqueda = () => {
+                    const p = {}
+
+                    p.region = $("#region").val()
+                    p.sucursal = $("#sucursal").val()
+                    p.grupo = $("#grupo").val()
+
+                    return p
+                }
+
+                const getParametrosConsulta = () => {
+                    if (!$("#autorizacion")[0].files[0]) return showError("Debe seleccionar el archivo de autorización.")
+                    if (!$("#identificacion")[0].files[0]) return showError("Debe seleccionar el archivo de identificación del cliente.")
+
+                    const datos = new FormData();
+
+                    datos.append("cliente", $("#noCliente").val())
+                    datos.append("nombre1", $("#nombre1").val())
+                    datos.append("nombre2", $("#nombre2").val() ?? null)
+                    datos.append("apellido1", $("#apellido1").val())
+                    datos.append("apellido2", $("#apellido2").val())
+                    datos.append("fecha", $("#fechaN").val())
+                    datos.append("rfc", $("#rfc").val())
+                    datos.append("calle", $("#calle").val())
+                    datos.append("colonia", $("#colonia").val())
+                    datos.append("municipio", $("#municipio").val())
+                    datos.append("ciudad", $("#ciudad").val())
+                    datos.append("estado", $("#estado").val())
+                    datos.append("cp", $("#cp").val())
+
+                    datos.append("autorizacion", $("#autorizacion")[0].files[0])
+                    datos.append("identificacion", $("#identificacion")[0].files[0])
+
+                    return datos
+                }
+
+                const getIcono = (icono, color, funcion) => {
+                    return "<i class='glyphicon glyphicon-" + icono + "' style='cursor: pointer; font-size: 1.5em; color: " + color + "; ' onclick='" + funcion + "'></i>"
+                }
+
+                const buscarConsultas = () => {
+                    const parametros = getParametrosBusqueda()
+                    if (!parametros) return
+
+                    consultaServidor("/CDC/GetConsultaGlobal", parametros, (res) => {
+                        if (!res.success) return respuestaError(idTabla, res.mensaje)
+                        if (res.datos.length === 0) return respuestaError(idTabla, "No se encontró información con los parámetros solicitados.")
+
+                        const datos = res.datos.map((item, fila) => {
+                            let autorizacion = ""
+                            let identificacion = ""
+                            let reporte = ""
+
+                            const i = "<i class='glyphicon glyphicon-ICONO' style='cursor: pointer; font-size: 1.5em; color: COLOR; ' onclick='FUNCION'></i>"
+
+                            if (item.AUTORIZACION == 0) autorizacion += getIcono("cloud-upload", "red", "cargaArchivo(" + item.CLIENTE + "," + item.FOLIO + ", \"autorizacion\")")
+                            else autorizacion += getIcono("ok-circle", "green", "verPDF(" + item.CLIENTE + "," + item.FOLIO + ", \"autorizacion\")")
+
+                            if (item.IDENTIFICACION == 0) identificacion += getIcono("cloud-upload", "red", "cargaArchivo(" + item.CLIENTE + "," + item.FOLIO + ", \"identificacion\")")
+                            else identificacion += getIcono("ok-circle", "green", "verPDF(" + item.CLIENTE + "," + item.FOLIO + ", \"identificacion\")")
+
+
+                            if (!validaCaducidad(item.CADUCIDAD)) reporte += getIcono("eye-open", "black", "verPDF(" + item.CLIENTE + "," + item.FOLIO + ", \"reporte\")")
+                            else {    
+                                reporte += getIcono("refresh", "blue" , "capturaDatosConsulta(" + fila + ")")
+                                reporte += "<input type='hidden' value='" + JSON.stringify(item) + "' id='" + fila + "'/>"
+                            }
+                            
+                            const documentos = "<div style='display: flex; justify-content: space-evenly;'>" + autorizacion + "|" + identificacion + "|" + reporte + "</div>"
+
+                            return [
+                                item.REGION,
+                                item.SUCURSAL,
+                                item.GRUPO,
+                                item.CLIENTE,
+                                item.NOMBRE,
+                                item.FOLIO,
+                                item.FECHA,
+                                item.CADUCIDAD,
+                                documentos
+                            ]
+                        })
+
+                        actualizaDatosTabla(idTabla, datos)
+                        $(".resultado").toggleClass("conDatos", true)
+                    })
+                }
+
+                const actualizaModal = (datos = {}) => {
+                    $("#noCliente").val(datos.CLIENTE ?? "")
+                    $("#rfc").val(datos.RFC ?? "")
+                    $("#fecha").val(datos.NACIMIENTO ?? "")
+                    $("#nombre1").val(datos.NOMBRE1 ?? "")
+                    $("#nombre2").val(datos.NOMBRE2 ?? "")
+                    $("#apellido1").val(datos.PRIMAPE ?? "")
+                    $("#apellido2").val(datos.SEGAPE ?? "")
+                    $("#calle").val(datos.CALLE ?? "")
+                    $("#colonia").val(datos.COLONIA ?? "")
+                    $("#municipio").val(datos.MUNICIPIO ?? "")
+                    $("#ciudad").val(datos.CIUDAD ?? "")
+                    $("#estadoNombre").val(datos.ESTADO_NOMBRE ?? "")
+                    $("#estado").val(datos.ESTADO ?? "")
+                    $("#cp").val(datos.CP ?? "")
+
+                    $("#autorizacion").val("")
+                    $("#identificacion").val("")
+                }
+
+                const capturaDatosConsulta = (id) => {
+                    const fila = JSON.parse($("#" + id).val())
+                    actualizaModal(fila)
+                    $("#modalCDC").modal("show")
+                }
+
+                const validaArchivo = (archivo) => {
+                    if (!archivo) return showError("Debe seleccionar los archivos de soporte.")
+                    if (archivo.size > 2097152) return showError("El archivo " + archivo.name + " supera los 2MB.")
+
+                    return true
+                }
+
+                const actualizaSucursales = () => {
+                    const region = $("#region").val()
+                    $("#sucursal").empty()
+                    $("#sucursal").append(new Option("Todas", ""))
+
+                    regSuc.filter((reg) => reg.REGION === region || region === "")
+                        .sort((a, b) => a.NOMBRE_SUCURSAL.localeCompare(b.NOMBRE_SUCURSAL))
+                        .forEach((suc) => {
+                            if (suc.REGION === region || region === "") $("#sucursal").append(new Option(suc.NOMBRE_SUCURSAL, suc.SUCURSAL))
+                        })
+                }
+
+                const getConfirmacionCargaMasiva = () => {
+                    const confirmacion = document.createElement("div")
+                    const t1 = document.createElement("p")
+                    const condiciones = document.createElement("ul")
+                    const t2 = document.createElement("p")
+                    const archivos = document.createElement("input")
+
+                    t1.innerText = "Para realizar la carga masiva de documentos los archivos deben cumplir las siguientes condiciones:"
+
+                    condiciones.style = "text-align: left; margin-left: 50px;"
+                    condiciones.innerHTML += "<li>El archivo debe ser de tipo PDF.</li>"
+                    condiciones.innerHTML += "<li>El archivo no debe superar los 2MB.</li>"
+                    condiciones.innerHTML += "<li>El nombre del archivo debe tener el formato requerido.<br>(No. de cliente_identificador)</li>"
+                    
+                    t2.innerHTML += "Identificadores de documentos:<br>"
+                    t2.innerHTML += "AUT: Autorización<br>"
+                    t2.innerHTML += "ID: Identificación<br>"
+                    t2.innerHTML += "<b>Ejemplo de nombre de archivo: 123456_AUT</b>"
+
+                    archivos.type = "file"
+                    archivos.accept = ".pdf"
+                    archivos.multiple = true
+                    archivos.style = "width: 100%;"
+
+                    confirmacion.id = "confirmacion"
+                    confirmacion.appendChild(t1)
+                    confirmacion.appendChild(condiciones)
+                    confirmacion.appendChild(t2)
+                    confirmacion.appendChild(archivos)
+
+                    return confirmacion
+                }
+                
+                const getConfirmacionCargaArchivo = () => {
+                    const confirmacion = document.createElement("div")
+                    const t1 = document.createElement("p")
+                    const condiciones = document.createElement("ul")
+                    const archivos = document.createElement("input")
+
+                    t1.innerText = "Para realizar la carga de documentos los archivos deben cumplir las siguientes condiciones:"
+
+                    condiciones.style = "text-align: left; margin-left: 50px;"
+                    condiciones.innerHTML += "<li>El archivo debe ser de tipo PDF.</li>"
+                    condiciones.innerHTML += "<li>El archivo no debe superar los 2MB.</li>"
+                    
+                    archivos.type = "file"
+                    archivos.accept = ".pdf"
+                    archivos.style = "width: 100%;"
+
+                    confirmacion.id = "confirmacion"
+                    confirmacion.appendChild(t1)
+                    confirmacion.appendChild(condiciones)
+                    confirmacion.appendChild(archivos)
+
+                    return confirmacion
+                }
+
+                const validaCargaMasiva = (archivos) => {
+                    let resultado = false
+                    const retornaError = (mensaje) => {
+                        showError(mensaje)
+                        resultado = false
+                        return resultado
+                    }
+
+                    if (archivos.length === 0) retornaError("Debe seleccionar al menos un archivo.")
+
+                    Array.from(archivos).some((archivo) => {
+                        if (archivo.size > 2097152) return !retornaError("El archivo " + archivo.name + " supera los 2MB.")
+
+                        const [cliente, id] = archivo.name.split(".")[0].split("_")
+                        if (cliente.length !== 6 || isNaN(cliente)) return !retornaError("El número de cliente en el archivo " + archivo.name + " no es válido.")
+                        if (id.toUpperCase() !== "AUT" && id.toUpperCase() !== "ID") return !retornaError("El identificador de documento en el archivo " + archivo.name + " no es válido.")
+                        resultado = true
+                    })
+
+                    return resultado
+                }
+
+                const cargaMasivaPDF = () => {
+                    confirmarMovimiento("Circulo de crédito", null, getConfirmacionCargaMasiva())
+                    .then((continuar) => {
+                        if (!continuar) return
+
+                        const archivos = $("#confirmacion input[type='file']")[0].files
+                        if (archivos.length === 0) return showError("Debe seleccionar al menos un archivo.")
+                        if (!validaCargaMasiva(archivos)) return
+
+                        confirmarMovimiento("Circulo de crédito", "Se guardaran unicamente los archivos faltantes en la consulta mas reciente de cada cliente.\\n¿Seguro desea continuar?")
+                        .then((continuar) => {
+                            if (!continuar) return
+
+                            const carga = new FormData()
+                            Array.from(archivos).forEach((archivo) => carga.append("archivos[]", archivo))
+                            
+                            consultaServidor("/CDC/CargaDocMasiva", carga, (res) => {
+                                if (!res.success) return showError(res.mensaje)
+                                showSuccess(res.mensaje).then(() => buscarConsultas())
+                            }, "POST", "JSON", false, false)
+                        })
+                    })
+                }
+
+                const cargaArchivo = (cliente, folio, documento) => {
+                    confirmarMovimiento("Circulo de crédito", null, getConfirmacionCargaArchivo())
+                    .then((continuar) => {
+                        if (!continuar) return
+
+                        const archivos = $("#confirmacion input[type='file']")[0].files
+                        if (archivos.length === 0) return showError("Debe seleccionar un archivo.")
+                        if (!validaArchivo(archivos)) return
+                        
+                        confirmarMovimiento("Circulo de crédito", "Se guardara este archivo como " + documento + ".\\n¿continuar?")
+                        .then((continuar) => {
+                            if (!continuar) return
+                            
+                            const datos = new FormData()
+                            datos.append("cliente", cliente)
+                            datos.append("folio", folio)
+                            datos.append(documento, archivos[0])
+                            datos.append("unico", "true")
+                            
+                            consultaServidor("/CDC/SubeDocumentosCDC", datos, (res) => {
+                                if (!res.success) return showError(res.mensaje)
+                                showSuccess(res.mensaje).then(() => buscarConsultas())
+                            }, "POST", "JSON", false, false)
+                        })
+                    })
+                }
+
+                $(document).ready(() => {
+                    configuraTabla(idTabla)
+                    $("#region").append(new Option("Todas", ""))
+                    regSuc.forEach((reg) => {
+                        if ($("#region option[value='" + reg.REGION + "']").length === 0)
+                            $("#region").append(new Option(reg.NOMBRE_REGION, reg.REGION))
+                    })
+
+                    $("#region").change(actualizaSucursales)
+                    $("#cliente").keypress((e) => { if (e.which === 13) buscarConsultas() })
+                    $("#buscar").click(buscarConsultas)
+                    $("#cargaMasiva").click(cargaMasivaPDF)
+                    $("#consultaCDC").click(consultaCDC)
+
+                    actualizaSucursales()
+                    buscarConsultas()
+                })
+            </script>
+        HTML;
+
+        View::set('header', $this->_contenedor->header(self::GetExtraHeader("Consulta CDC global")));
+        View::set('footer', $this->_contenedor->footer($js));
+        View::render('cdc_consulta_global');
+    }
+
+    public function GetConsultaCliente()
+    {
+        $resultado = CDCDao::GetConsultaCliente($_POST);
+        if ($resultado['success'] && count($resultado['datos']) !== 0) {
+            foreach ($resultado['datos'] as $key => &$value) {
+                $value['RESULTADO'] = null;
+                // if (is_resource($value['RESULTADO'])) {
+                //     $contenido = stream_get_contents($resultado['datos'][$key]['RESULTADO']);
+                //     fclose($resultado['datos'][$key]['RESULTADO']);
+                //     $value['RESULTADO'] = $contenido;
+                // }
+            }
+        }
+
+        self::RespondeJSON($resultado);
+    }
+
+    public function GetConsultaGlobal()
+    {
+        self::RespondeJSON(CDCDao::GetConsultaGlobal($_POST));
     }
 
     public function ConsultaCDC($cuerpo, $ep, $config = [])
@@ -491,25 +1159,8 @@ class CDC extends Controller
         ];
 
         if ($infoCliente['autorizacion']) $guardar['autorizacion'] = $infoCliente['autorizacion'];
-        if ($infoCliente['ine']) $guardar['ine'] = $infoCliente['ine'];
+        if ($infoCliente['identificacion']) $guardar['identificacion'] = $infoCliente['identificacion'];
         return CDCDao::SetResultadoCDC($guardar);
-    }
-
-    public function GetResultadosCDC()
-    {
-        $resultado = CDCDao::GetResultadosCDC($_POST);
-        if ($resultado['success'] && count($resultado['datos']) !== 0) {
-            foreach ($resultado['datos'] as $key => &$value) {
-                $value['RESULTADO'] = null;
-                // if (is_resource($value['RESULTADO'])) {
-                //     $contenido = stream_get_contents($resultado['datos'][$key]['RESULTADO']);
-                //     fclose($resultado['datos'][$key]['RESULTADO']);
-                //     $value['RESULTADO'] = $contenido;
-                // }
-            }
-        }
-
-        self::RespondeJSON($resultado);
     }
 
     public function GetDocumento()
@@ -528,9 +1179,10 @@ class CDC extends Controller
 
         $contenido = $archivo['datos']['PDF'];
         $archivo = is_resource($contenido) ? stream_get_contents($contenido) : $contenido;
+        $nombre = $_GET['cliente'] . '_' . strtoupper($_GET['documento']) . '.pdf';
 
         header("Content-Type: application/pdf");
-        header('Content-Disposition: inline; filename="' . $_GET['documento'] . '.pdf"');
+        header('Content-Disposition: inline; filename="' . $nombre . '.pdf"');
         header('Content-Transfer-Encoding: binary');
         header("Content-Length: " . strlen($archivo));
         echo $archivo;
@@ -547,23 +1199,23 @@ class CDC extends Controller
         else {
             try {
                 if (!isset($_FILES['autorizacion']) && $_FILES['autorizacion']['error'] !== UPLOAD_ERR_OK) return self::Responde(false, 'No se incluyó el archivo de autorización.');
-                if (!isset($_FILES['ine']) && $_FILES['ine']['error'] !== UPLOAD_ERR_OK) return self::Responde(false, 'No se incluyó el archivo de INE.');
+                if (!isset($_FILES['identificacion']) && $_FILES['identificacion']['error'] !== UPLOAD_ERR_OK) return self::Responde(false, 'No se incluyó el archivo de identificación del cliente.');
 
                 $_POST['autorizacion'] = fopen($_FILES['autorizacion']['tmp_name'], 'rb');
-                $_POST['ine'] = fopen($_FILES['ine']['tmp_name'], 'rb');
+                $_POST['identificacion'] = fopen($_FILES['identificacion']['tmp_name'], 'rb');
                 self::RespondeJSON(self::SetResultadoCDC($_POST, $cdc['datos']));
             } catch (\Exception $e) {
                 return self::Responde(false, 'Error al guardar los datos en la base.', null, $e->getMessage());
             } finally {
                 if (isset($_POST['autorizacion'])) fclose($_POST['autorizacion']);
-                if (isset($_POST['ine'])) fclose($_POST['ine']);
+                if (isset($_POST['identificacion'])) fclose($_POST['identificacion']);
             }
         }
     }
 
     public function GeneraConsultaCDC_API()
     {
-        $resultado = CDCDao::GetResultadosCDC($_GET);
+        $resultado = CDCDao::GetConsultaCliente($_GET);
 
         if (!$resultado['success']) return self::Responde(false, 'Ocurrió un error al consultar la información del cliente en la base de datos, favor de intentarlo nuevamente en unos minutos.\n Si el problema persiste contacte a soporte técnico.', null, $resultado['error']);
 
@@ -601,23 +1253,68 @@ class CDC extends Controller
     public function SubeDocumentosCDC()
     {
         try {
-            if (!isset($_FILES['autorizacion']) && $_FILES['autorizacion']['error'] !== UPLOAD_ERR_OK) return self::Responde(false, 'No se incluyó el archivo de autorización.');
-            if (!isset($_FILES['ine']) && $_FILES['ine']['error'] !== UPLOAD_ERR_OK) return self::Responde(false, 'No se incluyó el archivo de INE.');
+            if (!isset($_FILES['autorizacion']) && !$_POST['unico'] && $_FILES['autorizacion']['error'] !== UPLOAD_ERR_OK) return self::Responde(false, 'No se incluyó el archivo de autorización.');
+            if (!isset($_FILES['identificacion']) && !$_POST['unico']  && $_FILES['identificacion']['error'] !== UPLOAD_ERR_OK) return self::Responde(false, 'No se incluyó el archivo de identificación del cliente.');
 
-            $_POST['autorizacion'] = fopen($_FILES['autorizacion']['tmp_name'], 'rb');
-            $_POST['ine'] = fopen($_FILES['ine']['tmp_name'], 'rb');
+            if (isset($_FILES['autorizacion'])) $_POST['autorizacion'] = fopen($_FILES['autorizacion']['tmp_name'], 'rb');
+            if (isset($_FILES['identificacion'])) $_POST['identificacion'] = fopen($_FILES['identificacion']['tmp_name'], 'rb');
             self::RespondeJSON(CDCDao::SetDocumentosCDC($_POST));
         } catch (\Exception $e) {
             return self::Responde(false, 'Error al guardar los documentos en la base.', null, $e->getMessage());
         } finally {
             if (isset($_POST['autorizacion'])) fclose($_POST['autorizacion']);
-            if (isset($_POST['ine'])) fclose($_POST['ine']);
+            if (isset($_POST['identificacion'])) fclose($_POST['identificacion']);
         }
+    }
+
+    public function CargaDocMasiva()
+    {
+        if (!isset($_FILES['archivos'])) return self::Responde(false, 'No se incluyó ningún archivo para la carga masiva.');
+        $guardar = [];
+        $errores = [];
+
+        foreach ($_FILES['archivos']['tmp_name'] as $key => $archivo) {
+            if ($_FILES['archivos']['error'][$key] !== UPLOAD_ERR_OK) {
+                $errores[$key] = 'Error al cargar el archivo ' . $_FILES['archivos']['name'][$key] . '.';
+                continue;
+            }
+
+            $nombre = str_replace('.pdf', '', $_FILES['archivos']['name'][$key]);
+            [$cliente, $documento] = explode('_', $nombre);
+
+            if (strlen($cliente) !== 6 || !is_numeric($cliente)) {
+                $errores[$key] = 'El número de cliente en el archivo ' . $nombre . ' no es válido.';
+                continue;
+            }
+
+            if ($documento !== 'AUT' && $documento !== 'ID') {
+                $errores[$key] = 'El identificador de documento en el archivo ' . $nombre . ' no es válido.';
+                continue;
+            }
+
+            $guardar[$cliente][$documento] = fopen($archivo, 'rb');
+        }
+
+        if (count($guardar) === 0) return self::Responde(false, 'No se logro procesar ningún documento.', null, $errores);
+
+        $qrys = [];
+        $prms = [];
+        foreach ($guardar as $cliente => $documentos) {
+            $d = [];
+            $d['cliente'] = $cliente;
+            if ($documentos['AUT']) $d['autorizacion'] = $documentos['AUT'];
+            if ($documentos['ID']) $d['identificacion'] = $documentos['ID'];
+
+            [$qrys[], $prms[]] = CDCDao::GetQrysCargaDocMasiva($d);
+        }
+
+        $resultado = CDCDao::CargaDocMasiva($qrys, $prms);
+        return self::Responde(true, 'Documentos procesados correctamente.', $resultado, $errores);
     }
 
     public function GetReporteCDC()
     {
-        $resultado = CDCDao::GetResultadosCDC($_GET);
+        $resultado = CDCDao::GetConsultaCliente($_GET);
         if (!$resultado['success'] || count($resultado['datos']) === 0 || $resultado['datos'][0]['RESULTADO'] === null) {
             echo self::ErrorPDF('No se encontró información para el número de cliente proporcionado.');
             return;
@@ -772,9 +1469,9 @@ class CDC extends Controller
 
     private function AplicaEstilos($valor, $formato = null)
     {
-        if ($formato === 'moneda') return ['$' . number_format($valor, 2), 'text-align: right;'];
-        if ($formato === 'fecha') return [self::formatearFecha($valor), 'text-align: center;'];
-        if ($formato === 'centrado') return [$valor, 'text-align: center;'];
+        if ($valor && $formato === 'moneda') return ['$' . number_format($valor, 2), 'text-align: right;'];
+        if ($valor && $formato === 'fecha') return [self::formatearFecha($valor), 'text-align: center;'];
+        if ($valor && $formato === 'centrado') return [$valor, 'text-align: center;'];
         return [$valor, ''];
     }
 

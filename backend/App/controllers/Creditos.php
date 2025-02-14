@@ -106,9 +106,12 @@ class Creditos extends Controller
                     const region = $("#region").val()
                     $("#sucursal").empty()
                     $("#sucursal").append(new Option("Todas", ""))
-                    regSuc.forEach((suc) => {
-                        if (suc.REGION === region || region === "") $("#sucursal").append(new Option(suc.NOMBRE_SUCURSAL, suc.SUCURSAL))
-                    })
+                    
+                    regSuc.filter((reg) => reg.REGION === region || region === "")
+                        .sort((a, b) => a.NOMBRE_SUCURSAL.localeCompare(b.NOMBRE_SUCURSAL))
+                        .forEach((suc) => {
+                            if (suc.REGION === region || region === "") $("#sucursal").append(new Option(suc.NOMBRE_SUCURSAL, suc.SUCURSAL))
+                        })
                 }
 
                 $(document).ready(() => {

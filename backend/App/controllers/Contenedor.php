@@ -147,9 +147,9 @@ class Contenedor extends Controller
                 <li><a><i class="glyphicon glyphicon-ok-circle">&nbsp;</i>Circulo de Crédito<span class="fa fa-chevron-down"></span></a>
                     <ul class="nav child_menu">
                         <li><a href="/CDC/Consulta">Consulta por Cliente</a></li>
-                        <li><a href="/CDC/Consulta">Mis Consultas</a></li>
+                        <li><a href="/CDC/ConsultaGrupal">Mis Consultas</a></li>
                         <li><a href="/CDC/ConsultaAdmin">Consulta por Cliente (Admin)</a></li>
-                        <li><a href="/CDC/ConsultaAdmin">Consultas Globales</a></li>
+                        <li><a href="/CDC/ConsultaGlobal">Consulta Global</a></li>
                     </ul>
                 </li>
             </ul>
