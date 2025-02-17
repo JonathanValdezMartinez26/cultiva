@@ -15,6 +15,22 @@ class CDC extends Controller
     private $_contenedor;
     private $cnfg;
 
+    private $getIcono = <<<JAVASCRIPT
+        const getIcono = (tipo, funcion, texto = "") => {
+            const tipos = {
+                ver: { icono: "eye-open", color: "black" },
+                subir: { icono: "cloud-upload", color: "red" },
+                actualizar: { icono: "refresh", color: "blue" },
+                nuevo: { icono: "plus", color: "orange" },
+                ok: { icono: "ok-circle", color: "green" },
+                default: { icono: "grain", color: "black" }
+            }
+
+            const t = tipos[tipo]
+            const espacio = texto ? "&nbsp;" : ""
+            return "<i class='glyphicon glyphicon-" + t.icono + "' style='cursor: pointer; font-size: 1.5em; color: " + t.color + "; ' onclick='" + funcion + "'>" + espacio + "</i>" + texto
+        }
+    JAVASCRIPT;
     private $validaCaducidad = <<<JAVASCRIPT
         const validaCaducidad = (fecha) => {
             if (!fecha) return false
@@ -57,8 +73,9 @@ class CDC extends Controller
         const verPDF = (cliente, folio = "", documento = "") => {
             let metodo = "GetDocumento"
             if (documento === "reporte") metodo = "GetReporteCDC"
+            const host = window.location.origin
             $("#PDF").append($("<embed>", {
-                src: "http://192.168.1.2:7002/CDC/" + metodo + "/?cliente=" + cliente + "&folio=" + folio + "&documento=" + documento,
+                src: host + "/CDC/" + metodo + "/?cliente=" + cliente + "&folio=" + folio + "&documento=" + documento,
                 style: "width: 100%; height: 100%; z-index: 1000; position: relative;",
                 id: "PDF_viewer"
             }))
@@ -282,8 +299,8 @@ class CDC extends Controller
                 {$this->actualizaDatosTabla}
                 {$this->consultaServidor}
                 {$this->respuestaError}
+                {$this->getIcono}
                 {$this->validaCaducidad}
-                {$this->verPDF}
 
                 const idTabla = "tablaPrincipal"
                 const regSuc = JSON.parse('$regSuc')
@@ -348,8 +365,37 @@ class CDC extends Controller
                     return cliente
                 }
 
-                const getIcono = (icono, color, funcion) => {
-                    return "<i class='glyphicon glyphicon-" + icono + "' style='cursor: pointer; font-size: 1.5em; color: " + color + "; ' onclick='" + funcion + "'></i>"
+                const agrupaResultado = (datos) => {
+                    const agrupado = []
+                    datos.forEach((item, fila) => {
+                        const cliente = getDatosCliente(item, fila)
+                        let existente = agrupado.find(grupo => 
+                            grupo.REGION === item.REGION && 
+                            grupo.SUCURSAL === item.SUCURSAL && 
+                            grupo.GRUPO === item.GRUPO
+                        )
+
+                        if (existente) existente.CLIENTES.push(cliente)
+                        else {
+                            existente = {
+                                VER: 0,
+                                SUBIR: 0,
+                                ACTUALIZAR: 0,
+                                REGION: item.REGION,
+                                SUCURSAL: item.SUCURSAL,
+                                GRUPO: item.GRUPO,
+                                CLIENTES: [cliente]
+                            }
+                            agrupado.push(existente)
+                        }
+
+                        if (cliente.AUTORIZACION == 1 && cliente.IDENTIFICACION == 1)
+                            if (validaCaducidad(cliente.CADUCIDAD)) existente.ACTUALIZAR++
+                            else existente.VER++
+                        else existente.SUBIR++
+                    })
+
+                    return agrupado
                 }
 
                 const generaTablaClientes = (clientes, fila) => {
@@ -376,18 +422,14 @@ class CDC extends Controller
                             tr.appendChild(td)
                         })
                         const reporte = document.createElement("td")
-
-                        if (cliente.FOLIO === null) {
-                                reporte.innerHTML += getIcono("refresh", "blue", "capturaDatosConsulta(" + fila + ", true)")
-                                reporte.innerHTML += "<input type='hidden' value='" + JSON.stringify(item) + "' id='" + fila + "'/>"
-                            } else if (cliente.AUTORIZACION == 0 || cliente.IDENTIFICACION == 0) {
-                                reporte.innerHTML += getIcono("cloud-upload", "red", "capturaDatosConsulta(" + fila + ", false)")
-                                reporte.innerHTML += "<input type='hidden' value='" + JSON.stringify(cliente) + "' id='" + fila + "'/>"
+                            if (cliente.AUTORIZACION == 0 || cliente.IDENTIFICACION == 0) {
+                                reporte.innerHTML += getIcono("subir", "capturaDatosConsulta(" + fila + ", false)")
+                                reporte.innerHTML += "<input type='hidden' value='" + JSON.stringify(cliente) + "' id='" + cliente.CLIENTE + "'/>"
                             } else {
-                                if (fila === 0 && validaCaducidad(cliente.CADUCIDAD)) {
-                                    reporte.innerHTML += getIcono("refresh", "blue", "capturaDatosConsulta(" + fila + ", true)")
-                                    reporte.innerHTML += "<input type='hidden' value='" + JSON.stringify(cliente) + "' id='" + fila + "'/>"
-                                } else reporte.innerHTML += getIcono("eye-open", "green" , "verPDF(" + cliente.CLIENTE + "," + cliente.FOLIO + ", \"reporte\")")
+                                if (validaCaducidad(cliente.CADUCIDAD)) {
+                                    reporte.innerHTML += getIcono("actualizar", "capturaDatosConsulta(" + fila + ", true)")
+                                    reporte.innerHTML += "<input type='hidden' value='" + JSON.stringify(cliente) + "' id='" + cliente.CLIENTE + "'/>"
+                                } else reporte.innerHTML += getIcono("ver" , "verPDF(" + cliente.CLIENTE + "," + cliente.FOLIO + ", \"reporte\")")
                             }
 
                         tr.appendChild(reporte)
@@ -408,27 +450,7 @@ class CDC extends Controller
                         if (!res.success) return respuestaError(idTabla, res.mensaje)
                         if (res.datos.length === 0) return respuestaError(idTabla, "No se encontró información para el número de cliente proporcionado.")
                         
-                        const agrupado = []
-                        
-                        res.datos.forEach((item, fila) => {
-                            let existente = agrupado.find(r => 
-                                r.REGION === item.REGION && 
-                                r.SUCURSAL === item.SUCURSAL && 
-                                r.GRUPO === item.GRUPO
-                            );
-
-                            if (existente) existente.CLIENTES.push(getDatosCliente(item, fila));
-                            else {
-                                agrupado.push({
-                                    REGION: item.REGION,
-                                    SUCURSAL: item.SUCURSAL,
-                                    GRUPO: item.GRUPO,
-                                    CLIENTES: [getDatosCliente(item)]
-                                });
-                            }
-                        });
-
-                        const datos = agrupado.map((item, fila) => {
+                        const datos = agrupaResultado(res.datos).map((item, fila) => {
                             const detalles = $("<details>")
                             const titulo = $("<summary>")
 
@@ -439,10 +461,15 @@ class CDC extends Controller
                             detalles.append(generaTablaClientes(item.CLIENTES))
                             detalles.css("text-align", "left")
 
+                            const subir = item.SUBIR > 0 ? 
+                            "<div onclick='listaDocumentosPendientes(event)' style='cursor: pointer; font-weight: bold; height: 100%; width: 100%;'>" + item.SUBIR + "</div>"
+                            : item.SUBIR
+
                             return [
-                                item.REGION,
-                                item.SUCURSAL,
                                 item.GRUPO,
+                                item.VER,
+                                subir,
+                                item.ACTUALIZAR,
                                 detalles.prop("outerHTML")
                             ]
                         })
@@ -450,6 +477,30 @@ class CDC extends Controller
                         actualizaDatosTabla(idTabla, datos)
                         $(".resultado").toggleClass("conDatos", true)
                     })
+                }
+
+                const listaDocumentosPendientes = (e) => {
+                    $("#modalDocPendientes #listado").empty()
+                    
+                    const fila = e.target.closest("tr")
+                    const tabla = $(fila).find("table")
+
+                    if (tabla.length > 0) {
+                        const listado = $("<table>")
+                        listado.css("width", "100%")
+                        listado.append("<tr><th>Cliente</th><th>Folio</th><th style='width: 30%;'>Autorización</th><th  style='width: 30%;'>Identificación</th></tr>")
+
+                        tabla.find('input').each(function () {
+                            let informacion = $(this).val()
+                            datos = JSON.parse(informacion)
+                            listado.append("<tr><td>" + datos.CLIENTE + "</td><td>" + datos.FOLIO + "</td><td><input type='file' class='custom-file-input' accept='application/pdf' style='width: 90%; margin: 10px 0;'></td><td><input type='file' class='custom-file-input' accept='application/pdf' style='width: 90%; margin: 10px 0;'></td></tr>")
+                        })
+                        
+                        $("#modalDocPendientes #listado").append(listado)
+                    } else $("#modalDocPendientes #listado").html("<p>No hay documentos pendientes</p>")
+
+
+                    $("#modalDocPendientes").modal("show")
                 }
 
                 const actualizaSucursales = () => {
@@ -1318,8 +1369,7 @@ class CDC extends Controller
         if (!$resultado['success'] || count($resultado['datos']) === 0 || $resultado['datos'][0]['RESULTADO'] === null) {
             echo self::ErrorPDF('No se encontró información para el número de cliente proporcionado.');
             return;
-        }
-
+        }  
         $consulta = json_decode(stream_get_contents($resultado['datos'][0]['RESULTADO']), true);
 
         $nombreArchivo = 'Reporte CDC ' . $resultado['datos'][0]['CLIENTE'];
@@ -1494,102 +1544,6 @@ class CDC extends Controller
         ];
         $mes = $meses[$date->format('M')];
         return $date->format('d') . '/' . $mes . '/' . $date->format('y');
-    }
-
-    private function AplicaCatalogos($datos, $catalogo)
-    {
-        $estados = [
-            'AGS' => 'AGUASCALIENTES',
-            'BC' => 'BAJA CALIFORNIA',
-            'BCS' => 'BAJA CALIFORNIA SUR',
-            'CAMP' => 'CAMPECHE',
-            'CHIS' => 'CHIAPAS',
-            'CHIH' => 'CHIHUAHUA',
-            'CDMX' => 'CIUDAD DE MÉXICO',
-            'COAH' => 'COAHUILA',
-            'COL' => 'COLIMA',
-            'DGO' => 'DURANGO',
-            'GTO' => 'GUANAJUATO',
-            'GRO' => 'GUERRERO',
-            'HGO' => 'HIDALGO',
-            'JAL' => 'JALISCO',
-            'MEX' => 'MÉXICO',
-            'MICH' => 'MICHOACÁN',
-            'MOR' => 'MORELOS',
-            'NAY' => 'NAYARIT',
-            'NL' => 'NUEVO LEÓN',
-            'OAX' => 'OAXACA',
-            'PUE' => 'PUEBLA',
-            'QRO' => 'QUERÉTARO',
-            'QROO' => 'QUINTANA ROO',
-            'SLP' => 'SAN LUIS POTOSÍ',
-            'SIN' => 'SINALOA',
-            'SON' => 'SONORA',
-            'TAB' => 'TABASCO',
-            'TAMPS' => 'TAMAULIPAS',
-            'TLAX' => 'TLAXCALA',
-            'VER' => 'VERACRUZ',
-            'YUC' => 'YUCATÁN',
-            'ZAC' => 'ZACATECAS'
-        ];
-
-        $tiposCredito = [
-            'AA' => 'Arrendamiento Automotriz',
-            'AB' => 'Automotriz Bancario',
-            'AE' => 'Física Actividad Empresarial',
-            'AM' => 'Aparatos/Muebles',
-            'AR' => 'Arrendamiento',
-            'AV' => 'Aviación',
-            'BC' => 'Banca Comunal',
-            'BL' => 'Bote/Lancha',
-            'BR' => 'Bienes Raíces',
-            'CA' => 'Compra De Automóvil',
-            'CC' => 'Crédito Al Consumo',
-            'CF' => 'Crédito Fiscal',
-            'CO' => 'Consolidación',
-            'CP' => 'Crédito Personal Al Consumo',
-            'ED' => 'Editorial',
-            'EQ' => 'Equipo',
-            'FF' => 'Fondeo Fira',
-            'FI' => 'Fianza',
-            'FT' => 'Factoraje',
-            'GS' => 'Grupo Solidario',
-            'HB' => 'Hipotecario Bancario',
-            'HE' => 'Préstamo Tipo Home Equity',
-            'HV' => 'Hipotecario o Vivienda',
-            'LC' => 'Línea de Crédito',
-            'MC' => 'Mejoras a la Casa',
-            'NG' => 'Préstamo No Garantizado',
-            'PB' => 'Préstamo Personal Bancario',
-            'PC' => 'Procampo',
-            'PE' => 'Préstamo Para Estudiante',
-            'PG' => 'Préstamo Garantizado',
-            'PQ' => 'Préstamo Quirografario',
-            'PM' => 'Préstamo Empresarial',
-            'PN' => 'Préstamo de Nómina',
-            'PP' => 'Préstamo Personal',
-            'SH' => 'Segunda Hipoteca',
-            'TC' => 'Tarjeta De Crédito',
-            'TD' => 'Tarjeta Departamental',
-            'TG' => 'Tarjeta Garantizada',
-            'TS' => 'Tarjeta De Servicios',
-            'VR' => 'Vehículo Recreativo',
-            'OT' => 'Otros',
-            'NC' => 'Desconocido'
-        ];
-
-        $cat = null;
-        if ($catalogo === 'estados') $cat = $estados;
-        if ($catalogo === 'tiposCredito') $cat = $tiposCredito;
-        if ($cat === null) return $datos;
-
-        foreach ($datos as &$dato) {
-            foreach ($dato as $campo => &$valor) {
-                $valor = $cat[$valor] ?? $valor;
-            }
-        }
-
-        return $datos;
     }
 
     public function SecurityTest()

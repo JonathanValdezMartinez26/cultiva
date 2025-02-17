@@ -1,3 +1,7 @@
+<?php
+    use App\components\MuestraPDF;
+?>
+
 <?= $header ?>
 
 <div class="right_col">
@@ -53,9 +57,10 @@
                     <table class="table table-striped table-bordered table-hover" id="tablaPrincipal">
                         <thead>
                             <tr>
-                                <th>Region</th>
-                                <th>Sucursal</th>
                                 <th>Grupo</th>
+                                <th><i class="glyphicon glyphicon-eye-open" style="cursor: pointer; font-size: 1.5em; color: black;"></i></th>
+                                <th><i class="glyphicon glyphicon-cloud-upload" style="cursor: pointer; font-size: 1.5em; color: red;"></i></th>
+                                <th><i class="glyphicon glyphicon-refresh" style="cursor: pointer; font-size: 1.5em; color: blue;"></i></th>
                                 <th style="width: 60%;">Clientes</th>
                             </tr>
                         </thead>
@@ -203,85 +208,34 @@
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancelar</button>
+                <button type="button" class="btn btn-primary" id="consultaCDC">Subir documentos</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="modalDocPendientes" tabindex="-1" role="dialog" aria-hidden="true">
+    <div class="modal-dialog modal-lg" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal">&times;</button>
+                <center>
+                    <h2 class="modal-title" id="modalCDCLabel">Clientes con documentación pendiente</h2>
+                </center>
+            </div>
+            <div class="modal-body">
+                <div class="container-fluid" id="listado">
+                    
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancelar</button>
                 <button type="button" class="btn btn-primary" id="consultaCDC">Consultar</button>
             </div>
         </div>
     </div>
 </div>
 
-<dialog id="muestraPDF">
-    <div id="contenido">
-        <div id="PDF">
-            <img id="cargando" src="/img/wait.gif" alt="Cargando..." style="width: 100px; height: 100px; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); z-index: 101;">
-        </div>
-        <div id="botones">
-            <button type="button" class="btn btn-primary" id="cerrarPDF" onclick=cerrarPDF()>Cerrar</button>
-        </div>
-    </div>
-</dialog>
-
-<style>
-    #muestraPDF {
-        transition: opacity 0.3s ease-in-out, display 0.3s ease-in-out allow-discrete;
-        opacity: 0;
-        width: 100vw;
-        height: 100vh;
-        margin: 0;
-        padding: 0;
-        position: fixed;
-        left: 0;
-        top: 0;
-        z-index: 100;
-        background-color: rgba(0, 0, 0, 0.5);
-        border: none;
-        align-items: center;
-        justify-content: center;
-
-        #contenido {
-            background: white;
-            padding: 20px;
-            border-radius: 10px;
-            width: 50%;
-            height: 75%;
-            text-align: center;
-            scale: 0;
-            transition: scale 0.3s ease-in-out;
-
-            #PDF {
-                width: 100%;
-                height: 95%;
-            }
-
-            #botones {
-                display: flex;
-                justify-content: center;
-                margin-top: 10px;
-
-                button {
-                    margin: 0;
-                }
-            }
-        }
-
-        &[open] {
-            display: flex;
-            opacity: 1;
-            transition: opacity 0.3s ease-in-out;
-
-            @starting-style {
-                opacity: 0;
-            }
-
-            #contenido {
-                scale: 1;
-                transition: scale 0.3s ease-in-out;
-
-                @starting-style {
-                    scale: 0;
-                }
-            }
-        }
-    }
-</style>
+<?= MuestraPDF::Mostrar() ?>
 
 <?= $footer ?>
