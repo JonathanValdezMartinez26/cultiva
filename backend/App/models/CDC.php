@@ -24,6 +24,7 @@ class CDC extends Model
                 CL.PRIMAPE,
                 CL.SEGAPE,
                 TO_CHAR(CL.NACIMIENTO, 'DD/MM/YYYY') AS NACIMIENTO,
+                TO_CHAR(CL.NACIMIENTO, 'YYYY-MM-DD') AS NACIMIENTO_CDC,
                 CL.RFC,
                 CL.CALLE,
                 COL.NOMBRE AS COLONIA,

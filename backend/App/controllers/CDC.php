@@ -8,7 +8,6 @@ use Core\View;
 use Core\Controller;
 use App\models\CDC as CDCDao;
 use Core\App;
-use Error;
 
 class CDC extends Controller
 {
@@ -104,6 +103,7 @@ class CDC extends Controller
                 {$this->actualizaDatosTabla}
                 {$this->consultaServidor}
                 {$this->respuestaError}
+                {$this->getIcono}
                 {$this->validaCaducidad}
                 {$this->verPDF}
 
@@ -130,7 +130,7 @@ class CDC extends Controller
                     datos.append("nombre2", $("#nombre2").val() ?? null)
                     datos.append("apellido1", $("#apellido1").val())
                     datos.append("apellido2", $("#apellido2").val())
-                    datos.append("fecha", $("#fechaN").val())
+                    datos.append("fecha", $("#fechaCDC").val())
                     datos.append("rfc", $("#rfc").val())
                     datos.append("calle", $("#calle").val())
                     datos.append("colonia", $("#colonia").val())
@@ -160,10 +160,6 @@ class CDC extends Controller
                     return datos
                 }
 
-                const getIcono = (icono, color, funcion) => {
-                    return "<i class='glyphicon glyphicon-" + icono + "' style='cursor: pointer; font-size: 1.5em; color: " + color + "; ' onclick='" + funcion + "'></i>"
-                }
-
                 const buscarConsultas = () => {
                     const parametros = getParametrosBusqueda()
                     if (!parametros) return
@@ -172,29 +168,32 @@ class CDC extends Controller
                         if (!res.success) return respuestaError(idTabla, res.mensaje)
                         if (res.datos.length === 0) return respuestaError(idTabla, "No se encontró información para el número de cliente proporcionado.")
                         
-                        const datos = res.datos.map((item, fila) => {
-                            let boton = ""
+                        const datos = res.datos.map((datos, fila) => {
+                            let boton = document.createElement("div")
+                            boton.style = "display: flex; justify-content: space-evenly;"
+                            boton.innerHTML = ""
 
-                            if (item.FOLIO === null) {
-                                boton += getIcono("refresh", "blue", "capturaDatosConsulta(" + fila + ", true)")
-                                boton += "<input type='hidden' value='" + JSON.stringify(item) + "' id='" + fila + "'/>"
-                            } else if (item.AUTORIZACION == 0 || item.IDENTIFICACION == 0) {
-                                boton += getIcono("cloud-upload", "red", "capturaDatosConsulta(" + fila + ", false)")
-                                boton += "<input type='hidden' value='" + JSON.stringify(item) + "' id='" + fila + "'/>"
+                            if (datos.FOLIO === null) {
+                                boton.innerHTML += getIcono("actualizar", "capturaDatosConsulta(" + datos.CLIENTE + ", true)")
+                                boton.innerHTML += "<input type='hidden' value='" + JSON.stringify(datos) + "' id='" + datos.CLIENTE + "'/>"
+                            } else if (datos.AUTORIZACION == 0 || datos.IDENTIFICACION == 0) {
+                                boton.innerHTML += getIcono("subir", "capturaDatosConsulta(" + datos.CLIENTE + ", false)")
+                                boton.innerHTML += "<input type='hidden' value='" + JSON.stringify(datos) + "' id='" + datos.CLIENTE + "'/>"
+                                boton.innerHTML += getIcono("ver" , "verPDF(" + datos.CLIENTE + "," + datos.FOLIO + ", \"reporte\")")
                             } else {
-                                if (fila === 0 && validaCaducidad(item.CADUCIDAD)) {
-                                    boton += getIcono("refresh", "blue", "capturaDatosConsulta(" + fila + ", true)")
-                                    boton += "<input type='hidden' value='" + JSON.stringify(item) + "' id='" + fila + "'/>"
-                                } else boton += "<button type='button' class='btn btn-success' onclick='verPDF(" + item.CLIENTE + "," + item.FOLIO + ", \"reporte\")'><i class='glyphicon glyphicon-eye-open'>&nbsp;</i>Reporte</button>"
+                                if (validaCaducidad(datos.CADUCIDAD)) {
+                                    boton.innerHTML += getIcono("actualizar", "capturaDatosConsulta(" + datos.CLIENTE + ", true)")
+                                    boton.innerHTML += "<input type='hidden' value='" + JSON.stringify(datos) + "' id='" + datos.CLIENTE + "'/>"
+                                } else boton.innerHTML += getIcono("ver" , "verPDF(" + datos.CLIENTE + "," + datos.FOLIO + ", \"reporte\")")
                             }
                             
                             return [
-                                item.CLIENTE,
-                                item.NOMBRE,
-                                item.FOLIO,
-                                item.FECHA,
-                                item.CADUCIDAD,
-                                boton
+                                datos.CLIENTE,
+                                datos.NOMBRE,
+                                datos.FOLIO,
+                                datos.FECHA,
+                                datos.CADUCIDAD,
+                                boton.outerHTML
                             ]
                         })
 
@@ -207,6 +206,7 @@ class CDC extends Controller
                     $("#noCliente").val(datos.CLIENTE ?? "")
                     $("#rfc").val(datos.RFC ?? "")
                     $("#fecha").val(datos.NACIMIENTO ?? "")
+                    $("#fechaCDC").val(datos.NACIMIENTO_CDC ?? "")
                     $("#nombre1").val(datos.NOMBRE1 ?? "")
                     $("#nombre2").val(datos.NOMBRE2 ?? "")
                     $("#apellido1").val(datos.PRIMAPE ?? "")
@@ -224,7 +224,7 @@ class CDC extends Controller
                 }
 
                 const capturaDatosConsulta = (id, consulta) => {
-                    const fila = JSON.parse($("#" + id).val())
+                    const fila = JSON.parse($("#" + idTabla + " #" + id).val())
                     actualizaModal(fila)
 
                     $("#consultaCDC").text(consulta ? "Consultar": "Subir Documentos")
@@ -326,7 +326,7 @@ class CDC extends Controller
                     datos.append("nombre2", $("#nombre2").val() ?? null)
                     datos.append("apellido1", $("#apellido1").val())
                     datos.append("apellido2", $("#apellido2").val())
-                    datos.append("fecha", $("#fechaN").val())
+                    datos.append("fecha", $("#fechaCDC").val())
                     datos.append("rfc", $("#rfc").val())
                     datos.append("calle", $("#calle").val())
                     datos.append("colonia", $("#colonia").val())
@@ -413,7 +413,7 @@ class CDC extends Controller
                     tabla.appendChild(cabecera)
 
                     const datosVisibles = ["CLIENTE", "NOMBRE", "FOLIO", "FECHA", "CADUCIDAD"]
-                    clientes.forEach((cliente) => {
+                    clientes.forEach((cliente, fila) => {
                         const tr = document.createElement("tr")
                         Object.keys(cliente).forEach((campo) => {
                             if (!datosVisibles.includes(campo)) return
@@ -422,20 +422,22 @@ class CDC extends Controller
                             tr.appendChild(td)
                         })
                         const reporte = document.createElement("td")
-                            if (cliente.AUTORIZACION == 0 || cliente.IDENTIFICACION == 0) {
-                                reporte.innerHTML += getIcono("subir", "capturaDatosConsulta(" + fila + ", false)")
+                        reporte.style = "display: flex; justify-content: space-evenly;"
+
+                        if (cliente.AUTORIZACION == 0 || cliente.IDENTIFICACION == 0) {
+                            reporte.innerHTML += getIcono("subir", "capturaDatosConsulta(" + cliente.CLIENTE + ", false)")
+                            reporte.innerHTML += "<input type='hidden' value='" + JSON.stringify(cliente) + "' id='" + cliente.CLIENTE + "'/>"
+                            reporte.innerHTML += getIcono("ver" , "verPDF(" + cliente.CLIENTE + "," + cliente.FOLIO + ", \"reporte\")")
+                        } else {
+                            if (validaCaducidad(cliente.CADUCIDAD)) {
+                                reporte.innerHTML += getIcono("actualizar", "capturaDatosConsulta(" + cliente.CLIENTE + ", true)")
                                 reporte.innerHTML += "<input type='hidden' value='" + JSON.stringify(cliente) + "' id='" + cliente.CLIENTE + "'/>"
-                            } else {
-                                if (validaCaducidad(cliente.CADUCIDAD)) {
-                                    reporte.innerHTML += getIcono("actualizar", "capturaDatosConsulta(" + fila + ", true)")
-                                    reporte.innerHTML += "<input type='hidden' value='" + JSON.stringify(cliente) + "' id='" + cliente.CLIENTE + "'/>"
-                                } else reporte.innerHTML += getIcono("ver" , "verPDF(" + cliente.CLIENTE + "," + cliente.FOLIO + ", \"reporte\")")
-                            }
+                            } else reporte.innerHTML += getIcono("ver" , "verPDF(" + cliente.CLIENTE + "," + cliente.FOLIO + ", \"reporte\")")
+                        }
 
                         tr.appendChild(reporte)
                         cuerpo.appendChild(tr)
                     })
-
 
                     tabla.style = "width: 100%; margin-top: 10px;"
                     tabla.appendChild(cuerpo)
@@ -486,10 +488,7 @@ class CDC extends Controller
                     const tabla = $(fila).find("table")
 
                     if (tabla.length > 0) {
-                        const listado = $("<table>")
-                        listado.css("width", "100%")
-                        listado.append("<tr><th>Cliente</th><th>Folio</th><th style='width: 30%;'>Autorización</th><th  style='width: 30%;'>Identificación</th></tr>")
-
+                        const listado = $("#listado")
                         tabla.find('input').each(function () {
                             let informacion = $(this).val()
                             datos = JSON.parse(informacion)
@@ -521,6 +520,7 @@ class CDC extends Controller
                     $("#folio").val(datos.FOLIO ?? "")
                     $("#rfc").val(datos.RFC ?? "")
                     $("#fecha").val(datos.NACIMIENTO ?? "")
+                    $("#fechaCDC").val(datos.NACIMIENTO_CDC ?? "")
                     $("#nombre1").val(datos.NOMBRE1 ?? "")
                     $("#nombre2").val(datos.NOMBRE2 ?? "")
                     $("#apellido1").val(datos.PRIMAPE ?? "")
@@ -538,7 +538,7 @@ class CDC extends Controller
                 }
 
                 const capturaDatosConsulta = (id, consulta) => {
-                    const fila = JSON.parse($("#" + id).val())
+                    const fila = JSON.parse($("#" +idTabla + " #" + id).val())
                     actualizaModal(fila)
 
                     $("#consultaCDC").text(consulta ? "Consultar": "Subir Documentos")
@@ -586,6 +586,44 @@ class CDC extends Controller
                     return true
                 }
 
+                const docPendientes = () => {
+                    const documentos = $("#modalDocPendientes #listado")
+
+                    const datos = new FormData()
+                    let completo = true
+
+                    documentos.find("tr").each(function (fila) {
+                        if (!completo) return
+                        const autorizacion = $(this).find("input[type='file']").eq(0)[0].files[0]
+                        const identificacion = $(this).find("input[type='file']").eq(1)[0].files[0]
+
+                        if (!autorizacion || !identificacion) {
+                            completo = false
+                            return showError("Debe seleccionar ambos archivos de soporte para el cliente " + $(this).find("td").eq(0).text())
+                        }
+
+                        datos.append("clientes[" + fila + "][cliente]", $(this).find("td").eq(0).text())
+                        datos.append("clientes[" + fila + "][folio]", $(this).find("td").eq(1).text())
+                        datos.append("clientes[" + fila + "][autorizacion]", autorizacion)
+                        datos.append("clientes[" + fila + "][identificacion]", identificacion)
+                    })
+
+                    if (!completo) return
+
+                    confirmarMovimiento("Circulo de crédito", "¿Seguro desea subir estos archivos?")
+                    .then((continuar) => {
+                        if (!continuar) return
+
+                        consultaServidor("/CDC/SubeDocPendientes", datos, (res) => {
+                            if (!res.success) return showError(res.mensaje)
+                            showSuccess(res.mensaje).then(() => {
+                                $("#modalDocPendientes").modal("hide")
+                                buscarConsultas()
+                            })
+                        }, "POST", "JSON", false, false)
+                    })
+                }
+
                 $(document).ready(() => {
                     configuraTabla(idTabla)
                     $("#region").append(new Option("Todas", ""))
@@ -600,6 +638,7 @@ class CDC extends Controller
                     $("#cliente").keypress((e) => { if (e.which === 13) buscarConsultas() })
                     $("#buscar").click(buscarConsultas)
                     $("#consultaCDC").click(consultaCDC)
+                    $("#guardarPendientes").click(docPendientes)
 
                     actualizaSucursales()
                     buscarConsultas()
@@ -653,7 +692,7 @@ class CDC extends Controller
                     datos.append("nombre2", $("#nombre2").val() ?? null)
                     datos.append("apellido1", $("#apellido1").val())
                     datos.append("apellido2", $("#apellido2").val())
-                    datos.append("fecha", $("#fechaN").val())
+                    datos.append("fecha", $("#fechaCDC").val())
                     datos.append("rfc", $("#rfc").val())
                     datos.append("calle", $("#calle").val())
                     datos.append("colonia", $("#colonia").val())
@@ -780,6 +819,7 @@ class CDC extends Controller
                     $("#noCliente").val(datos.CLIENTE ?? "")
                     $("#rfc").val(datos.RFC ?? "")
                     $("#fecha").val(datos.NACIMIENTO ?? "")
+                    $("#fechaCDC").val(datos.NACIMIENTO_CDC ?? "")
                     $("#nombre1").val(datos.NOMBRE1 ?? "")
                     $("#nombre2").val(datos.NOMBRE2 ?? "")
                     $("#apellido1").val(datos.PRIMAPE ?? "")
@@ -864,7 +904,7 @@ class CDC extends Controller
                     datos.append("nombre2", $("#nombre2").val() ?? null)
                     datos.append("apellido1", $("#apellido1").val())
                     datos.append("apellido2", $("#apellido2").val())
-                    datos.append("fecha", $("#fechaN").val())
+                    datos.append("fecha", $("#fechaCDC").val())
                     datos.append("rfc", $("#rfc").val())
                     datos.append("calle", $("#calle").val())
                     datos.append("colonia", $("#colonia").val())
@@ -935,6 +975,7 @@ class CDC extends Controller
                     $("#noCliente").val(datos.CLIENTE ?? "")
                     $("#rfc").val(datos.RFC ?? "")
                     $("#fecha").val(datos.NACIMIENTO ?? "")
+                    $("#fechaCDC").val(datos.NACIMIENTO_CDC ?? "")
                     $("#nombre1").val(datos.NOMBRE1 ?? "")
                     $("#nombre2").val(datos.NOMBRE2 ?? "")
                     $("#apellido1").val(datos.PRIMAPE ?? "")
@@ -1161,6 +1202,8 @@ class CDC extends Controller
             'PASS_CERT' => $this->cnfg['PASS_CERT'],
             'URL' => $config['URL'] ?? $this->cnfg['URL_CDC'],
             'API_KEY' => $config['API_KEY'] ?? $this->cnfg['API_KEY'],
+            'USER_CDC' => $this->cnfg['USER_CDC'],
+            'PASS_CDC' => $this->cnfg['PASS_CDC'],
             'valida' => $config['valida'] ?? true
         ];
         $firmas = new \SignatureService($cnfg['CERT_CDC'], $cnfg['CERT_CULTIVA'], $cnfg['PASS_CERT']);
@@ -1175,8 +1218,10 @@ class CDC extends Controller
                 CURLOPT_CUSTOMREQUEST => 'POST',
                 CURLOPT_HTTPHEADER => [
                     'Content-Type: application/json',
+                    'x-signature: ' . $firma,
                     'x-api-key: ' . $cnfg['API_KEY'],
-                    'x-signature: ' . $firma
+                    'username: ' . $cnfg['USER_CDC'],
+                    'password: ' . $cnfg['PASS_CDC']
                 ],
                 CURLOPT_POSTFIELDS => $cuerpo,
                 CURLOPT_HEADERFUNCTION => function ($curl, $hdr) use (&$hdrs) {
@@ -1188,7 +1233,9 @@ class CDC extends Controller
 
             $resultado = curl_exec($ci);
             if (curl_errno($ci)) return self::GetRespuesta(false, 'No se logro consultar el servicio de CDC.', null, curl_error($ci));
-            if (curl_getinfo($ci, CURLINFO_HTTP_CODE) !== 200) return self::GetRespuesta(false, 'Error al consultar los servicios de CDC.', null, json_decode($resultado, true));
+            $codigo = curl_getinfo($ci, CURLINFO_HTTP_CODE);
+            if ($codigo === 404) return self::GetRespuesta(false, 'Circulo de crédito no cuenta con información con los datos proporcionados del cliente.', null, json_decode($resultado, true));
+            if ($codigo !== 200) return self::GetRespuesta(false, 'Error al consultar los servicios de CDC.', $cnfg, json_decode($resultado, true));
             if ($cnfg['valida'] && !$firmas->isDigitalSigantureValid($resultado, $hdrs['x-signature'])) return self::GetRespuesta(false, 'Error en la respuesta de CDC.', null, 'La firma de respuesta no es válida.');
 
             $resJSON = json_decode($resultado, true) ?? $resultado;
@@ -1230,10 +1277,10 @@ class CDC extends Controller
 
         $contenido = $archivo['datos']['PDF'];
         $archivo = is_resource($contenido) ? stream_get_contents($contenido) : $contenido;
-        $nombre = $_GET['cliente'] . '_' . strtoupper($_GET['documento']) . '.pdf';
+        $nombre = strtoupper($_GET['documento']) . '_' . $_GET['cliente'] . '_' . $_GET['folio'] . '.pdf';
 
         header("Content-Type: application/pdf");
-        header('Content-Disposition: inline; filename="' . $nombre . '.pdf"');
+        header('Content-Disposition: inline; filename="' . $nombre);
         header('Content-Transfer-Encoding: binary');
         header("Content-Length: " . strlen($archivo));
         echo $archivo;
@@ -1286,7 +1333,7 @@ class CDC extends Controller
             'nombre2' => $ultimaConsulta['NOMBRE2'],
             'apellido1' => $ultimaConsulta['PRIMAPE'],
             'apellido2' => $ultimaConsulta['SEGAPE'],
-            'fecha' => $ultimaConsulta['NACIMIENTO'],
+            'fecha' => $ultimaConsulta['NACIMIENTO_CDC'],
             'rfc' => $ultimaConsulta['RFC'],
             'calle' => $ultimaConsulta['CALLE'],
             'colonia' => $ultimaConsulta['COLONIA'],
@@ -1297,6 +1344,7 @@ class CDC extends Controller
         ];
 
         $cdc = self::ReporteConsolidado($infoCliente);
+
         if (!$cdc['success']) self::RespondeJSON($cdc);
         else self::RespondeJSON(self::SetResultadoCDC($infoCliente, $cdc['datos']));
     }
@@ -1316,6 +1364,28 @@ class CDC extends Controller
             if (isset($_POST['autorizacion'])) fclose($_POST['autorizacion']);
             if (isset($_POST['identificacion'])) fclose($_POST['identificacion']);
         }
+    }
+
+    public function SubeDocPendientes()
+    {
+        $resultados = [];
+        foreach ($_POST['clientes'] as $indice => $cliente) {
+            try {
+                $validacion = $_FILES['clientes']['name'][$indice];
+                $archivos = $_FILES['clientes']['tmp_name'][$indice];
+                if ($validacion['autorizacion']) $cliente['autorizacion'] = fopen($archivos['autorizacion'], 'rb');
+                if ($validacion['identificacion']) $cliente['identificacion'] = fopen($archivos['identificacion'], 'rb');
+
+                $resultados[] = CDCDao::SetDocumentosCDC($cliente);
+            } catch (\Exception $e) {
+                $resultados[] = self::Responde(false, 'Error al procesar los documentos del cliente ' . $cliente['cliente'] . '.', null, $e->getMessage());
+            } finally {
+                if ($cliente['autorizacion']) fclose($cliente['autorizacion']);
+                if ($cliente['identificacion']) fclose($cliente['identificacion']);
+            }
+        }
+
+        return self::Responde(true, 'Documentos procesados correctamente.', $resultados);
     }
 
     public function CargaDocMasiva()
@@ -1369,10 +1439,10 @@ class CDC extends Controller
         if (!$resultado['success'] || count($resultado['datos']) === 0 || $resultado['datos'][0]['RESULTADO'] === null) {
             echo self::ErrorPDF('No se encontró información para el número de cliente proporcionado.');
             return;
-        }  
+        }
         $consulta = json_decode(stream_get_contents($resultado['datos'][0]['RESULTADO']), true);
 
-        $nombreArchivo = 'Reporte CDC ' . $resultado['datos'][0]['CLIENTE'];
+        $nombreArchivo = 'Reporte CDC_' . $resultado['datos'][0]['CLIENTE'] . '_' . $resultado['datos'][0]['FOLIO'];
         $mpdf = new \Mpdf([
             'mode' => 'utf-8',
             'format' => 'Letter',
@@ -1558,28 +1628,29 @@ class CDC extends Controller
         $ep = 'v2/rcc';
 
         $campos = [
-            'primerNombre' => 'JUAN' ?? $datos['nombre1'],
-            'segundoNombre' => null, // ?? $datos['nombre2'],
-            'apellidoPaterno' => 'SESENTA' ?? $datos['apellido1'],
-            'apellidoMaterno' => 'PRUEBA' ?? $datos['apellido2'],
-            'fechaNacimiento' => '1944-01-04' ?? $datos['fecha'],
-            'RFC' => 'SEPJ440104K91' ?? $datos['rfc'],
-            'nacionalidad' => 'MX' ?? $datos['nacionalidad'],
+            'primerNombre' => $datos['nombre1'],
+            'segundoNombre' => $datos['nombre2'],
+            'apellidoPaterno' => $datos['apellido1'],
+            'apellidoMaterno' => $datos['apellido2'],
+            'fechaNacimiento' => $datos['fecha'],
+            'RFC' => $datos['rfc'],
+            'nacionalidad' => $datos['nacionalidad'] ?? 'MX',
             'domicilio' => [
-                'direccion' => 'PASADISO ENCONTRADO 772' ?? $datos['calle'],
-                'coloniaPoblacion' => 'JOSÉ VASCONCELOS CALDERÓN' ?? $datos['colonia'],
-                'delegacionMunicipio' => 'AGUASCALIENTES' ?? $datos['municipio'],
-                'ciudad' => 'AGUASCALIENTES' ?? $datos['ciudad'],
-                'estado' => 'AGS' ?? $datos['estado'],
-                'CP' => '20200' ?? $datos['cp']
+                'direccion' => $datos['calle'],
+                'coloniaPoblacion' => $datos['colonia'],
+                'delegacionMunicipio' => $datos['municipio'],
+                'ciudad' => $datos['ciudad'],
+                'estado' => $datos['estado'],
+                'CP' => $datos['cp']
             ]
         ];
         $campos = json_encode($campos);
 
-        // Esta configuración debe comentarse al pasar a producción
-        $TST_cnfg = $this->GetTstCnfg();
+        // Configuración solo para pruebas
+        // $TST_cnfg =$this->GetTstCnfg();
+        // return $this->ConsultaCDC($campos, $ep, $TST_cnfg);
 
-        return $this->ConsultaCDC($campos, $ep, $TST_cnfg);
+        return $this->ConsultaCDC($campos, $ep);
     }
 
     private function GetTstCnfg()

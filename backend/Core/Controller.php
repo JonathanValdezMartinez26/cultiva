@@ -100,11 +100,12 @@ class Controller
     public $actualizaDatosTabla = <<<JAVASCRIPT
         const actualizaDatosTabla = (id, datos) => {
             const tabla = $("#" + id).DataTable()
-            tabla.clear().draw()
+            tabla.clear()
             datos.forEach((item) => {
                 if (Array.isArray(item)) tabla.row.add(item).draw(false)
                 else tabla.row.add(Object.values(item)).draw(false)
             })
+            tabla.draw()
         }
     JAVASCRIPT;
     public $respuestaError = <<<JAVASCRIPT

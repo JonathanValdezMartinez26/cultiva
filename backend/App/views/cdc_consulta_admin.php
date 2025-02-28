@@ -96,6 +96,7 @@
                             <div class="form-group">
                                 <label for="fecha">Fecha de nacimiento</label>
                                 <input type="text" class="form-control" id="fecha" readonly>
+                                <input type="hidden" id="fechaCDC">
                             </div>
                         </div>
                         <div class="col-md-3">

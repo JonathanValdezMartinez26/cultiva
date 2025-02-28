@@ -1,5 +1,6 @@
 <?php
-    use App\components\MuestraPDF;
+
+use App\components\MuestraPDF;
 ?>
 
 <?= $header ?>
@@ -107,6 +108,7 @@
                             <div class="form-group">
                                 <label for="fecha">Fecha de nacimiento</label>
                                 <input type="text" class="form-control" id="fecha" readonly>
+                                <input type="hidden" id="fechaCDC">
                             </div>
                         </div>
                         <div class="col-md-3">
@@ -224,13 +226,24 @@
                 </center>
             </div>
             <div class="modal-body">
-                <div class="container-fluid" id="listado">
-                    
+                <div class="container-fluid">
+                    <table atyle="width: 100%;">
+                        <thead>
+                            <tr>
+                                <th>Cliente</th>
+                                <th>Folio</th>
+                                <th style='width: 30%;'>Autorización</th>
+                                <th style='width: 30%;'>Identificación</th>
+                            </tr>
+                        </thead>
+                        <tbody id="listado">
+                        </tbody>
+                    </table>
                 </div>
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancelar</button>
-                <button type="button" class="btn btn-primary" id="consultaCDC">Consultar</button>
+                <button type="button" class="btn btn-primary" id="guardarPendientes">Guardar</button>
             </div>
         </div>
     </div>
