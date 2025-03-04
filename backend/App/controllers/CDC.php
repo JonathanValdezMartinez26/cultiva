@@ -71,7 +71,6 @@ class CDC extends Controller
     private $verPDF = <<<JAVASCRIPT
         const verPDF = (cliente, folio = "", documento = "") => {
             let metodo = "GetDocumento"
-            if (documento === "reporte") metodo = "GetReporteCDC"
             const host = window.location.origin
             $("#PDF").append($("<embed>", {
                 src: host + "/CDC/" + metodo + "/?cliente=" + cliente + "&folio=" + folio + "&documento=" + documento,
@@ -1238,8 +1237,14 @@ class CDC extends Controller
             if ($codigo !== 200) return self::GetRespuesta(false, 'Error al consultar los servicios de CDC.', $cnfg, json_decode($resultado, true));
             if ($cnfg['valida'] && !$firmas->isDigitalSigantureValid($resultado, $hdrs['x-signature'])) return self::GetRespuesta(false, 'Error en la respuesta de CDC.', null, 'La firma de respuesta no es válida.');
 
+            $reporte = self::Reporte_PDF_CDC($resultado);
             $resJSON = json_decode($resultado, true) ?? $resultado;
-            return self::GetRespuesta(true, 'Consulta exitosa', $resJSON);
+            $res = [
+                'json' => $resJSON
+            ];
+
+            if ($reporte['success']) $res['reporte'] = $reporte['datos'];
+            return self::GetRespuesta(true, 'Consulta exitosa', $res);
         } catch (\Exception $e) {
             return self::GetRespuesta(false, 'Error al consultar la información del cliente en CDC.', null, $e->getMessage());
         } finally {
@@ -1251,13 +1256,15 @@ class CDC extends Controller
     {
         $guardar = [
             'cliente' => $infoCliente['cliente'],
-            'folio' => $consultaCDC['folioConsulta'],
-            'resultado' => json_encode($consultaCDC),
-            'usuario' => $_SESSION['usuario'] ?? null
+            'folio' => $consultaCDC['json']['folioConsulta'],
+            'resultado' => json_encode($consultaCDC['json']),
+            'usuario' => $_SESSION['usuario'] ?? null,
         ];
 
         if ($infoCliente['autorizacion']) $guardar['autorizacion'] = $infoCliente['autorizacion'];
         if ($infoCliente['identificacion']) $guardar['identificacion'] = $infoCliente['identificacion'];
+        if ($consultaCDC['reporte']) $guardar['reporte'] = $consultaCDC['reporte'];
+
         return CDCDao::SetResultadoCDC($guardar);
     }
 
@@ -1301,12 +1308,14 @@ class CDC extends Controller
 
                 $_POST['autorizacion'] = fopen($_FILES['autorizacion']['tmp_name'], 'rb');
                 $_POST['identificacion'] = fopen($_FILES['identificacion']['tmp_name'], 'rb');
+
                 self::RespondeJSON(self::SetResultadoCDC($_POST, $cdc['datos']));
             } catch (\Exception $e) {
                 return self::Responde(false, 'Error al guardar los datos en la base.', null, $e->getMessage());
             } finally {
                 if (isset($_POST['autorizacion'])) fclose($_POST['autorizacion']);
                 if (isset($_POST['identificacion'])) fclose($_POST['identificacion']);
+                if (isset($cdc['datos']['reporte'])) fclose($cdc['datos']['reporte']);
             }
         }
     }
@@ -1433,189 +1442,6 @@ class CDC extends Controller
         return self::Responde(true, 'Documentos procesados correctamente.', $resultado, $errores);
     }
 
-    public function GetReporteCDC()
-    {
-        $resultado = CDCDao::GetConsultaCliente($_GET);
-        if (!$resultado['success'] || count($resultado['datos']) === 0 || $resultado['datos'][0]['RESULTADO'] === null) {
-            echo self::ErrorPDF('No se encontró información para el número de cliente proporcionado.');
-            return;
-        }
-        $consulta = json_decode(stream_get_contents($resultado['datos'][0]['RESULTADO']), true);
-
-        $nombreArchivo = 'Reporte CDC_' . $resultado['datos'][0]['CLIENTE'] . '_' . $resultado['datos'][0]['FOLIO'];
-        $mpdf = new \Mpdf([
-            'mode' => 'utf-8',
-            'format' => 'Letter',
-            'default_font_size' => 6,
-            'default_font' => 'Arial',
-            'margin_top' => 10,
-            'margin_bottom' => 10,
-            'margin_left' => 10,
-            'margin_right' => 10,
-            'margin_header' => 0,
-            'margin_footer' => 5,
-        ]);
-        $mpdf->SetTitle($nombreArchivo);
-
-        $fi = date('d/m/Y H:i:s');
-        $pie = <<< HTML
-            <table style="width: 100%; font-size: 10px">
-                <tr>
-                    <td style="text-align: left; width: 50%;">
-                        Fecha de impresión  {$fi}
-                    </td>
-                    <td style="text-align: right; width: 50%;">
-                        Página {PAGENO} de {nb}
-                    </td>
-                </tr>
-            </table>
-        HTML;
-
-        $mpdf->SetHTMLFooter($pie);
-
-        // Estilos generales
-        $estilo = <<<HTML
-            <style>
-                body {
-                    margin: 0;
-                    padding: 0;
-                }
-                table {
-                    width: 100%;
-                    border-collapse: collapse;
-                    margin-bottom: 15px;
-                }
-                .tituloTablas {
-                    text-align: left;
-                    font-weight: bold;
-                    font-size: 15px;
-                }
-            </style>
-        HTML;
-        $mpdf->WriteHTML($estilo, 1);
-
-        $cuerpo = self::generarTablaHtml('Datos generales', [$consulta['persona']], [
-            ['titulo' => 'Nombre (s)', 'campo' => 'nombres', 'formato' => 'centrado'],
-            ['titulo' => 'Primer apellido', 'campo' => 'apellidoPaterno', 'formato' => 'centrado'],
-            ['titulo' => 'Segundo apellido', 'campo' => 'apellidoMaterno', 'formato' => 'centrado'],
-            ['titulo' => 'Fecha de nacimiento', 'campo' => 'fechaNacimiento', 'formato' => 'fecha'],
-            ['titulo' => 'RFC', 'campo' => 'RFC', 'formato' => 'centrado'],
-        ]);
-
-        // DOMICILIOS
-        $cuerpo .= self::generarTablaHtml('Domicilios', $consulta['domicilios'], [
-            ['titulo' => 'Calle y número', 'campo' => 'direccion'],
-            ['titulo' => 'Colonia', 'campo' => 'coloniaPoblacion'],
-            ['titulo' => 'Del/Mpio', 'campo' => 'delegacionMunicipio'],
-            ['titulo' => 'Ciudad', 'campo' => 'ciudad'],
-            ['titulo' => 'Estado', 'campo' => 'estado', 'formato' => 'centrado'],
-            ['titulo' => 'CP', 'campo' => 'CP', 'formato' => 'centrado'],
-            ['titulo' => 'Teléfono', 'campo' => 'numeroTelefono', 'formato' => 'centrado'],
-            ['titulo' => 'Fecha de', 'campo' => 'fechaResidencia', 'formato' => 'fecha'],
-        ], true);
-
-        // CREDITOS
-        $cuerpo .= self::generarTablaHtml('Créditos otorgados', $consulta['creditos'], [
-            ['titulo' => 'Otorgante', 'campo' => 'NombreOtorgante'],
-            ['titulo' => 'Apertura', 'campo' => 'FechaAperturaCuenta', 'formato' => 'fecha'],
-            ['titulo' => 'Ultimo pago', 'campo' => 'FechaUltimoPago', 'formato' => 'fecha'],
-            ['titulo' => 'Limite de crédito', 'campo' => 'LimiteCredito', 'formato' => 'moneda'],
-            ['titulo' => 'Saldo actual', 'campo' => 'SaldoActual', 'formato' => 'moneda'],
-            ['titulo' => 'Saldo vencido', 'campo' => 'SaldoVencido', 'formato' => 'moneda'],
-        ]);
-
-        // EMPLEOS
-        $cuerpo .= self::generarTablaHtml('Empleos Registrados', $consulta['empleos'], [
-            ['titulo' => 'Empresa', 'campo' => 'nombreEmpresa'],
-            ['titulo' => 'Puesto', 'campo' => 'puesto'],
-            ['titulo' => 'Contratación', 'campo' => 'fechaContratacion', 'formato' => 'fecha'],
-            ['titulo' => 'Salario', 'campo' => 'salarioMensual', 'formato' => 'moneda'],
-        ]);
-
-        // CONSULTAS
-        $cuerpo .= self::generarTablaHtml('Consultas realizadas', $consulta['consultas'], [
-            ['titulo' => 'Fecha de Consulta', 'campo' => 'fechaConsulta', 'formato' => 'fecha'],
-            ['titulo' => 'Otorgante', 'campo' => 'nombreOtorgante'],
-            ['titulo' => 'Tipo de crédito', 'campo' => 'tipoCredito', 'formato' => 'centrado'],
-            ['titulo' => 'Monto', 'campo' => 'importeCredito', 'formato' => 'moneda'],
-            ['titulo' => 'Moneda', 'campo' => 'claveUnidadMonetaria', 'formato' => 'centrado'],
-        ]);
-
-        $mpdf->WriteHTML($cuerpo, 2);
-        $mpdf->Output($nombreArchivo . '.pdf', 'I');
-    }
-
-    private function generarTablaHtml($titulo, $datos, $columnas, $indice = false)
-    {
-        $noCol = count($columnas);
-        if ($indice) $noCol++;
-
-        $html = <<<HTML
-            <table>
-                <thead>
-                    <tr>
-                        <td colspan="{$noCol}" class="tituloTablas">
-                            $titulo
-                        </td>
-                    </tr>
-                    <tr>
-        HTML;
-
-        if ($indice) $html .= "<th style='border: 1px solid #006699;'>#</th>";
-
-        foreach ($columnas as $columna) {
-            $html .= "<th style='border: 1px solid #006699;'>{$columna['titulo']}</th>";
-        }
-
-        $html .= "</tr></thead><tbody>";
-
-        // Añadir las filas de datos
-        $i = 0;
-        foreach ($datos as $dato) {
-            $html .= "<tr>";
-            $i++;
-            if ($indice) $html .= "<td style='border: 1px solid #006699; text-align: center;'>{$i}</td>";
-            foreach ($columnas as $columna) {
-                [$valor, $estilo] = self::AplicaEstilos($dato[$columna['campo']], $columna['formato']);
-                $html .= "<td style='border: 1px solid #006699; {$estilo}'>{$valor}</td>";
-            }
-            $html .= "</tr>";
-        }
-
-        $html .= '</tbody></table>';
-
-        return $html;
-    }
-
-    private function AplicaEstilos($valor, $formato = null)
-    {
-        if ($valor && $formato === 'moneda') return ['$' . number_format($valor, 2), 'text-align: right;'];
-        if ($valor && $formato === 'fecha') return [self::formatearFecha($valor), 'text-align: center;'];
-        if ($valor && $formato === 'centrado') return [$valor, 'text-align: center;'];
-        return [$valor, ''];
-    }
-
-    private function formatearFecha($fecha)
-    {
-        $date = \DateTime::createFromFormat('Y-m-d', $fecha);
-        $meses = [
-            'Jan' => 'ENE',
-            'Feb' => 'FEB',
-            'Mar' => 'MAR',
-            'Apr' => 'ABR',
-            'May' => 'MAY',
-            'Jun' => 'JUN',
-            'Jul' => 'JUL',
-            'Aug' => 'AGO',
-            'Sep' => 'SEP',
-            'Oct' => 'OCT',
-            'Nov' => 'NOV',
-            'Dec' => 'DIC'
-        ];
-        $mes = $meses[$date->format('M')];
-        return $date->format('d') . '/' . $mes . '/' . $date->format('y');
-    }
-
     public function SecurityTest()
     {
         $ep = 'v1/securitytest';
@@ -1644,11 +1470,16 @@ class CDC extends Controller
                 'CP' => $datos['cp']
             ]
         ];
+
+
         $campos = json_encode($campos);
 
-        // Configuración solo para pruebas
-        // $TST_cnfg =$this->GetTstCnfg();
-        // return $this->ConsultaCDC($campos, $ep, $TST_cnfg);
+        // Inicio: Configuración solo para pruebas
+        $campos = json_decode(file_get_contents(__DIR__ . '/../config/datosDemo_CDC.json'), true);
+        $campos = json_encode($campos[array_rand($campos)]);
+        $TST_cnfg = $this->GetTstCnfg();
+        return $this->ConsultaCDC($campos, $ep, $TST_cnfg);
+        // Fin: Configuración solo para pruebas
 
         return $this->ConsultaCDC($campos, $ep);
     }
@@ -1660,5 +1491,28 @@ class CDC extends Controller
             'API_KEY' => $this->cnfg['API_KEY_TST'],
             'valida' => false
         ];
+    }
+
+    private function Reporte_PDF_CDC($reporte)
+    {
+        $archivo = tempnam(sys_get_temp_dir(), 'CDC_');
+        file_put_contents($archivo, $reporte);
+
+        $cmd = 'java -jar ' . __DIR__ . '/../../libs/CDC/Reporte_PDF_CDC.jar ' . $archivo . ' ' . date('Y-m-d');
+        $resultado = shell_exec($cmd);
+
+        if (file_exists($archivo)) unlink($archivo);
+
+        try {
+            $pdf = base64_decode($resultado);
+            $stream = fopen('php://memory', 'rb+');
+            fwrite($stream, $pdf);
+            rewind($stream);
+            if ($stream === false) return self::GetRespuesta(false, 'Error al generar el reporte en PDF.', null, 'No se logro generar el reporte en PDF.');
+        } catch (\Exception $e) {
+            return self::GetRespuesta(false, 'Error al generar el reporte en PDF.', null, $e->getMessage());
+        }
+
+        return self::GetRespuesta(true, 'Reporte generado correctamente.', $stream);
     }
 }

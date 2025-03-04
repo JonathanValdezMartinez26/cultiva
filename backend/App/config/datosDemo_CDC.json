@@ -1,0 +1,306 @@
+[
+    {
+        "apellidoPaterno": "SESENTAYDOS",
+        "apellidoMaterno": "PRUEBA",
+        "primerNombre": "JUAN",
+        "fechaNacimiento": "1965-08-09",
+        "RFC": "SEPJ650809JG1",
+        "nacionalidad": "MX",
+        "domicilio": {
+            "direccion": "PASADISO ENCONTRADO 58",
+            "coloniaPoblacion": "MONTEVIDEO",
+            "delegacionMunicipio": "GUSTAVO A MADERO",
+            "ciudad": "CIUDAD DE MÉXICO",
+            "estado": "CDMX",
+            "CP": "07730"
+        }
+    },
+    {
+        "apellidoPaterno": "CINCUENTAYNUEVE",
+        "apellidoMaterno": "PRUEBA",
+        "primerNombre": "JUAN",
+        "fechaNacimiento": "1945-02-12",
+        "RFC": "CIPJ450212KG4",
+        "nacionalidad": "MX",
+        "domicilio": {
+            "direccion": "PASADISO ENCONTRADO 168",
+            "coloniaPoblacion": "CHALMA DE GUADALUPE",
+            "delegacionMunicipio": "GUSTAVO A MADERO",
+            "ciudad": "CIUDAD DE MÉXICO",
+            "estado": "CDMX",
+            "CP": "07210"
+        }
+    },
+    {
+        "apellidoPaterno": "SESENTAYSIETE",
+        "apellidoMaterno": "PRUEBA",
+        "primerNombre": "JUAN",
+        "fechaNacimiento": "1945-08-07",
+        "RFC": "SEPJ4508071Y8",
+        "nacionalidad": "MX",
+        "domicilio": {
+            "direccion": "PASADISO ENCONTRADO 746",
+            "coloniaPoblacion": "PUEBLO LA CANDELARIA",
+            "delegacionMunicipio": "COYOACAN",
+            "ciudad": "CIUDAD DE MÉXICO",
+            "estado": "CDMX",
+            "CP": "04380"
+        }
+    },
+    {
+        "apellidoPaterno": "DIEZYSEIS",
+        "apellidoMaterno": "PRUEBA",
+        "primerNombre": "JUAN",
+        "fechaNacimiento": "1970-08-25",
+        "RFC": "DIPJ700825549",
+        "nacionalidad": "MX",
+        "domicilio": {
+            "direccion": "PASADISO ENCONTRADO 975",
+            "coloniaPoblacion": "AVANTE",
+            "delegacionMunicipio": "COYOACAN",
+            "ciudad": "CIUDAD DE MÉXICO",
+            "estado": "CDMX",
+            "CP": "04460"
+        }
+    },
+    {
+        "apellidoPaterno": "SESENTAYCINCO",
+        "apellidoMaterno": "PRUEBA",
+        "primerNombre": "JUAN",
+        "fechaNacimiento": "1974-02-11",
+        "RFC": "SEPJ740211TL7",
+        "nacionalidad": "MX",
+        "domicilio": {
+            "direccion": "PASADISO ENCONTRADO 285",
+            "coloniaPoblacion": "ALDANA",
+            "delegacionMunicipio": "AZCAPOTZALCO",
+            "ciudad": "CIUDAD DE MÉXICO",
+            "estado": "CDMX",
+            "CP": "02910"
+        }
+    },
+    {
+        "apellidoPaterno": "DIEZ",
+        "apellidoMaterno": "PRUEBA",
+        "primerNombre": "JUAN",
+        "fechaNacimiento": "1969-01-20",
+        "RFC": "DIPJ690120I50",
+        "nacionalidad": "MX",
+        "domicilio": {
+            "direccion": "PASADISO ENCONTRADO 998",
+            "coloniaPoblacion": "PARAJE TLALATLACO",
+            "delegacionMunicipio": "XOCHIMILCO",
+            "ciudad": "CIUDAD DE MÉXICO",
+            "estado": "CDMX",
+            "CP": "16247"
+        }
+    },
+    {
+        "apellidoPaterno": "TREINTAYOCHO",
+        "apellidoMaterno": "PRUEBA",
+        "primerNombre": "JUAN",
+        "fechaNacimiento": "1988-09-09",
+        "RFC": "TEPJ880909AKA",
+        "nacionalidad": "MX",
+        "domicilio": {
+            "direccion": "PASADISO ENCONTRADO 1646",
+            "coloniaPoblacion": "JUSTO SIERRA",
+            "delegacionMunicipio": "IZTAPALAPA",
+            "ciudad": "CIUDAD DE MÉXICO",
+            "estado": "CDMX",
+            "CP": "09460"
+        }
+    },
+    {
+        "apellidoPaterno": "CUARENTAYCUATRO",
+        "apellidoMaterno": "PRUEBA",
+        "primerNombre": "JUAN",
+        "fechaNacimiento": "1997-10-19",
+        "RFC": "CUPJ971019FM9",
+        "nacionalidad": "MX",
+        "domicilio": {
+            "direccion": "PASADISO ENCONTRADO 966",
+            "coloniaPoblacion": "SANTA LUCÍA CHANTEPEC",
+            "delegacionMunicipio": "ALVARO OBREGON",
+            "ciudad": "CIUDAD DE MÉXICO",
+            "estado": "CDMX",
+            "CP": "01509"
+        }
+    },
+    {
+        "apellidoPaterno": "SESENTAYSEIS",
+        "apellidoMaterno": "PRUEBA",
+        "primerNombre": "JUAN",
+        "fechaNacimiento": "1975-10-02",
+        "RFC": "SEPJ751002UK4",
+        "nacionalidad": "MX",
+        "domicilio": {
+            "direccion": "PASADISO ENCONTRADO 974",
+            "coloniaPoblacion": "GRANJAS ESMERALDA",
+            "delegacionMunicipio": "IZTAPALAPA",
+            "ciudad": "CIUDAD DE MÉXICO",
+            "estado": "CDMX",
+            "CP": "09810"
+        }
+    },
+    {
+        "apellidoPaterno": "TREINTAYDOS",
+        "apellidoMaterno": "PRUEBA",
+        "primerNombre": "JUAN",
+        "fechaNacimiento": "1986-05-28",
+        "RFC": "TEPJ860528278",
+        "nacionalidad": "MX",
+        "domicilio": {
+            "direccion": "PASADISO ENCONTRADO 1304",
+            "coloniaPoblacion": "SAN LUCAS XOCHIMANCA",
+            "delegacionMunicipio": "XOCHIMILCO",
+            "ciudad": "CIUDAD DE MÉXICO",
+            "estado": "CDMX",
+            "CP": "16300"
+        }
+    },
+    {
+        "apellidoPaterno": "CUARENTAYOCHO",
+        "apellidoMaterno": "PRUEBA",
+        "primerNombre": "JUAN",
+        "fechaNacimiento": "1966-04-04",
+        "RFC": "CUPJ6604046Y9",
+        "nacionalidad": "MX",
+        "domicilio": {
+            "direccion": "PASADISO ENCONTRADO 180",
+            "coloniaPoblacion": "BARRIO SAN DIEGO",
+            "delegacionMunicipio": "XOCHIMILCO",
+            "ciudad": "CIUDAD DE MÉXICO",
+            "estado": "CDMX",
+            "CP": "16080"
+        }
+    },
+    {
+        "apellidoPaterno": "TREINTAYSIETE",
+        "apellidoMaterno": "PRUEBA",
+        "primerNombre": "JUAN",
+        "fechaNacimiento": "1967-01-29",
+        "RFC": "TEPJ670129E48",
+        "nacionalidad": "MX",
+        "domicilio": {
+            "direccion": "PASADISO ENCONTRADO 65",
+            "coloniaPoblacion": "EL PARQUE DE COYOACÁN",
+            "delegacionMunicipio": "COYOACAN",
+            "ciudad": "CIUDAD DE MÉXICO",
+            "estado": "CDMX",
+            "CP": "04899"
+        }
+    },
+    {
+        "apellidoPaterno": "EÑE",
+        "apellidoMaterno": "PRUEBA",
+        "primerNombre": "JUAN",
+        "fechaNacimiento": "1969-12-11",
+        "RFC": "EEPJ691211166",
+        "nacionalidad": "MX",
+        "domicilio": {
+            "direccion": "PASADISO ENCONTRADO 1653",
+            "coloniaPoblacion": "APATLACO",
+            "delegacionMunicipio": "IZTAPALAPA",
+            "ciudad": "CIUDAD DE MÉXICO",
+            "estado": "CDMX",
+            "CP": "09430"
+        }
+    },
+    {
+        "apellidoPaterno": "TREINTAYSEIS",
+        "apellidoMaterno": "PRUEBA",
+        "primerNombre": "JUAN",
+        "fechaNacimiento": "1949-10-04",
+        "RFC": "TEPJ491004CB9",
+        "nacionalidad": "MX",
+        "domicilio": {
+            "direccion": "PASADISO ENCONTRADO 304",
+            "coloniaPoblacion": "CARLOS ZAPATA VELA",
+            "delegacionMunicipio": "IZTACALCO",
+            "ciudad": "CIUDAD DE MÉXICO",
+            "estado": "CDMX",
+            "CP": "08040"
+        }
+    },
+    {
+        "apellidoPaterno": "ONCE",
+        "apellidoMaterno": "PRUEBA",
+        "primerNombre": "JUAN",
+        "fechaNacimiento": "1994-07-17",
+        "RFC": "OEPJ940717858",
+        "nacionalidad": "MX",
+        "domicilio": {
+            "direccion": "PASADISO ENCONTRADO 160",
+            "coloniaPoblacion": "TEPEYAC INSURGENTES",
+            "delegacionMunicipio": "GUSTAVO A MADERO",
+            "ciudad": "CIUDAD DE MÉXICO",
+            "estado": "CDMX",
+            "CP": "07020"
+        }
+    },
+    {
+        "apellidoPaterno": "CINCUENTAYSEIS",
+        "apellidoMaterno": "PRUEBA",
+        "primerNombre": "JUAN",
+        "fechaNacimiento": "1955-07-19",
+        "RFC": "CIPJ550719EZ3",
+        "nacionalidad": "MX",
+        "domicilio": {
+            "direccion": "PASADISO ENCONTRADO 600",
+            "coloniaPoblacion": "LA ASUNCIÓN",
+            "delegacionMunicipio": "TLAHUAC",
+            "ciudad": "CIUDAD DE MÉXICO",
+            "estado": "CDMX",
+            "CP": "13000"
+        }
+    },
+    {
+        "apellidoPaterno": "CIENTOUNO",
+        "apellidoMaterno": "PRUEBA",
+        "primerNombre": "JUAN",
+        "fechaNacimiento": "1964-10-06",
+        "RFC": "CIPJ641006H3A",
+        "nacionalidad": "MX",
+        "domicilio": {
+            "direccion": "PASADISO ENCONTRADO 881",
+            "coloniaPoblacion": "PENSADOR MEXICANO",
+            "delegacionMunicipio": "VENUSTIANO CARRANZA",
+            "ciudad": "CIUDAD DE MÉXICO",
+            "estado": "CDMX",
+            "CP": "15510"
+        }
+    },
+    {
+        "apellidoPaterno": "DOS",
+        "apellidoMaterno": "PRUEBA",
+        "primerNombre": "JUAN",
+        "fechaNacimiento": "1964-02-04",
+        "RFC": "DOPJ6402046I9",
+        "nacionalidad": "MX",
+        "domicilio": {
+            "direccion": "PASADISO ENCONTRADO 1349",
+            "coloniaPoblacion": "SANTA CECILIA",
+            "delegacionMunicipio": "COYOACAN",
+            "ciudad": "CIUDAD DE MÉXICO",
+            "estado": "CDMX",
+            "CP": "04930"
+        }
+    },
+    {
+        "apellidoPaterno": "SESENTA",
+        "apellidoMaterno": "PRUEBA",
+        "primerNombre": "JUAN",
+        "fechaNacimiento": "1944-01-04",
+        "RFC": "SEPJ440104K91",
+        "nacionalidad": "MX",
+        "domicilio": {
+            "direccion": "PASADISO ENCONTRADO 772",
+            "coloniaPoblacion": "JOSÉ VASCONCELOS CALDERÓN",
+            "delegacionMunicipio": "AGUASCALIENTES",
+            "ciudad": "AGUASCALIENTES",
+            "estado": "AGS",
+            "CP": "20200"
+        }
+    }
+]

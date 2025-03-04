@@ -8,7 +8,7 @@ use \Core\Controller;
 
 require_once dirname(__DIR__) . '../../libs/mpdf/mpdf.php';
 require_once dirname(__DIR__) . '../../libs/PhpSpreadsheet/PhpSpreadsheet.php';
-require_once dirname(__DIR__) . '../../libs/SignatureService.php';
+require_once dirname(__DIR__) . '../../libs/CDC/SignatureService.php';
 
 class Contenedor extends Controller
 {

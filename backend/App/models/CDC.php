@@ -148,9 +148,9 @@ class CDC extends Model
     {
         $qry = <<<SQL
             INSERT INTO BITACORA_CIRCULO_CREDITO
-                (CDGCL, FOLIO_CONSULTA, RES_CONSULTA, FECHA_CONSULTA, ESTATUS, CDGPE, AUTORIZACION_PDF, IDENTIFICACION_PDF)
+                (CDGCL, FOLIO_CONSULTA, RES_CONSULTA, FECHA_CONSULTA, ESTATUS, CDGPE, AUTORIZACION_PDF, IDENTIFICACION_PDF, REPORTE)
             VALUES
-                (:cliente, :folio, :resultado, SYSDATE, 'A', :usuario, _AUTORIZACION_, _IDENTIFICACION_)
+                (:cliente, :folio, :resultado, SYSDATE, 'A', :usuario, _AUTORIZACION_, _IDENTIFICACION_, _REPORTE_)
         SQL;
 
         $prm = [
@@ -179,11 +179,19 @@ class CDC extends Model
             $parametros[] = ':identificacion';
         }
 
+        if (!isset($datos['reporte'])) $qry = str_replace('_REPORTE_', 'NULL', $qry);
+        else {
+            $prm['reporte'] = $datos['reporte'];
+            $qry = str_replace('_REPORTE_', ':reporte', $qry);
+            $columnas[] = 'REPORTE';
+            $parametros[] = ':reporte';
+        }
+
         if (count($columnas) > 0) $qry .= 'RETURNING ' . implode(', ', $columnas) . ' INTO ' . implode(', ', $parametros);
 
         try {
             $db = new Database();
-            $res = $db->insertarBlob($qry, $prm, ['autorizacion', 'identificacion'], ['resultado']);
+            $res = $db->insertarBlob($qry, $prm, ['autorizacion', 'identificacion', 'reporte'], ['resultado']);
             return self::Responde(true, "Consulta registrada exitosamente.", $res);
         } catch (\Exception $e) {
             return self::Responde(false, 'Error al guardar los datos en la base.', null, $e->getMessage());
@@ -249,6 +257,12 @@ class CDC extends Model
 
     public static function GetDocumento($datos)
     {
+        $columnas = [
+            'autorizacion' => 'AUTORIZACION_PDF',
+            'identificacion' => 'IDENTIFICACION_PDF',
+            'reporte' => 'REPORTE'
+        ];
+
         $qry = <<<SQL
             SELECT
                 columna AS PDF
@@ -266,7 +280,7 @@ class CDC extends Model
             'folio' => $datos['folio']
         ];
 
-        $columna = $datos['documento'] === 'autorizacion' ? 'AUTORIZACION_PDF' : 'IDENTIFICACION_PDF';
+        $columna = $columnas[$datos['documento']];
         $qry = str_replace('columna', $columna, $qry);
 
         try {
