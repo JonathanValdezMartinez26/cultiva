@@ -140,8 +140,8 @@ class Contenedor extends Controller
             HTML;
         }
 
-        $perimisos = ['AMGM'];
-        if (in_array($this->__usuario, $perimisos)) {
+        $perimisos = ['AMGM', 'ADMIN', 'AMOCA'];
+        if (in_array($this->__usuario, $perimisos) || in_array($this->__perfil, $perimisos)) {
             $menu .= <<<HTML
             <ul class="nav side-menu">
                 <li><a><i class="glyphicon glyphicon-ok-circle">&nbsp;</i>Circulo de Crédito<span class="fa fa-chevron-down"></span></a>

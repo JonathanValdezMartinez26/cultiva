@@ -84,6 +84,7 @@ class CDC extends Model
                 CL.PRIMAPE,
                 CL.SEGAPE,
                 TO_CHAR(CL.NACIMIENTO, 'DD/MM/YYYY') AS NACIMIENTO,
+                TO_CHAR(CL.NACIMIENTO, 'YYYY-MM-DD') AS NACIMIENTO_CDC,
                 CL.RFC,
                 CL.CALLE,
                 COL.NOMBRE AS COLONIA,
@@ -205,7 +206,8 @@ class CDC extends Model
                 BITACORA_CIRCULO_CREDITO
             SET
                 AUTORIZACION_PDF = _AUTORIZACION_PDF_,
-                IDENTIFICACION_PDF = _IDENTIFICACION_PDF_
+                IDENTIFICACION_PDF = _IDENTIFICACION_PDF_,
+                REPORTE = _REPORTE_
             WHERE
                 CDGCL = :cliente
                 AND FOLIO_CONSULTA = :folio
@@ -238,6 +240,15 @@ class CDC extends Model
             $retorno2[] = ':identificacion';
         }
 
+        if (!isset($datos['reporte'])) $qry = str_replace('_REPORTE_', 'REPORTE', $qry);
+        else {
+            $prm['reporte'] = $datos['reporte'];
+            $qry = str_replace('_REPORTE_', 'EMPTY_BLOB()', $qry);
+            $filtro[] = 'REPORTE IS NULL';
+            $retorno1[] = 'REPORTE';
+            $retorno2[] = ':reporte';
+        }
+
         $f = '';
         if (count($filtro) > 0) $f .= ' AND (' . implode(' OR ', $filtro) . ')';
 
@@ -248,8 +259,8 @@ class CDC extends Model
 
         try {
             $db = new Database();
-            $res = $db->insertarBlob($qry, $prm, ['autorizacion', 'identificacion']);
-            return self::Responde(true, "Registro actualizado exitosamente.", $res);
+            $res = $db->insertarBlob($qry, $prm, ['autorizacion', 'identificacion', 'reporte']);
+            return self::Responde(true, "Registro actualizado exitosamente.", $res, $qry);
         } catch (\Exception $e) {
             return self::Responde(false, 'Error al actualizar los datos en la base.', null, $e->getMessage());
         }
@@ -265,7 +276,8 @@ class CDC extends Model
 
         $qry = <<<SQL
             SELECT
-                columna AS PDF
+                columna AS PDF,
+                RES_CONSULTA AS RESULTADO
             FROM
                 BITACORA_CIRCULO_CREDITO
             WHERE

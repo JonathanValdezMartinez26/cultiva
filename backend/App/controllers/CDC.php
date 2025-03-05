@@ -104,7 +104,6 @@ class CDC extends Controller
                 {$this->respuestaError}
                 {$this->getIcono}
                 {$this->validaCaducidad}
-                {$this->verPDF}
 
                 const idTabla = "tablaPrincipal"
 
@@ -126,7 +125,7 @@ class CDC extends Controller
 
                     datos.append("cliente", $("#noCliente").val())
                     datos.append("nombre1", $("#nombre1").val())
-                    datos.append("nombre2", $("#nombre2").val() ?? null)
+                    datos.append("nombre2", $("#nombre2").val())
                     datos.append("apellido1", $("#apellido1").val())
                     datos.append("apellido2", $("#apellido2").val())
                     datos.append("fecha", $("#fechaCDC").val())
@@ -322,7 +321,7 @@ class CDC extends Controller
 
                     datos.append("cliente", $("#noCliente").val())
                     datos.append("nombre1", $("#nombre1").val())
-                    datos.append("nombre2", $("#nombre2").val() ?? null)
+                    datos.append("nombre2", $("#nombre2").val())
                     datos.append("apellido1", $("#apellido1").val())
                     datos.append("apellido2", $("#apellido2").val())
                     datos.append("fecha", $("#fechaCDC").val())
@@ -666,7 +665,6 @@ class CDC extends Controller
                 {$this->respuestaError}
                 {$this->muestraPDF}
                 {$this->consultaCDC}
-                {$this->verPDF}
 
                 const idTabla = "tablaPrincipal"
 
@@ -688,7 +686,7 @@ class CDC extends Controller
 
                     datos.append("cliente", $("#noCliente").val())
                     datos.append("nombre1", $("#nombre1").val())
-                    datos.append("nombre2", $("#nombre2").val() ?? null)
+                    datos.append("nombre2", $("#nombre2").val())
                     datos.append("apellido1", $("#apellido1").val())
                     datos.append("apellido2", $("#apellido2").val())
                     datos.append("fecha", $("#fechaCDC").val())
@@ -877,7 +875,6 @@ class CDC extends Controller
                 {$this->respuestaError}
                 {$this->validaCaducidad}
                 {$this->consultaCDC}
-                {$this->verPDF}
 
                 const idTabla = "tablaPrincipal"
                 const regSuc = JSON.parse('$regSuc')
@@ -900,7 +897,7 @@ class CDC extends Controller
 
                     datos.append("cliente", $("#noCliente").val())
                     datos.append("nombre1", $("#nombre1").val())
-                    datos.append("nombre2", $("#nombre2").val() ?? null)
+                    datos.append("nombre2", $("#nombre2").val())
                     datos.append("apellido1", $("#apellido1").val())
                     datos.append("apellido2", $("#apellido2").val())
                     datos.append("fecha", $("#fechaCDC").val())
@@ -1237,6 +1234,7 @@ class CDC extends Controller
             if ($codigo !== 200) return self::GetRespuesta(false, 'Error al consultar los servicios de CDC.', $cnfg, json_decode($resultado, true));
             if ($cnfg['valida'] && !$firmas->isDigitalSigantureValid($resultado, $hdrs['x-signature'])) return self::GetRespuesta(false, 'Error en la respuesta de CDC.', null, 'La firma de respuesta no es válida.');
 
+            $resultado = str_replace(["\r", "\n"], "", $resultado);
             $reporte = self::Reporte_PDF_CDC($resultado);
             $resJSON = json_decode($resultado, true) ?? $resultado;
             $res = [
@@ -1270,21 +1268,41 @@ class CDC extends Controller
 
     public function GetDocumento()
     {
-        $archivo = CDCDao::GetDocumento($_GET);
+        $res = null;
+        $consulta = CDCDao::GetDocumento($_GET);
 
-        if (!$archivo['success']) {
-            echo self::ErrorPDF($archivo['mensaje']);
+        if (!$consulta['success']) {
+            echo self::ErrorPDF($consulta['mensaje']);
             return;
         }
 
-        if ($archivo['datos']['PDF'] === null) {
+        $pdf = $consulta['datos']['PDF'];
+        $archivo = is_resource($pdf) ? stream_get_contents($pdf) : $pdf;
+        $nombre = strtoupper($_GET['documento']) . '_' . $_GET['cliente'] . '_' . $_GET['folio'] . '.pdf';
+
+        if ($_GET['documento'] === 'reporte' && empty($archivo)) {
+            $reporte = self::Reporte_PDF_CDC($consulta['datos']['RESULTADO']);
+
+            if ($reporte['success']) {
+                $cliente = [
+                    'cliente' => $_GET['cliente'],
+                    'folio' => $_GET['folio'],
+                    'reporte' => $reporte['datos']
+                ];
+
+                $res = CDCDao::SetDocumentosCDC($cliente);
+                if ($res['success']) {
+                    $consulta = CDCDao::GetDocumento($_GET);
+                    $pdf = $consulta['datos']['PDF'];
+                    $archivo = is_resource($pdf) ? stream_get_contents($pdf) : $pdf;
+                }
+            }
+        }
+
+        if (empty($archivo)) {
             echo self::ErrorPDF('El documento solicitado no ha sido registrado aun.');
             return;
         }
-
-        $contenido = $archivo['datos']['PDF'];
-        $archivo = is_resource($contenido) ? stream_get_contents($contenido) : $contenido;
-        $nombre = strtoupper($_GET['documento']) . '_' . $_GET['cliente'] . '_' . $_GET['folio'] . '.pdf';
 
         header("Content-Type: application/pdf");
         header('Content-Disposition: inline; filename="' . $nombre);
@@ -1455,7 +1473,6 @@ class CDC extends Controller
 
         $campos = [
             'primerNombre' => $datos['nombre1'],
-            'segundoNombre' => $datos['nombre2'],
             'apellidoPaterno' => $datos['apellido1'],
             'apellidoMaterno' => $datos['apellido2'],
             'fechaNacimiento' => $datos['fecha'],
@@ -1471,14 +1488,15 @@ class CDC extends Controller
             ]
         ];
 
+        if ($datos['nombre2'] !== null && $datos['nombre2'] !== '') $campos['segundoNombre'] = $datos['nombre2'];
 
         $campos = json_encode($campos);
 
         // Inicio: Configuración solo para pruebas
-        $campos = json_decode(file_get_contents(__DIR__ . '/../config/datosDemo_CDC.json'), true);
-        $campos = json_encode($campos[array_rand($campos)]);
-        $TST_cnfg = $this->GetTstCnfg();
-        return $this->ConsultaCDC($campos, $ep, $TST_cnfg);
+        // $campos = json_decode(file_get_contents(__DIR__ . '/../config/datosDemo_CDC.json'), true);
+        // $campos = json_encode($campos[array_rand($campos)]);
+        // $TST_cnfg = $this->GetTstCnfg();
+        // return $this->ConsultaCDC($campos, $ep, $TST_cnfg);
         // Fin: Configuración solo para pruebas
 
         return $this->ConsultaCDC($campos, $ep);
@@ -1497,11 +1515,34 @@ class CDC extends Controller
     {
         $archivo = tempnam(sys_get_temp_dir(), 'CDC_');
         file_put_contents($archivo, $reporte);
+        $jar = __DIR__ . '/../../libs/CDC/Reporte_PDF_CDC.jar';
+        $fecha = date('Y-m-d');
 
-        $cmd = 'java -jar ' . __DIR__ . '/../../libs/CDC/Reporte_PDF_CDC.jar ' . $archivo . ' ' . date('Y-m-d');
-        $resultado = shell_exec($cmd);
+        $cmd = "java -jar $jar $archivo $fecha";
+
+        $errores = null;
+        $salidas = [
+            '1' => ['pipe', 'w'],
+            '2' => ['pipe', 'w']
+        ];
+
+        $proceso = proc_open($cmd, $salidas, $pipes);
+        $resultado = stream_get_contents($pipes[1]);
+        $errores = stream_get_contents($pipes[2]);
+        fclose($pipes[1]);
+        fclose($pipes[2]);
+        proc_close($proceso);
 
         if (file_exists($archivo)) unlink($archivo);
+
+        if (strpos($errores, 'Exception ') !== false || strpos($errores, 'Error ') !== false || strpos($resultado, 'Unrecognized field') !== false) {
+            // echo "<pre>Comando:\n$cmd\n\n";
+            // echo "Resultado:\n$resultado\n\n";
+            // echo "Errores:\n$errores\n\n</pre>";
+            // exit;
+
+            return self::GetRespuesta(false, 'Error al generar el reporte en PDF.', null, $errores);
+        }
 
         try {
             $pdf = base64_decode($resultado);

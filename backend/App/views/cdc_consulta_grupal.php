@@ -1,6 +1,7 @@
 <?php
 
 use App\components\MuestraPDF;
+
 ?>
 
 <?= $header ?>

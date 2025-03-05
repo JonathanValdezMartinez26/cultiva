@@ -26,7 +26,6 @@ class MuestraPDF
             <script>
                 const verPDF = (cliente, folio = "", documento = "") => {
                     let metodo = "GetDocumento"
-                    if (documento === "reporte") metodo = "GetReporteCDC"
                     const host = window.location.origin
                     $("#PDF").append($("<embed>", {
                         src: host + "/CDC/" + metodo + "/?cliente=" + cliente + "&folio=" + folio + "&documento=" + documento,
