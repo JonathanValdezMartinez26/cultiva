@@ -113,7 +113,7 @@ class Contenedor extends Controller
             HTML;
         }
 
-        $perimisos = ['AMGM', 'PHEE'];
+        $perimisos = ['AMGM', 'PHEE', 'GASC', 'LSOC'];
         if (in_array($this->__usuario, $perimisos)) {
             $menu .= <<<HTML
             <ul class="nav side-menu">
@@ -140,7 +140,7 @@ class Contenedor extends Controller
             HTML;
         }
 
-        $perimisos = ['AMGM', 'ADMIN', 'AMOCA'];
+        $perimisos = ['AMGM', 'GASC', 'LSOC', 'ADMIN', 'AMOCA'];
         if (in_array($this->__usuario, $perimisos) || in_array($this->__perfil, $perimisos)) {
             $menu .= <<<HTML
             <ul class="nav side-menu">
