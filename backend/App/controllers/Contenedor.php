@@ -80,7 +80,7 @@ class Contenedor extends Controller
                                     <h3>GENERAL </h3>     
         HTML;
 
-        $permisos = ['AMGM', 'GASC', 'GBNA', 'PHEE'];
+        $permisos = ['AMGM', 'GASC', 'GBNA', 'PHEE', 'FECR'];
         if (in_array($this->__usuario, $permisos)) {
             $menu .= <<<HTML
             <ul class="nav side-menu">

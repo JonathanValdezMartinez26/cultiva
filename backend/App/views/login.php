@@ -10,8 +10,8 @@ $anio = date('Y');
     <meta charset="utf-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Login | Cultiva</title>
     <link rel="shortcut icon" href="/img/logo_ico.png">
+    <title>Login | Cultiva </title>
 
     <!-- Bootstrap -->
     <link href="../vendors/bootstrap/dist/css/bootstrap.min.css" rel="stylesheet">
@@ -25,10 +25,10 @@ $anio = date('Y');
     <!-- Custom Theme Style -->
     <link href="../build/css/custom.min.css" rel="stylesheet">
 </head>
+
 <div class="login_wrapper" style="margin-top: 0%;">
     <div class="animate form login_form">
         <section class="login_content" style="padding: 100px 0 0;">
-            <br>
             <div style="text-align: center;">
                 <img src="/img/logo.png" alt="Login" width="350" height="110">
             </div>
@@ -37,7 +37,7 @@ $anio = date('Y');
                 <h1 style="color: #C43136; font-size: 30px; text-align: center;">Iniciar Sesión</h1>
                 <div class="col-md-1 col-sm-1 col-xs-1"><span id="availability"> </span></div>
                 <div class="col-md-12 col-sm-12 col-xs-12">
-                    <input type="text" name="usuario" id="usuario" class="form-control col-md-6 col-xs-12" placeholder="Usuario" required="" onkeyup="mayusculas(event);">
+                    <input type="text" name="usuario" id="usuario" class="form-control col-md-6 col-xs-12" placeholder="Usuario" required="" onkeyup="mayus(this);">
                 </div>
                 <div class="col-md-12 col-sm-12 col-xs-12">
                     <input type="password" name="password" id="password" class="form-control col-md-5 col-xs-12" placeholder="Contraseña" required="" onkeypress="if (event.keyCode == 13) enviar_formulario()">
@@ -47,22 +47,19 @@ $anio = date('Y');
                         <button type="button" id="btnEntrar" class="btn btn-warning col-md-4 col-sm-4 col-xs-4 pull-right" style="background: #C43136; border-color: #C43136">Entrar <i class="glyphicon glyphicon-log-in"></i></button>
                     </div>
                 </div>
-
                 <div class="clearfix"></div>
-
                 <div class="separator">
-
                     <div class="clearfix"></div>
                     <br />
-
                     <div>
                         <h1><i class="fa fa-paw"></i>Financiera Cultiva</h1>
                         <p>© <?= $anio ?> - Al ingresar al sistema de Financiera Cultiva, los usuarios están de acuerdo con las políticas de privacidad y términos de uso establecidos por la empresa.</p>
                     </div>
                 </div>
             </form>
+            <div id="avisoNavegador"></div>
         </section>
     </div>
-
 </div>
+
 <?= $footer; ?>
