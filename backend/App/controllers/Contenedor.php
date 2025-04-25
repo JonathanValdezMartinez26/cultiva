@@ -81,7 +81,7 @@ class Contenedor extends Controller
         HTML;
 
         $permisos = ['AMGM', 'GASC', 'GBNA', 'PHEE', 'FECR'];
-        if (in_array($this->__usuario, $permisos)) {
+        if ($this->ValidaPermiso($permisos)) {
             $menu .= <<<HTML
             <ul class="nav side-menu">
                 <li><a><i class="glyphicon glyphicon-th-list">&nbsp;</i>PLD<span class="fa fa-chevron-down"></span></a>
@@ -100,7 +100,7 @@ class Contenedor extends Controller
         }
 
         $permisos = ['AMGM', 'GASC', 'GBNA', 'PHEE'];
-        if (in_array($this->__usuario, $permisos)) {
+        if ($this->ValidaPermiso($permisos)) {
             $menu .= <<<HTML
             <ul class="nav side-menu">
                 <li><a><i class="glyphicon glyphicon-globe">&nbsp;</i>Api Condusef<span class="fa fa-chevron-down"></span></a>
@@ -113,8 +113,8 @@ class Contenedor extends Controller
             HTML;
         }
 
-        $perimisos = ['AMGM', 'PHEE', 'GASC', 'LSOC'];
-        if (in_array($this->__usuario, $perimisos)) {
+        $permisos = ['AMGM', 'PHEE', 'GASC', 'LSOC'];
+        if ($this->ValidaPermiso($permisos)) {
             $menu .= <<<HTML
             <ul class="nav side-menu">
                 <li><a><i class="glyphicon glyphicon-usd">&nbsp;</i>Créditos<span class="fa fa-chevron-down"></span></a>
@@ -126,8 +126,8 @@ class Contenedor extends Controller
             HTML;
         }
 
-        $perimisos = ['AMGM', 'PLMV', 'LGFR', 'MCDP'];
-        if (in_array($this->__usuario, $perimisos)) {
+        $permisos = ['AMGM', 'PLMV', 'LGFR', 'MCDP'];
+        if ($this->ValidaPermiso($permisos)) {
             $menu .= <<<HTML
             <ul class="nav side-menu">
                 <li><a><i class="glyphicon glyphicon-piggy-bank">&nbsp;</i>Tesorería<span class="fa fa-chevron-down"></span></a>
@@ -140,25 +140,43 @@ class Contenedor extends Controller
             HTML;
         }
 
-        $perimisos = ['AMGM', 'GASC', 'LSOC', 'ADMIN', 'AMOCA'];
-        if (in_array($this->__usuario, $perimisos) || in_array($this->__perfil, $perimisos)) {
+        $permisos = ['AMGM', 'GASC', 'LSOC', 'ADMIN', 'AMOCA'];
+        if ($this->ValidaPermiso($permisos)) {
             $menu .= <<<HTML
             <ul class="nav side-menu">
                 <li><a><i class="glyphicon glyphicon-ok-circle">&nbsp;</i>Circulo de Crédito<span class="fa fa-chevron-down"></span></a>
                 <ul class="nav child_menu">
             HTML;
 
-            $perimisos = ['AMGM', 'AMOCA'];
-            $menu .= (in_array($this->__usuario, $perimisos) || in_array($this->__perfil, $perimisos)) ? '<li><a href="/CDC/Consulta">Consulta por Cliente</a></li>' : '';
+            $permisos = ['AMGM', 'AMOCA'];
+            $menu .= $this->ValidaPermiso($permisos) ? '<li><a href="/CDC/Consulta">Consulta por Cliente</a></li>' : '';
 
-            $perimisos = ['AMGM', 'AMOCA'];
-            $menu .= (in_array($this->__usuario, $perimisos) || in_array($this->__perfil, $perimisos)) ? '<li><a href="/CDC/ConsultaGrupal">Mis Consultas</a></li>' : '';
+            $permisos = ['AMGM', 'AMOCA'];
+            $menu .= $this->ValidaPermiso($permisos) ? '<li><a href="/CDC/ConsultaGrupal">Mis Consultas</a></li>' : '';
 
-            $perimisos = ['AMGM', 'GASC', 'LSOC', 'ADMIN'];
-            $menu .= (in_array($this->__usuario, $perimisos) || in_array($this->__perfil, $perimisos)) ? '<li><a href="/CDC/ConsultaAdmin">Consulta por Cliente (Admin)</a></li>' : '';
+            $permisos = ['AMGM', 'GASC', 'LSOC', 'ADMIN'];
+            $menu .= $this->ValidaPermiso($permisos) ? '<li><a href="/CDC/ConsultaAdmin">Consulta por Cliente (Admin)</a></li>' : '';
 
-            $perimisos = ['AMGM', 'GASC', 'LSOC', 'ADMIN'];
-            $menu .= (in_array($this->__usuario, $perimisos) || in_array($this->__perfil, $perimisos)) ? '<li><a href="/CDC/ConsultaGlobal">Consulta Global</a></li>' : '';
+            $permisos = ['AMGM', 'GASC', 'LSOC', 'ADMIN'];
+            $menu .= $this->ValidaPermiso($permisos) ? '<li><a href="/CDC/ConsultaGlobal">Consulta Global</a></li>' : '';
+
+            $menu .= <<<HTML
+                    </ul>
+                </li>
+            </ul>
+            HTML;
+        }
+
+        $permisos = ['AMGM', 'GASC', 'LSOC'];
+        if ($this->ValidaPermiso($permisos)) {
+            $menu .= <<<HTML
+            <ul class="nav side-menu">
+                <li><a><i class="glyphicon glyphicon-cog">&nbsp;</i>Operaciones<span class="fa fa-chevron-down"></span></a>
+                <ul class="nav child_menu">
+            HTML;
+
+            $permisos = ['ADMIN', 'CAMAG', 'ORHM', 'MAPH'];
+            $menu .= $this->ValidaPermiso($permisos) ? '<li><a href="/Creditos/CambioSucursal/">Cambio de Sucursal</a></li>' : '';
 
             $menu .= <<<HTML
                     </ul>
@@ -225,5 +243,10 @@ class Contenedor extends Controller
         HTML;
 
         return $footer;
+    }
+
+    public function ValidaPermiso($permisos)
+    {
+        return in_array($this->__perfil, $permisos) || in_array($this->__usuario, $permisos);
     }
 }

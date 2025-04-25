@@ -24,13 +24,16 @@ class Database
     private function Conecta($s = null, $u = null, $p = null)
     {
         $s = $this->configuracion[$s] ?? $s;
-        $host = 'oci:dbname=//' . ($s ?? $this->configuracion['SERVIDOR']) . ':1521/ESIACOM;charset=UTF8';
+        $servidor = $s ?? $this->configuracion['SERVIDOR'];
+        $esquema = $this->configuracion['ESQUEMA'] ?? 'ESIACOM';
+
+        $cadena = "oci:dbname=//$servidor:1521/$esquema;charset=UTF8";
         $usuario = $u ?? $this->configuracion['USUARIO'];
         $password = $p ?? $this->configuracion['PASSWORD'];
         try {
-            $this->db_activa =  new PDO($host, $usuario, $password);
+            $this->db_activa =  new PDO($cadena, $usuario, $password);
         } catch (\PDOException $e) {
-            self::baseNoDisponible($e->getMessage());
+            self::baseNoDisponible("{$e->getMessage()}\nDatos de conexión: $cadena\nUsuario: $usuario\nPassword: $password");
             $this->db_activa =  null;
         }
     }
@@ -238,6 +241,26 @@ class Database
         } catch (\PDOException $e) {
             self::muestraError($e, $sql);
             return false;
+        }
+    }
+
+    public function EjecutaSP($sp, $parametros)
+    {
+        try {
+            $sp = (strpos($sp, 'CALL ') === false ? 'CALL ' : '') . $sp;
+            $stmt = $this->db_activa->prepare($sp);
+
+            foreach ($parametros as $key => $value) {
+                $stmt->bindValue(":$key", $value);
+            }
+
+            $output = '';
+            $stmt->bindParam(':output', $output, \PDO::PARAM_STR | \PDO::PARAM_INPUT_OUTPUT, 4000);
+            $stmt->execute();
+
+            return $output;
+        } catch (\PDOException $e) {
+            throw new \Exception("Error en EjecutaSP: " . $e->getMessage() . "\nSP: $sp \nDatos: " . print_r($parametros, 1));
         }
     }
 }

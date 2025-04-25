@@ -135,4 +135,89 @@ class Creditos extends Model
             return self::Responde(false, 'Error al ejecutar la consulta', null, $e->getMessage());
         }
     }
+
+    public static function SelectSucursalAllCreditoCambioSuc($datos)
+    {
+        $qry = <<<SQL
+            SELECT 
+                PRN.CDGNS CREDITO
+                , NS.NOMBRE GRUPO
+                , PRN.CICLO
+                , PRN.CANTENTRE MONTO
+                , PRN.SITUACION
+                , PRN.CDGCO ID_SUCURSAL
+                , GET_NOMBRE_SUCURSAL(PRN.CDGCO) SUCURSAL
+                , GET_NOMBRE_EMPLEADO(PRN.CDGOCPE) EJECUTIVO
+            FROM 
+                PRN
+                JOIN NS ON NS.CODIGO = PRN.CDGNS
+            WHERE
+                PRN.CDGNS = :credito
+                AND PRN.CDGEM = 'EMPFIN'
+                AND PRN.SITUACION != 'T'
+            order BY
+                PRN.INICIO DESC
+        SQL;
+
+        $prm = [
+            'credito' => $datos['credito']
+        ];
+
+        try {
+            $db = new Database();
+            $res = $db->queryOne($qry, $prm);
+            return self::Responde(true, "Consulta exitosa", $res);
+        } catch (\Exception $e) {
+            return self::Responde(false, 'Error al ejecutar la consulta', null, $e->getMessage());
+        }
+    }
+
+    public static function ListaSucursales()
+    {
+        $qry = <<<SQL
+            SELECT DISTINCT 
+                RG.CODIGO ID_REGION,
+                RG.NOMBRE REGION,
+                CO.CODIGO ID_SUCURSAL,
+                CO.NOMBRE SUCURSAL
+            FROM
+                PCO, CO, RG
+            WHERE
+                PCO.CDGCO = CO.CODIGO
+                AND CO.CDGRG = RG.CODIGO 
+                AND PCO.CDGEM = 'EMPFIN'
+            ORDER BY
+                    SUCURSAL ASC
+        SQL;
+
+        try {
+            $db = new Database();
+            $res = $db->queryAll($qry);
+            return self::Responde(true, "Consulta exitosa", $res);
+        } catch (\Exception $e) {
+            return self::Responde(false, 'Error al ejecutar la consulta', null, $e->getMessage());
+        }
+    }
+
+    public static function UpdateSucursal($datos)
+    {
+        $sp = "SPACTUALIZASUC('EMPFIN', :credito, :ciclo, :sucursal, :output)";
+
+        $prm = [
+            'credito' => $datos['credito'],
+            'ciclo' => $datos['ciclo'],
+            'sucursal' => $datos['sucursal']
+        ];
+
+        try {
+            $db = new Database();
+            $res = $db->EjecutaSP($sp, $prm);
+            if ($res == '1 Proceso realizado exitosamente')
+                return self::Responde(true, "Sucursal actualizada correctamente", $res);
+            else
+                return self::Responde(false, "Error al actualizar la sucursal", $res);
+        } catch (\Exception $e) {
+            return self::Responde(false, 'Error al ejecutar la consulta', null, $e->getMessage());
+        }
+    }
 }

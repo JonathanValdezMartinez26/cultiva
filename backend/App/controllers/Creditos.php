@@ -171,4 +171,81 @@ class Creditos extends Controller
 
         \PHPSpreadsheet::DescargaExcel('Referencias Cultiva', 'Reporte', 'Referencias', $columnas, $filas);
     }
+
+    public function CambioSucursal()
+    {
+        $extraFooter = <<<HTML
+            <script>
+                function getParameterByName(name) {
+                    name = name.replace(/[\[]/, "\\[").replace(/[\]]/, "\\]")
+                    var regex = new RegExp("[\\?&]" + name + "=([^&#]*)"),
+                        results = regex.exec(location.search)
+                    return results === null ? "" : decodeURIComponent(results[1].replace(/\+/g, " "))
+                }
+
+                function enviar_add(ciclo_p) {
+                    credito = getParameterByName("Credito")
+                    sucursal = document.getElementById("sucursal").value
+                    ciclo = ciclo_p
+
+                    $.ajax({
+                        type: "POST",
+                        url: "/Creditos/UpdateSucursal/",
+                        data: { credito, sucursal, ciclo },
+                        success: function (respuesta) {
+                            respuesta = JSON.parse(respuesta)
+                            if (respuesta.success) {
+                                location.reload()
+                            } else {
+                                swal(respuesta.mensaje, {
+                                    icon: "error"
+                                })
+                            }
+                        }
+                    })
+                }
+
+
+                function EditarSucursal(id_suc) {
+                    credito = getParameterByName("Credito");
+                    id_sucursal = id_suc;
+
+                    $("#modal_cambio_sucursal").modal("show");
+                }
+            </script>
+        HTML;
+
+        $credito = $_GET['Credito'];
+        $vista = "cambio_sucursal_all";
+
+        if ($credito != '') {
+            $credito_cambio = CreditosDao::SelectSucursalAllCreditoCambioSuc(['credito' => $credito]);
+
+            if (!$credito_cambio['success'] || !isset($credito_cambio['datos'])) {
+                $vista = "cambio_sucursal_busqueda_message";
+            } else {
+                $datos = $credito_cambio['datos'];
+                $sucursales = CreditosDao::ListaSucursales();
+                $ComboSucursal = '';
+                foreach ($sucursales['datos'] as $key => $val2) {
+                    $selected = $val2['ID_SUCURSAL'] == $datos['ID_SUCURSAL'] ? 'selected' : '';
+                    $ComboSucursal .= "<option $selected value='{$val2['ID_SUCURSAL']}'>{$val2['SUCURSAL']}</option>";
+                }
+
+                View::set('Administracion', $datos);
+                View::set('sucursal', $ComboSucursal);
+                $vista = "cambio_sucursal_busqueda";
+            }
+        }
+
+        View::set('header', $this->_contenedor->header(self::GetExtraHeader("Cambio de Sucursal")));
+        View::set('footer', $this->_contenedor->footer($extraFooter));
+        View::set('credito', $credito);
+        View::render($vista);
+    }
+
+    public function UpdateSucursal()
+    {
+        echo json_encode(CreditosDao::UpdateSucursal($_POST));
+    }
 }
