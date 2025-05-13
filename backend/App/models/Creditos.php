@@ -220,4 +220,116 @@ class Creditos extends Model
             return self::Responde(false, 'Error al ejecutar la consulta', null, $e->getMessage());
         }
     }
+
+    public static function GetReportePrestamos($datos)
+    {
+        $qry = <<<SQL
+            SELECT
+                Q1.*
+                , CASE WHEN Q1.CAPITAL_PAGADO IS NOT NULL THEN Q1.CAPITAL_PAGADO + Q1.INT_PAGADO ELSE NULL END AS TOTAL_PAGADO
+                , CASE WHEN Q1.INT_GEN IS NOT NULL THEN Q1.INT_GEN - Q1.INT_PAGADO ELSE NULL END AS SALDO_INT
+            FROM (
+                SELECT
+                    SN.CDGNS CREDITO
+                    , SN.CICLO
+                    , NS.NOMBRE
+                    , (SELECT COUNT(*) FROM CL, SC WHERE CL.CDGEM = SC.CDGEM AND CL.CODIGO = SC.CDGCL AND SC.CDGNS = SN.CDGNS AND SC.CDGEM = SN.CDGEM AND SC.CICLO = SN.CICLO AND SC.SITUACION = SN.SITUACION AND CL.SEXO IN ('F','E') AND SC.CDGEM = SN.CDGEM AND SC.CDGNS = SN.CDGNS AND SC.CICLO = SN.CICLO) MUJERES
+                    , (SELECT COUNT(*) FROM CL, SC WHERE CL.CDGEM = SC.CDGEM AND CL.CODIGO = SC.CDGCL AND SC.CDGNS = SN.CDGNS AND SC.CDGEM = SN.CDGEM AND SC.CICLO = SN.CICLO AND SC.SITUACION = SN.SITUACION AND CL.SEXO IN ('M','H') AND SC.CDGEM = SN.CDGEM AND SC.CDGNS = SN.CDGNS AND SC.CICLO = SN.CICLO) HOMBRES
+                    , RG.CODIGO || ' - ' || RG.NOMBRE AS REGION
+                    , CO.CODIGO || ' - ' || CO.NOMBRE AS SUCURSAL
+                    , TO_CHAR(SN.SOLICITUD, 'DD/MM/YYYY') SOLICITUD
+                    , TO_CHAR(PRN.FAUTCAR, 'DD/MM/YYYY') AUTORIZACION
+                    , CASE WHEN PRN.CANTENTRE IS NOT NULL THEN PRN.AUTCARPE || ' - ' || GET_NOMBRE_EMPLEADO(PRN.AUTCARPE) ELSE NULL END AUTORIZO
+                    , SN.DURACION
+                    , SN.TASA
+                    , TO_CHAR(SN.INICIO, 'DD/MM/YYYY') INICIO
+                    , TO_CHAR(FNFECHAPROXPAGO(SN.INICIO, SN.PERIODICIDAD, SN.DURACION), 'DD/MM/YYYY') FIN_CICLO
+                    , CASE SN.SITUACION
+                        WHEN 'A' THEN 'AUT. CARTE.'
+                        WHEN 'S' THEN 'SOLICITADO'
+                        WHEN 'R' THEN 'RECHAZADO'
+                        ELSE ''
+                    END SITUACION_SOLICITUD
+                    , CASE PRN.SITUACION
+                        WHEN 'A' THEN 'AUT. CARTE.'
+                        WHEN 'D' THEN 'DEVUELTO'
+                        WHEN 'E' THEN 'ENTREGADO'
+                        WHEN 'L' THEN 'LIQUIDADO'
+                        WHEN 'T' THEN 'AUT. TESOR.'
+                        WHEN 'S' THEN 'SOLICITADO'
+                        WHEN 'R' THEN 'RECHAZADO'
+                        ELSE ''
+                    END SITUACION_PRESTAMO
+                    , ROUND(PARCIALIDADPRN(PRN.CDGEM, PRN.CDGNS, PRN.CICLO, NVL(PRN.CANTENTRE,PRN.CANTAUTOR), PRN.TASA, PRN.PLAZO, PRN.PERIODICIDAD, PRN.CDGMCI, PRN.INICIO, PRN.DIAJUNTA, PRN.MULTPER, PRN.PERIGRCAP, PRN.PERIGRINT, PRN.DESFASEPAGO, PRN.CDGTI, NULL),2) PARCIALIDAD
+                    , SN.CANTSOLIC
+                    , NULL DIAS_MORA
+                    , PRN.CANTENTRE
+                    , ROUND(CASE PRN.PERIODICIDAD
+                        WHEN 'S' THEN NVL(PRN.CANTENTRE,0) + (NVL(PRN.TASA,0) * NVL(PRN.PLAZO,0) * NVL(PRN.CANTENTRE,0))/(4 * 100)
+                        WHEN 'Q' THEN NVL(PRN.CANTENTRE,0) + (NVL(PRN.TASA,0) * NVL(PRN.PLAZO,0) * NVL(PRN.CANTENTRE,0) * 15)/(30 * 100)
+                        WHEN 'C' THEN NVL(PRN.CANTENTRE,0) + (NVL(PRN.TASA,0) * NVL(PRN.PLAZO,0) * NVL(PRN.CANTENTRE,0))/(2 * 100)
+                        WHEN 'M' THEN NVL(PRN.CANTENTRE,0) + (NVL(PRN.TASA,0) * NVL(PRN.PLAZO,0) * NVL(PRN.CANTENTRE,0))/(100)
+                        ELSE 0
+                    END - CANTENTRE, 2) INT_GEN
+                    , NULL NO_PUEDO_PAGAR
+                    , CASE WHEN PRN.CANTENTRE IS NOT NULL THEN PAGADOCAPITALPRN(PRN.CDGEM, PRN.CDGNS, PRN.CICLO, PRN.CDGMCI, TO_DATE(:fechaF, 'YYYY-MM-DD'), 'N') ELSE NULL END CAPITAL_PAGADO
+                    , CASE WHEN PRN.CANTENTRE IS NOT NULL THEN PAGADOINTERESPRN(PRN.CDGEM, PRN.CDGNS, PRN.CICLO, TO_DATE(:fechaF, 'YYYY-MM-DD')) ELSE NULL END INT_PAGADO
+                    , CASE WHEN PRN.CANTENTRE IS NOT NULL THEN SALDOCAPITALPRN(PRN.CDGEM, PRN.CDGNS, PRN.CICLO, PRN.CANTENTRE, PRN.TASA, PRN.PLAZO, PRN.PERIODICIDAD, PRN.CDGMCI, PRN.INICIO, PRN.DIAJUNTA, PRN.MULTPER, PRN.PERIGRCAP, PRN.PERIGRINT, PRN.DESFASEPAGO, PRN.CDGTI, PRN.MODOAPLIRECA, TO_DATE(:fechaF, 'YYYY-MM-DD'), NULL, 'N') ELSE NULL END SALDO_CAP
+                    , CASE WHEN PRN.CANTENTRE IS NOT NULL THEN SALDOTOTALPRN(PRN.CDGEM, PRN.CDGNS, PRN.CICLO, PRN.CANTENTRE, PRN.TASA, PRN.PLAZO, PRN.PERIODICIDAD, PRN.CDGMCI, PRN.INICIO, PRN.DIAJUNTA, PRN.MULTPER, PRN.PERIGRCAP, PRN.PERIGRINT, PRN.DESFASEPAGO, PRN.CDGTI, PRN.MODOAPLIRECA, TO_DATE(:fechaF, 'YYYY-MM-DD')) ELSE NULL END SALDO_TOT
+                    , CASE WHEN PRN.CANTENTRE IS NOT NULL THEN ROUND(SALDOVENCIDOCAPITALPRN(PRN.CDGEM, PRN.CDGNS, PRN.CICLO, PRN.CANTENTRE, PRN.TASA, PRN.PLAZO, PRN.PERIODICIDAD, PRN.CDGMCI, PRN.INICIO, PRN.DIAJUNTA, PRN.MULTPER, PRN.PERIGRCAP, PRN.PERIGRINT, PRN.DESFASEPAGO, PRN.CDGTI, PRN.MODOAPLIRECA, TO_DATE(:fechaF, 'YYYY-MM-DD'), NULL, 'S'), 2) ELSE NULL END MORA_TOT
+                    , CASE WHEN PRN.CANTENTRE IS NOT NULL AND SN.CICLO = (SELECT MAX(A.CICLO) CICLO FROM PRN A WHERE A.CDGEM = PRN.CDGEM AND A.SITUACION <> 'D' AND A.CDGNS = PRN.CDGNS) THEN FNSDOGARANTIA(PRN.CDGEM, PRN.CDGNS, PRN.CICLO, 'G', TO_DATE(:fechaF, 'YYYY-MM-DD')) ELSE NULL END SALDO_GL
+                    , SN.CDGOCPE || ' - ' || GET_NOMBRE_EMPLEADO(SN.CDGOCPE) ASESOR
+                    , CO.CDGPE || ' - ' || GET_NOMBRE_EMPLEADO(CO.CDGPE) NOM_GERENTE
+                    , TPC.NOMBRE TIPO_CARTERA
+                FROM
+                    SN
+                    LEFT JOIN PRN ON PRN.CDGNS = SN.CDGNS AND PRN.CICLO = SN.CICLO AND PRN.SOLICITUD = SN.SOLICITUD
+                    LEFT JOIN TPC ON TPC.CDGEM = PRN.CDGEM AND TPC.CODIGO = PRN.CDGTPC
+                    LEFT JOIN NS ON NS.CODIGO = SN.CDGNS
+                    LEFT JOIN CO ON CO.CODIGO = SN.CDGCO
+                    LEFT JOIN RG ON RG.CODIGO = CO.CDGRG
+                WHERE
+                    SN.SOLICITUD BETWEEN TO_DATE(:fechaI, 'YYYY-MM-DD') AND TO_DATE(:fechaF, 'YYYY-MM-DD')
+                    FILTROS
+            ) Q1
+            ORDER BY
+                Q1.SOLICITUD DESC
+        SQL;
+
+        $filtros = '';
+        $prm = [
+            'fechaI' => $datos['fechaI'],
+            'fechaF' => $datos['fechaF']
+        ];
+
+        if (isset($datos['region']) && $datos['region'] !== '') {
+            $filtros .= ' AND RG.CODIGO = :region';
+            $prm['region'] = $datos['region'];
+        }
+
+        if (isset($datos['sucursal']) && $datos['sucursal'] !== '') {
+            $filtros .= ' AND CO.CODIGO = :sucursal';
+            $prm['sucursal'] = $datos['sucursal'];
+        }
+
+        if (isset($datos['sitSolicitud']) && $datos['sitSolicitud'] !== '') {
+            $filtros .= ' AND SN.SITUACION = :sitSolicitud';
+            $prm['sitSolicitud'] = $datos['sitSolicitud'];
+        }
+
+        if (isset($datos['sitPrestamo']) && $datos['sitPrestamo'] !== '') {
+            $filtros .= ' AND PRN.SITUACION = :sitPrestamo';
+            $prm['sitPrestamo'] = $datos['sitPrestamo'];
+        }
+
+        $qry = str_replace('FILTROS', $filtros, $qry);
+
+        try {
+            $db = new Database();
+            $res = $db->queryAll($qry, $prm);
+            return self::Responde(true, "Consulta exitosa", $res);
+        } catch (\Exception $e) {
+            return self::Responde(false, 'Error al ejecutar la consulta', null, $e->getMessage());
+        }
+    }
 }

@@ -10,10 +10,20 @@ use PhpOffice\PhpSpreadsheet\Cell\DataType;
 
 class PHPSpreadsheet
 {
-    private const formatoMoneda = '"$"#,##0.00';
-    private const formatoPorcentaje = '0.00%';
-    private const formatoFecha = 'dd/mm/yyyy';
-    private const formatoFechaHora = 'dd/mm/yyyy hh:mm:ss';
+    private const FORMATOMONEDA = '"$"#,##0.00';
+    private const FORMATOPORCENTAJE = '0.00%';
+    private const FORMATOFECHA = 'dd/mm/yyyy';
+    private const FORMATOFECHAHORA = 'dd/mm/yyyy hh:mm:ss';
+
+    private const OPERACIONES = [
+        'PROMEDIO' => 1,
+        'CONTAR' => 2,
+        'CONTARA' => 3,
+        'MAX' => 4,
+        'MIN' => 5,
+        'PRODUCTO' => 6,
+        'SUMA' => 9,
+    ];
 
     /**
      * ColumnaExcel
@@ -31,7 +41,7 @@ class PHPSpreadsheet
      */
     public static function ColumnaExcel($campo, $titulo = '', $configuracion = [])
     {
-        $defecto = ['letra' => '', 'estilo' => [], 'total' => false];
+        $defecto = ['letra' => '', 'estilo' => [], 'total' => false, 'operacion' => 'SUMA'];
         $configuracion = array_merge($defecto, $configuracion);
 
         $titulo = $titulo === '' ? $campo : $titulo;
@@ -42,6 +52,7 @@ class PHPSpreadsheet
             'estilo' => $configuracion['estilo'],
             'letra' => $configuracion['letra'],
             'total' => $configuracion['total'],
+            'operacion' => $configuracion['operacion'],
         ];
     }
 
@@ -102,19 +113,23 @@ class PHPSpreadsheet
             ],
             'fecha' => [
                 'alignment' => ['horizontal' => Style\Alignment::HORIZONTAL_CENTER],
-                'numberFormat' => ['formatCode' => self::formatoFecha]
+                'numberFormat' => ['formatCode' => self::FORMATOFECHA]
             ],
             'fecha_hora' => [
                 'alignment' => ['horizontal' =>  Style\Alignment::HORIZONTAL_CENTER],
-                'numberFormat' => ['formatCode' => self::formatoFechaHora]
+                'numberFormat' => ['formatCode' => self::FORMATOFECHAHORA]
             ],
             'moneda' => [
                 'alignment' => ['horizontal' => Style\Alignment::HORIZONTAL_RIGHT],
-                'numberFormat' => ['formatCode' => self::formatoMoneda]
+                'numberFormat' => ['formatCode' => self::FORMATOMONEDA]
             ],
             'porcentaje' => [
                 'alignment' => ['horizontal' => Style\Alignment::HORIZONTAL_CENTER],
-                'numberFormat' => ['formatCode' => self::formatoPorcentaje]
+                'numberFormat' => ['formatCode' => self::FORMATOPORCENTAJE]
+            ],
+            'porcentaje_entero' => [
+                'alignment' => ['horizontal' => Style\Alignment::HORIZONTAL_CENTER],
+                'numberFormat' => ['formatCode' => self::FORMATOPORCENTAJE]
             ],
             'texto_centrado' => [
                 'alignment' => ['horizontal' => Style\Alignment::HORIZONTAL_CENTER]
@@ -222,6 +237,8 @@ class PHPSpreadsheet
                     $hoja->setCellValue($columna['letra'] . $noFila, self::convierteFecha('d/m/Y H:i:s', $fila[$columna['campo']]));
                 else if ($columna['estilo'] === self::GetEstilosExcel('texto_centrado') || $columna['estilo'] === self::GetEstilosExcel('texto_izquierda') || $columna['estilo'] === self::GetEstilosExcel('texto_derecha'))
                     $hoja->setCellValueExplicit($columna['letra'] . $noFila, html_entity_decode($fila[$columna['campo']], ENT_QUOTES, "UTF-8"), DataType::TYPE_STRING);
+                else if ($columna['estilo'] === self::GetEstilosExcel('porcentaje_entero'))
+                    $hoja->setCellValue($columna['letra'] . $noFila, $fila[$columna['campo']] / 100);
                 else
                     $hoja->setCellValue($columna['letra'] . $noFila, html_entity_decode($fila[$columna['campo']], ENT_QUOTES, "UTF-8"));
 
@@ -248,7 +265,7 @@ class PHPSpreadsheet
         // Congelar en la fila de encabezados, poner autofiltro y ajustar ancho de columnas al contenido
         $hoja->setSelectedCell("A$filaInicial");
         $hoja->freezePane("A$filaInicial");
-        $hoja->setAutoFilter("A$filaEncabezados:" . $columnas[count($columnas) - 1]['letra'] . $filaEncabezados);
+        $hoja->setAutoFilter("A$filaEncabezados:{$columnas[count($columnas) - 1]['letra']}$filaEncabezados");
 
         // Poner el cursor en la celda A1
         $hoja->setSelectedCell('A1');
@@ -292,9 +309,12 @@ class PHPSpreadsheet
                 ]
             ]);
 
+
         // Poner fórmulas para totales
         foreach ($totales as $key => $total) {
-            $hoja->setCellValue($total['letra'] . $noFila, '=SUBTOTAL(9,' . $total['letra'] . '3:' . $total['letra'] . ($noFila - 2) . ')');
+            $operacion = self::OPERACIONES[$total['operacion']];
+            $nf = $noFila - 2;
+            $hoja->setCellValue($total['letra'] . $noFila, "=SUBTOTAL($operacion,{$total['letra']}3:{$total['letra']}$nf)");
             $hoja->getStyle($total['letra'] . $noFila)->applyFromArray($total['estilo']);
         }
     }

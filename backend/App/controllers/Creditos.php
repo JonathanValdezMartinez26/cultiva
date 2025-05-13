@@ -204,8 +204,7 @@ class Creditos extends Controller
                         }
                     })
                 }
-
-
+                
                 function EditarSucursal(id_suc) {
                     credito = getParameterByName("Credito");
                     id_sucursal = id_suc;
@@ -247,5 +246,184 @@ class Creditos extends Controller
     public function UpdateSucursal()
     {
         echo json_encode(CreditosDao::UpdateSucursal($_POST));
+    }
+
+    public function ReportePrestamos()
+    {
+        $regSuc = CreditosDao::GetSucursales();
+        $regSuc = $regSuc['success'] ? $regSuc['datos'] : [];
+        $sucursales = json_encode($regSuc);
+
+        $extraFooter = <<<HTML
+            <script>
+                {$this->mensajes}
+                {$this->configuraTabla}
+                {$this->actualizaDatosTabla}
+                {$this->consultaServidor}
+                {$this->respuestaError}
+                {$this->respuestaSuccess}
+                {$this->descargaExcel}
+
+                const idTabla = "prestamos"
+                const regSuc = JSON.parse('$sucursales')
+
+                const getParametros = (post = true) => {
+                    const p = {
+                        fechaI: $("#fechaI").val(),
+                        fechaF: $("#fechaF").val(),
+                        region: $("#region").val(),
+                        sucursal: $("#sucursal").val(),
+                        sitSolicitud: $("#sitSolicitud").val(),
+                        sitPrestamo: $("#sitPrestamo").val(),
+                    }
+
+                    if (post) return p
+                    return Object.keys(p).map((key) => key + "=" + p[key]).join("&")
+                }
+
+                const getReporte = () => {
+                    consultaServidor("/Creditos/GetReportePrestamos", getParametros(), (res) => {
+                        if (!res.success) return respuestaError(idTabla, res.mensaje)
+                        if (res.datos.length === 0) return respuestaError(idTabla, "No se encontraron registros para los parámetros solicitados.")
+
+                        if (res.datos.length > 2000) return respuestaError(idTabla, "El reporte es demasiado grande para ser mostrado, reduzca el rango de fechas o descargue el reporte en Excel.")
+                        
+                        const datos = res.datos.map((item) => {
+                            return [
+                                item.CREDITO,
+                                item.CICLO,
+                                item.NOMBRE,
+                                item.MUJERES,
+                                item.HOMBRES,
+                                item.REGION,
+                                item.SUCURSAL,
+                                item.SOLICITUD,
+                                item.AUTORIZACION,
+                                item.AUTORIZO,
+                                item.DURACION,
+                                item.TASA + " %",
+                                item.INICIO,
+                                item.FIN_CICLO,
+                                item.SITUACION_SOLICITUD,
+                                item.SITUACION_PRESTAMO,
+                                formatoMoneda(item.PARCIALIDAD),
+                                formatoMoneda(item.CANTSOLIC),
+                                item.DIAS_MORA,
+                                formatoMoneda(item.CANTENTRE),
+                                formatoMoneda(item.INT_GEN),
+                                item.NO_PUEDO_PAGAR,
+                                formatoMoneda(item.CAPITAL_PAGADO),
+                                formatoMoneda(item.INT_PAGADO),
+                                formatoMoneda(item.TOTAL_PAGADO),
+                                formatoMoneda(item.SALDO_CAP),
+                                formatoMoneda(item.SALDO_INT),
+                                formatoMoneda(item.SALDO_TOT),
+                                formatoMoneda(item.MORA_TOT),
+                                formatoMoneda(item.SALDO_GL),
+                                item.ASESOR,
+                                item.NOM_GERENTE,
+                                item.TIPO_CARTERA
+                            ]
+                        })
+
+                        respuestaSuccess(idTabla, datos)
+                    })
+                }
+
+                const formatoMoneda = (valor) => {
+                    if (valor === null || valor === undefined) return "$ 0.00"
+                    return "$ " + parseFloat(valor).toLocaleString("es-MX", { minimumFractionDigits: 2, maximumFractionDigits: 2 })
+                }
+
+                const actualizaSucursales = () => {
+                    const region = $("#region").val()
+                    $("#sucursal").empty()
+                    $("#sucursal").append(new Option("Todas", ""))
+
+                    regSuc.filter((reg) => reg.ID_REGION === region || region === "")
+                        .sort((a, b) => a.SUCURSAL.localeCompare(b.SUCURSAL))
+                        .forEach((suc) => {
+                            if (suc.ID_REGION === region || region === "") $("#sucursal").append(new Option(suc.SUCURSAL, suc.ID_SUCURSAL))
+                        })
+                }
+
+                $(document).ready(() => {
+                    $("#region").change(actualizaSucursales)
+                    $("#generar").click(getReporte)
+                    $("#exportar").click(() => descargaExcel("/Creditos/ExportReportePrestamos/?" + getParametros(false)))
+                    
+                    configuraTabla(idTabla)
+                    actualizaSucursales()
+                })
+            </script>
+        HTML;
+
+        $regiones = '<option value="">Todas</option>';
+
+        foreach ($regSuc as $key => $val) {
+            $reg = "<option value='{$val['ID_REGION']}'>{$val['REGION']}</option>";
+
+            if (strpos($regiones, $reg) === false) $regiones .= $reg;
+        }
+
+        View::set('header', $this->_contenedor->header(self::GetExtraHeader("Reporte de Prestamos")));
+        View::set('footer', $this->_contenedor->footer($extraFooter));
+        View::set('regiones', $regiones);
+        View::render("creditos_reporte_prestamos");
+    }
+
+    public function GetReportePrestamos()
+    {
+        echo json_encode(CreditosDao::GetReportePrestamos($_POST));
+    }
+
+    public function ExportReportePrestamos()
+    {
+        $texto = ['estilo' => \PHPSpreadsheet::GetEstilosExcel('texto_centrado')];
+        $centrado = ['estilo' => \PHPSpreadsheet::GetEstilosExcel('centrado')];
+        $moneda = ['estilo' => \PHPSpreadsheet::GetEstilosExcel('moneda'), 'total' => true];
+        $fecha = ['estilo' => \PHPSpreadsheet::GetEstilosExcel('fecha')];
+        $porcentaje = ['estilo' => \PHPSpreadsheet::GetEstilosExcel('porcentaje_entero')];
+
+        $columnas = [
+            \PHPSpreadsheet::ColumnaExcel('CREDITO', 'Crédito', $texto),
+            \PHPSpreadsheet::ColumnaExcel('CICLO', 'Ciclo', $texto),
+            \PHPSpreadsheet::ColumnaExcel('NOMBRE', 'Nombre grupo'),
+            \PHPSpreadsheet::ColumnaExcel('MUJERES', 'Mujeres', $centrado),
+            \PHPSpreadsheet::ColumnaExcel('HOMBRES', 'Hombres', $centrado),
+            \PHPSpreadsheet::ColumnaExcel('REGION', 'Región'),
+            \PHPSpreadsheet::ColumnaExcel('SUCURSAL', 'Sucursal'),
+            \PHPSpreadsheet::ColumnaExcel('SOLICITUD', 'Fecha de solicitud', $fecha),
+            \PHPSpreadsheet::ColumnaExcel('AUTORIZACION', 'Fecha de autorización', $fecha),
+            \PHPSpreadsheet::ColumnaExcel('AUTORIZO', 'Autorizo'),
+            \PHPSpreadsheet::ColumnaExcel('DURACION', 'Duración'),
+            \PHPSpreadsheet::ColumnaExcel('TASA', 'Tasa', $porcentaje),
+            \PHPSpreadsheet::ColumnaExcel('INICIO', 'Fecha de inicio', $fecha),
+            \PHPSpreadsheet::ColumnaExcel('FIN_CICLO', 'Fecha de fin', $fecha),
+            \PHPSpreadsheet::ColumnaExcel('SITUACION_SOLICITUD', 'Situación de la solicitud'),
+            \PHPSpreadsheet::ColumnaExcel('SITUACION_PRESTAMO', 'Situación del préstamo'),
+            \PHPSpreadsheet::ColumnaExcel('PARCIALIDAD', 'Parcialidad', $moneda),
+            \PHPSpreadsheet::ColumnaExcel('CANTSOLIC', 'Cantidad solicitada', $moneda),
+            \PHPSpreadsheet::ColumnaExcel('DIAS_MORA', 'Días de mora'),
+            \PHPSpreadsheet::ColumnaExcel('CANTENTRE', 'Cantidad entregada', $moneda),
+            \PHPSpreadsheet::ColumnaExcel('INT_GEN', 'Interés generado', $moneda),
+            \PHPSpreadsheet::ColumnaExcel('NO_PUEDO_PAGAR', 'NO PUEDO PAGAR', $moneda),
+            \PHPSpreadsheet::ColumnaExcel('CAPITAL_PAGADO', 'Capital pagado', $moneda),
+            \PHPSpreadsheet::ColumnaExcel('INT_PAGADO', 'Interés pagado', $moneda),
+            \PHPSpreadsheet::ColumnaExcel('TOTAL_PAG', 'Total pagado', $moneda),
+            \PHPSpreadsheet::ColumnaExcel('SALDO_CAP', 'Saldo capital', $moneda),
+            \PHPSpreadsheet::ColumnaExcel('SALDO_INT', 'Saldo interés', $moneda),
+            \PHPSpreadsheet::ColumnaExcel('SALDO_TOT', 'Saldo total', $moneda),
+            \PHPSpreadsheet::ColumnaExcel('MORA_TOT', 'Mora total', $moneda),
+            \PHPSpreadsheet::ColumnaExcel('SALDO_GL', 'Garantía', $moneda),
+            \PHPSpreadsheet::ColumnaExcel('ASESOR', 'Asesor'),
+            \PHPSpreadsheet::ColumnaExcel('NOM_GERENTE', 'Gerente'),
+            \PHPSpreadsheet::ColumnaExcel('TIPO_CARTERA', 'Tipo de cartera'),
+        ];
+
+        $datos = CreditosDao::GetReportePrestamos($_GET);
+        $filas = $datos['success'] ? $datos['datos'] : [];
+
+        \PHPSpreadsheet::DescargaExcel('Prestamos Cultiva', 'Reporte de Prestamos', 'Prestamos Cultiva', $columnas, $filas);
     }
 }

@@ -120,6 +120,7 @@ class Contenedor extends Controller
                 <li><a><i class="glyphicon glyphicon-usd">&nbsp;</i>Créditos<span class="fa fa-chevron-down"></span></a>
                     <ul class="nav child_menu">
                         <li><a href="/Creditos/ReporteReferencias/">Reporte de Referencias</a></li>
+                        <li><a href="/Creditos/ReportePrestamos/">Reporte de Prestamos</a></li>
                     </ul>
                 </li>
             </ul>
