@@ -80,7 +80,7 @@ class Contenedor extends Controller
                                     <h3>GENERAL </h3>     
         HTML;
 
-        $permisos = ['AMGM', 'GASC', 'GBNA', 'PHEE', 'FECR'];
+        $permisos = ['AMGM', 'GASC', 'GBNA', 'PHEE', 'FECR', 'MAJL', 'AFJJ', 'LSOC'];
         if ($this->ValidaPermiso($permisos)) {
             $menu .= <<<HTML
             <ul class="nav side-menu">
@@ -113,7 +113,7 @@ class Contenedor extends Controller
             HTML;
         }
 
-        $permisos = ['AMGM', 'PHEE', 'GASC', 'LSOC'];
+        $permisos = ['AMGM', 'PHEE', 'GASC', 'LSOC', 'MAJL', 'AFJJ'];
         if ($this->ValidaPermiso($permisos)) {
             $menu .= <<<HTML
             <ul class="nav side-menu">
@@ -127,7 +127,7 @@ class Contenedor extends Controller
             HTML;
         }
 
-        $permisos = ['AMGM', 'PLMV', 'LGFR', 'MCDP'];
+        $permisos = ['AMGM', 'PLMV', 'LGFR', 'MCDP', 'GASC', 'MAJL', 'AFJJ'];
         if ($this->ValidaPermiso($permisos)) {
             $menu .= <<<HTML
             <ul class="nav side-menu">
@@ -141,7 +141,7 @@ class Contenedor extends Controller
             HTML;
         }
 
-        $permisos = ['AMGM', 'GASC', 'LSOC', 'ADMIN', 'AMOCA'];
+        $permisos = ['AMGM', 'GASC', 'LSOC', 'ADMIN', 'AMOCA', 'MAJL', 'AFJJ'];
         if ($this->ValidaPermiso($permisos)) {
             $menu .= <<<HTML
             <ul class="nav side-menu">
@@ -168,7 +168,7 @@ class Contenedor extends Controller
             HTML;
         }
 
-        $permisos = ['AMGM', 'GASC', 'LSOC'];
+        $permisos = ['AMGM', 'GASC', 'LSOC', 'MAJL', 'AFJJ'];
         if ($this->ValidaPermiso($permisos)) {
             $menu .= <<<HTML
             <ul class="nav side-menu">
