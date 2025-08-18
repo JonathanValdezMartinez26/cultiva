@@ -33,7 +33,9 @@
             </div>
             <div class="card col-md-12">
                 <hr style="border-top: 1px solid #e5e5e5; margin-top: 5px;">
-                <button id="export_excel_consulta" type="button" class="btn btn-success btn-circle"><i class="fa fa-file-excel-o"> </i> <b>Exportar a Excel</b></button>
+                <form name="all" id="all" method="GET">
+                    <button id="export_excel_consulta" type="button" class="btn btn-success btn-circle"><i class="fa fa-file-excel-o"> </i> <b>Exportar a Excel</b></button>
+                </form>
                 <hr style="border-top: 1px solid #787878; margin-top: 5px;">
 
                 <div class="dataTable_wrapper">
