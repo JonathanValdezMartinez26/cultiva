@@ -127,7 +127,7 @@ class Contenedor extends Controller
             HTML;
         }
 
-        $permisos = ['AMGM', 'PLMV', 'LGFR', 'MCDP', 'GASC', 'MAJL', 'AFJJ','JCMG','JACJ'];
+        $permisos = ['AMGM', 'PLMV', 'LGFR', 'MCDP', 'GASC', 'MAJL', 'AFJJ', 'JCMG', 'JACJ'];
         if ($this->ValidaPermiso($permisos)) {
             $menu .= <<<HTML
             <ul class="nav side-menu">
@@ -179,6 +179,23 @@ class Contenedor extends Controller
             $permisos = ['ADMIN', 'CAMAG', 'ORHM', 'MAPH'];
             $menu .= $this->ValidaPermiso($permisos) ? '<li><a href="/Creditos/CambioSucursal/">Cambio de Sucursal</a></li>' : '';
 
+            $menu .= <<<HTML
+                    </ul>
+                </li>
+            </ul>
+            HTML;
+        }
+
+        $permisos = ['AMGM', 'GASC', 'LSOC', 'ADMIN', 'AMOCA', 'MAJL', 'AFJJ'];
+        if ($this->ValidaPermiso($permisos)) {
+            $menu .= <<<HTML
+            <ul class="nav side-menu">
+                <li><a><i class="glyphicon glyphicon-briefcase">&nbsp;</i>Contabilidad<span class="fa fa-chevron-down"></span></a>
+                <ul class="nav child_menu">
+            HTML;
+
+            $permisos = ['AMGM', 'AMOCA'];
+            $menu .= $this->ValidaPermiso($permisos) ? '<li><a href="/contabilidad/ConsultaGrupo">Consulta por grupo</a></li>' : '';
             $menu .= <<<HTML
                     </ul>
                 </li>

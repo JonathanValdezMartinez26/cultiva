@@ -87,71 +87,67 @@ class Tesoreria extends Controller
 
     public function ReingresarClientesCredito()
     {
-        $extraHeader = <<<html
-        <title>Reingresar Clientes Cultiva</title>
-        <link rel="shortcut icon" href="/img/logo.png">
-html;
-        $extraFooter = <<<html
-      <script>
-       
-       ponerElCursorAlFinal('Credito');
-       
-       function ActivarCredito(cdgcl, fecha, motivo){	
-           
-            if(motivo == '')
-                {
-                     swal("Atención", "Ingrese un monto mayor a $0", "warning");
-                     document.getElementById("monto_e").focus();
-                  
-                }
-            else
-                {
-                    $.ajax({
-                    type: 'POST',
-                    url: '/Cultiva/ReactivarCredito/',
-                    data: "cdgcl="+cdgcl,
-                    success: function(respuesta) {
-                         if(respuesta=='1'){
+
+        $extraFooter = <<<HTML
+            <script>
+                ponerElCursorAlFinal('Credito');
+                
+                function ActivarCredito(cdgcl, fecha, motivo){	
                     
-                                swal("Registro guardado exitosamente", {
-                                      icon: "success",
-                                    });
-                        location.reload();
-                        }else 
-                            {
-                                swal(respuesta, {
-                                      icon: "error",
-                                    });
+                    if(motivo == '')
+                        {
+                                swal("Atención", "Ingrese un monto mayor a $0", "warning");
+                                document.getElementById("monto_e").focus();
+                            
+                        }
+                    else
+                        {
+                            $.ajax({
+                            type: 'POST',
+                            url: '/Cultiva/ReactivarCredito/',
+                            data: "cdgcl="+cdgcl,
+                            success: function(respuesta) {
+                                    if(respuesta=='1'){
+                            
+                                        swal("Registro guardado exitosamente", {
+                                                icon: "success",
+                                            });
+                                location.reload();
+                                }else 
+                                    {
+                                        swal(respuesta, {
+                                                icon: "error",
+                                            });
+                                    }
                             }
-                    }
-                    });
+                            });
+                        }
                 }
-    }
-    
-       $(document).ready(function(){
-            $("#muestra-cupones").tablesorter();
-          var oTable = $('#muestra-cupones').DataTable({
-                "columnDefs": [{
-                    "orderable": false,
-                    "targets": 0
-                }],
-                 "order": false
-            });
-            // Remove accented character from search input as well
-            $('#muestra-cupones input[type=search]').keyup( function () {
-                var table = $('#example').DataTable();
-                table.search(
-                    jQuery.fn.DataTable.ext.type.search.html(this.value)
-                ).draw();
-            });
-            var checkAll = 0;
-            
-        });
-      
-      </script>
-html;
+
+                $(document).ready(function(){
+                    $("#muestra-cupones").tablesorter();
+                    var oTable = $('#muestra-cupones').DataTable({
+                        "columnDefs": [{
+                            "orderable": false,
+                            "targets": 0
+                        }],
+                            "order": false
+                    });
+                    // Remove accented character from search input as well
+                    $('#muestra-cupones input[type=search]').keyup( function () {
+                        var table = $('#example').DataTable();
+                        table.search(
+                            jQuery.fn.DataTable.ext.type.search.html(this.value)
+                        ).draw();
+                    });
+                    var checkAll = 0;
+                    
+                });
+            </script>
+        HTML;
 
         $credito = $_GET['Credito'];
+        $vista = '';
 
         if ($credito != '') {
 
@@ -159,27 +155,28 @@ html;
             $tabla = '';
 
             foreach ($Clientes[0] as $key => $value) {
-
-                $tabla .= <<<html
-                <tr style="padding: 0px !important;">
-                    <td style="padding: 10px !important;">{$value['CDGNS']}</td>
-                    <td style="padding: 10px !important;">{$value['CDGCL']}</td>
-                    <td style="padding: 10px !important;">{$value['NOMBRE_CLIENTE']}</td>
-                    <td style="padding: 10px !important;">{$value['FECHA_BAJA']}</td>
-                    <td style="padding: 10px !important;">{$value['MOTIVO_BAJA']}</td>
-                    <td> <button type="button" class="btn btn-danger btn-circle" onclick="ActivarCredito('{$value['CDGCL']}', '{$value['FECHA_BAJA_REAL']}', '{$value['CODIGO_MOTIVO']}');"><i class="fa fa-check"></i></button></td>
-                </tr>
-html;
+                $tabla .= <<<HTML
+                    <tr style="padding: 0px !important;">
+                        <td style="padding: 10px !important;">{$value['CDGNS']}</td>
+                        <td style="padding: 10px !important;">{$value['CDGCL']}</td>
+                        <td style="padding: 10px !important;">{$value['NOMBRE_CLIENTE']}</td>
+                        <td style="padding: 10px !important;">{$value['FECHA_BAJA']}</td>
+                        <td style="padding: 10px !important;">{$value['MOTIVO_BAJA']}</td>
+                        <td> <button type="button" class="btn btn-danger btn-circle" onclick="ActivarCredito('{$value['CDGCL']}', '{$value['FECHA_BAJA_REAL']}', '{$value['CODIGO_MOTIVO']}');"><i class="fa fa-check"></i></button></td>
+                    </tr>
+                HTML;
             }
-            View::set('header', $this->_contenedor->header($extraHeader));
+
             View::set('footer', $this->_contenedor->footer($extraFooter));
             View::set('tabla', $tabla);
             View::set('Nombre', $Clientes[1]['NOMBRE']);
-            View::render("reingresar_clientes_cultiva_sec");
+            $vista = 'reingresar_clientes_cultiva_sec';
         } else {
-            View::set('header', $this->_contenedor->header($extraHeader));
-            View::set('footer', $this->_contenedor->footer($extraFooter));
-            View::render("reingresar_clientes_cultiva_ini");
+            $vista = 'reingresar_clientes_cultiva_ini';
         }
+
+        View::set('header', $this->_contenedor->header(self::GetExtraHeader("Reingresar Clientes Cultiva")));
+        View::set('footer', $this->_contenedor->footer($extraFooter));
+        View::render($vista);
     }
 }
