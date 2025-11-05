@@ -80,7 +80,7 @@ class Contenedor extends Controller
                                     <h3>GENERAL </h3>     
         HTML;
 
-        $permisos = ['AMGM', 'GASC', 'GBNA', 'PHEE', 'FECR', 'MAJL', 'AFJJ', 'LSOC'];
+        $permisos = ['AMGM', 'GASC', 'GBNA', 'LMVH', 'FECR', 'MAJL', 'AFJJ', 'LSOC'];
         if ($this->ValidaPermiso($permisos)) {
             $menu .= <<<HTML
             <ul class="nav side-menu">
@@ -99,7 +99,7 @@ class Contenedor extends Controller
             HTML;
         }
 
-        $permisos = ['AMGM', 'GASC', 'GBNA', 'PHEE'];
+        $permisos = ['AMGM', 'GASC', 'GBNA', 'LMVH'];
         if ($this->ValidaPermiso($permisos)) {
             $menu .= <<<HTML
             <ul class="nav side-menu">
